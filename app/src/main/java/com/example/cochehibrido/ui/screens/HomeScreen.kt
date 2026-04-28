@@ -19,6 +19,9 @@ fun HomeScreen(
     val costeGasolinaKm by viewModel.costeGasolinaKm.collectAsStateWithLifecycle(initialValue = 0.0)
     val costeElectricoKm by viewModel.costeElectricoKm.collectAsStateWithLifecycle(initialValue = 0.0)
 
+    // 🔥 NUEVO: stats reales
+    val stats by viewModel.stats.collectAsStateWithLifecycle()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -34,7 +37,7 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Tarjeta principal
+        // Tarjeta resumen
         Card(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(6.dp)
@@ -52,6 +55,31 @@ fun HomeScreen(
                     text = "Coste por km calculado automáticamente",
                     style = MaterialTheme.typography.bodyMedium
                 )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 🔥 NUEVA TARJETA: cálculo real
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(6.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+
+                Text(
+                    text = "Cálculo total",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Text("Km totales: %.1f km".format(stats.totalKm))
+
+                Text("Coste total: %.2f €".format(stats.totalCost))
+
+                Text("€/km real: %.3f €".format(stats.costPerKm))
             }
         }
 

@@ -53,6 +53,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.material:material:1.6.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation ("androidx.compose.material:material-icons-extended")
 
     // ROOM
     implementation(libs.androidx.room.runtime)

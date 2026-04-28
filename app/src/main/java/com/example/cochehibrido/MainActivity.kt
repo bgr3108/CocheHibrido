@@ -4,15 +4,28 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.navigation.compose.rememberNavController
 
+// 🔥 ICONOS (esto es lo que te faltaba)
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocalGasStation
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material3.Icon
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocalGasStation
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material3.Icon
+
 import com.example.cochehibrido.ui.navigation.HybridCarNavHost
+import com.example.cochehibrido.ui.theme.CocheHibridoTheme
 import com.example.cochehibrido.viewmodel.AppViewModelProvider
 import com.example.cochehibrido.viewmodel.FuelEntryViewModel
 import com.example.cochehibrido.viewmodel.HomeViewModel
+import com.example.cochehibrido.viewmodel.TripViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -24,14 +37,21 @@ class MainActivity : ComponentActivity() {
         AppViewModelProvider.Factory
     }
 
+    private val tripViewModel: TripViewModel by viewModels {
+        AppViewModelProvider.Factory
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            AppContent(
-                fuelViewModel = fuelViewModel,
-                homeViewModel = homeViewModel
-            )
+            CocheHibridoTheme {
+                AppContent(
+                    fuelViewModel = fuelViewModel,
+                    homeViewModel = homeViewModel,
+                    tripViewModel = tripViewModel
+                )
+            }
         }
     }
 }
@@ -39,17 +59,56 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppContent(
     fuelViewModel: FuelEntryViewModel,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    tripViewModel: TripViewModel
 ) {
     val navController = rememberNavController()
 
-    Scaffold { innerPadding ->
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+
+                val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ) {
+                    NavigationBarItem(
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                        )
+                        selected = currentRoute == "home",
+                        onClick = { navController.navigate("home") },
+                        icon = { Icon(Icons.Default.Home, contentDescription = null) },
+                        label = { Text("Inicio") }
+                    )
+
+                    NavigationBarItem(
+                        selected = currentRoute == "consumption",
+                        onClick = { navController.navigate("consumption") },
+                        icon = { Icon(Icons.Default.LocalGasStation, contentDescription = null) },
+                        label = { Text("Repostajes") }
+                    )
+
+                    NavigationBarItem(
+                        selected = currentRoute == "trips",
+                        onClick = { navController.navigate("trips") },
+                        icon = { Icon(Icons.Default.DirectionsCar, contentDescription = null) },
+                        label = { Text("Viajes") }
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
 
         HybridCarNavHost(
             navController = navController,
             innerPadding = innerPadding,
             fuelViewModel = fuelViewModel,
-            homeViewModel = homeViewModel
+            homeViewModel = homeViewModel,
+            tripViewModel = tripViewModel
         )
     }
 }

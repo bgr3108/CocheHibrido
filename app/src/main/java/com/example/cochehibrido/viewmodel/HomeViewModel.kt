@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cochehibrido.data.FuelRepository
 import com.example.cochehibrido.data.FuelType
+import com.example.cochehibrido.domain.ConsumptionStats
+import com.example.cochehibrido.domain.calculateConsumption
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -28,6 +30,12 @@ class HomeViewModel(
         (precio * consumo) / 100
     }
 
+    // 🔥 NUEVO — STATS REALES
+    private val _stats = MutableStateFlow(
+        ConsumptionStats(0.0, 0.0, 0.0, 0.0, 0.0)
+    )
+    val stats: StateFlow<ConsumptionStats> = _stats
+
     init {
         observarDatos()
     }
@@ -37,6 +45,9 @@ class HomeViewModel(
             fuelRepository.getAllEntries().collect { lista ->
 
                 if (lista.isEmpty()) return@collect
+
+                // 🔥 NUEVO — CALCULO GLOBAL
+                _stats.value = calculateConsumption(lista)
 
                 // ⛽ GASOLINA
                 val ultimoGasolina = lista
