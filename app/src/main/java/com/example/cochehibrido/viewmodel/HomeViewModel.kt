@@ -2,40 +2,66 @@ package com.example.cochehibrido.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cochehibrido.data.*
+import com.example.cochehibrido.data.FuelRepository
+import com.example.cochehibrido.data.FuelType
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
+import kotlinx.coroutines.launch
 
 class HomeViewModel(
     private val fuelRepository: FuelRepository
 ) : ViewModel() {
 
-    val entries = fuelRepository.getAllEntries()
-        .stateIn(viewModelScope, WhileSubscribed(5000), emptyList())
+    private val _precioGasolina = MutableStateFlow(1.44)
+    val precioGasolina: StateFlow<Double> = _precioGasolina
 
-    // ⛽ GASOLINA (ignora gratis)
-    val precioGasolina: StateFlow<Double> =
-        entries.map { list ->
-            val gas = list.filter {
-                it.tipo == FuelType.GASOLINA && it.precio > 0
+    private val _precioElectrico = MutableStateFlow(0.25)
+    val precioElectrico: StateFlow<Double> = _precioElectrico
+
+    val consumoGasolina = MutableStateFlow(5.5)
+    val consumoElectrico = MutableStateFlow(15.0)
+
+    val costeGasolinaKm = combine(precioGasolina, consumoGasolina) { precio, consumo ->
+        (precio * consumo) / 100
+    }
+
+    val costeElectricoKm = combine(precioElectrico, consumoElectrico) { precio, consumo ->
+        (precio * consumo) / 100
+    }
+
+    init {
+        observarDatos()
+    }
+
+    private fun observarDatos() {
+        viewModelScope.launch {
+            fuelRepository.getAllEntries().collect { lista ->
+
+                if (lista.isEmpty()) return@collect
+
+                // ⛽ GASOLINA
+                val ultimoGasolina = lista
+                    .filter { it.tipo == FuelType.GASOLINA }
+                    .maxByOrNull { it.fecha }
+
+                ultimoGasolina?.let {
+                    if (it.cantidad > 0) {
+                        val precioUnitario = it.precio / it.cantidad
+                        _precioGasolina.value = precioUnitario
+                    }
+                }
+
+                // 🔋 ELECTRICO
+                val ultimoElectrico = lista
+                    .filter { it.tipo == FuelType.ELECTRICO }
+                    .maxByOrNull { it.fecha }
+
+                ultimoElectrico?.let {
+                    if (it.cantidad > 0) {
+                        val precioUnitario = it.precio / it.cantidad
+                        _precioElectrico.value = precioUnitario
+                    }
+                }
             }
-
-            val litros = gas.sumOf { it.cantidad }
-            val euros = gas.sumOf { it.precio }
-
-            if (litros > 0) euros / litros else 0.0
-        }.stateIn(viewModelScope, WhileSubscribed(5000), 0.0)
-
-    // 🔋 ELECTRICIDAD (ignora gratis)
-    val precioElectrico: StateFlow<Double> =
-        entries.map { list ->
-            val elec = list.filter {
-                it.tipo == FuelType.ELECTRICO && it.precio > 0
-            }
-
-            val kwh = elec.sumOf { it.cantidad }
-            val euros = elec.sumOf { it.precio }
-
-            if (kwh > 0) euros / kwh else 0.0
-        }.stateIn(viewModelScope, WhileSubscribed(5000), 0.0)
+        }
+    }
 }

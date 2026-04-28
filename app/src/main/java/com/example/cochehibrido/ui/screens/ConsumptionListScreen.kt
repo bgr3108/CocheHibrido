@@ -62,12 +62,12 @@ fun ConsumptionListScreen(
                     ) {
                         Column(Modifier.padding(16.dp)) {
 
-                            Text(entry.fecha)
+                            Text(text = "${entry.fecha}")
 
                             Text("Km: ${entry.km.toSpanishDecimal()}")
 
                             Text(
-                                if (entry.tipo == FuelType.GASOLINA)
+                                text = if (entry.tipo == FuelType.GASOLINA)
                                     "⛽ ${entry.cantidad.toSpanishDecimal()} L"
                                 else
                                     "🔋 ${entry.cantidad.toSpanishDecimal()} kWh"

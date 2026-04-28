@@ -22,7 +22,7 @@ object AppViewModelProvider {
 
         initializer {
             HomeViewModel(
-                hybridCarApplication().container.fuelRepository // 🔥 SOLO ESTO
+                hybridCarApplication().container.fuelRepository
             )
         }
 

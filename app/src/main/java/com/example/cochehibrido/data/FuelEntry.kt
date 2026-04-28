@@ -13,19 +13,12 @@ data class FuelEntry(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 
-    val fecha: String,
+    val fecha: Long, // 🔥 ahora es timestamp
 
-    // Cantidad:
-    // gasolina → litros
-    // eléctrico → kWh
     val cantidad: Double,
-
-    // Precio total (€)
     val precio: Double,
 
-    // Tipo de energía
     val tipo: FuelType,
 
-    // 🔥 NUEVO → KM del coche en ese momento (odómetro)
     val km: Double
 )
