@@ -8,33 +8,48 @@ import com.example.cochehibrido.domain.ConsumptionStats
 import com.example.cochehibrido.domain.calculateConsumption
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.combine
 
 class HomeViewModel(
     private val fuelRepository: FuelRepository
 ) : ViewModel() {
 
-    private val _precioGasolina = MutableStateFlow(1.44)
+    val entries = fuelRepository.getAllEntries()
+
+    private val _precioGasolina = MutableStateFlow(0.0)
     val precioGasolina: StateFlow<Double> = _precioGasolina
 
-    private val _precioElectrico = MutableStateFlow(0.25)
+    private val _precioElectrico = MutableStateFlow(0.0)
     val precioElectrico: StateFlow<Double> = _precioElectrico
 
-    val consumoGasolina = MutableStateFlow(5.5)
-    val consumoElectrico = MutableStateFlow(15.0)
-
-    val costeGasolinaKm = combine(precioGasolina, consumoGasolina) { precio, consumo ->
-        (precio * consumo) / 100
-    }
-
-    val costeElectricoKm = combine(precioElectrico, consumoElectrico) { precio, consumo ->
-        (precio * consumo) / 100
-    }
-
-    // 🔥 NUEVO — STATS REALES
+    // 🔥 STATS REALES
     private val _stats = MutableStateFlow(
         ConsumptionStats(0.0, 0.0, 0.0, 0.0, 0.0)
     )
     val stats: StateFlow<ConsumptionStats> = _stats
+
+    // 🔥 COSTES (AHORA BIEN COLOCADOS)
+    val costeGasolinaKm = combine(precioGasolina, stats) { precio, s ->
+        if (s.totalKm > 0) {
+            val consumo = (s.totalGasolina / s.totalKm) * 100
+            (precio * consumo) / 100
+        } else 0.0
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        0.0
+    )
+
+    val costeElectricoKm = combine(precioElectrico, stats) { precio, s ->
+        if (s.totalKm > 0) {
+            val consumo = (s.totalElectrico / s.totalKm) * 100
+            (precio * consumo) / 100
+        } else 0.0
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        0.0
+    )
 
     init {
         observarDatos()
@@ -44,32 +59,32 @@ class HomeViewModel(
         viewModelScope.launch {
             fuelRepository.getAllEntries().collect { lista ->
 
-                if (lista.isEmpty()) return@collect
+                if (lista.isEmpty()) {
+                    _precioGasolina.value = 0.0
+                    _precioElectrico.value = 0.0
+                    _stats.value = ConsumptionStats(0.0, 0.0, 0.0, 0.0, 0.0)
+                    return@collect
+                }
 
-                // 🔥 NUEVO — CALCULO GLOBAL
                 _stats.value = calculateConsumption(lista)
 
-                // ⛽ GASOLINA
                 val ultimoGasolina = lista
                     .filter { it.tipo == FuelType.GASOLINA }
                     .maxByOrNull { it.fecha }
 
                 ultimoGasolina?.let {
                     if (it.cantidad > 0) {
-                        val precioUnitario = it.precio / it.cantidad
-                        _precioGasolina.value = precioUnitario
+                        _precioGasolina.value = it.precio / it.cantidad
                     }
                 }
 
-                // 🔋 ELECTRICO
                 val ultimoElectrico = lista
                     .filter { it.tipo == FuelType.ELECTRICO }
                     .maxByOrNull { it.fecha }
 
                 ultimoElectrico?.let {
                     if (it.cantidad > 0) {
-                        val precioUnitario = it.precio / it.cantidad
-                        _precioElectrico.value = precioUnitario
+                        _precioElectrico.value = it.precio / it.cantidad
                     }
                 }
             }

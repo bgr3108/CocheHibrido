@@ -13,6 +13,7 @@ import androidx.navigation.NavController
 import com.example.cochehibrido.data.Trip
 import com.example.cochehibrido.viewmodel.TripViewModel
 import com.example.cochehibrido.viewmodel.HomeViewModel
+import com.example.cochehibrido.util.toDateString
 
 @Composable
 fun TripListScreen(
@@ -49,6 +50,10 @@ fun TripListScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        if (trips.isEmpty()) {
+            Text("No hay viajes")
+        }
+
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
@@ -71,7 +76,7 @@ fun TripListScreen(
                 ) {
                     Column(Modifier.padding(16.dp)) {
 
-                        Text(trip.fecha)
+                        Text(trip.fecha.toDateString())
                         Text("Km: ${trip.km}")
                         Text("Gasolina: ${trip.consumoGasolina}")
                         Text("Eléctrico: ${trip.consumoElectrico}")

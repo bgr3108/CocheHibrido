@@ -14,6 +14,7 @@ import com.example.cochehibrido.data.FuelEntry
 import com.example.cochehibrido.data.FuelType
 import com.example.cochehibrido.viewmodel.FuelEntryViewModel
 import com.example.cochehibrido.util.toSpanishDecimal
+import com.example.cochehibrido.util.toDateString
 
 @Composable
 fun ConsumptionListScreen(
@@ -23,6 +24,7 @@ fun ConsumptionListScreen(
     onAddClick: () -> Unit
 ) {
     val entries by viewModel.entries.collectAsStateWithLifecycle()
+    val sortedEntries = entries.sortedByDescending { it.fecha }
 
     var entryToDelete by remember { mutableStateOf<FuelEntry?>(null) }
 
@@ -52,57 +54,71 @@ fun ConsumptionListScreen(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(entries, key = { it.id }) { entry ->
+                items(sortedEntries, key = { it.id }) { entry ->
 
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
+                    Column(Modifier.padding(16.dp)) {
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                entry.fecha.toDateString(),
+                                style = MaterialTheme.typography.labelMedium
+                            )
+
+                            Text(
+                                "${entry.km.toSpanishDecimal()} km",
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        // ⛽/🔋 Tipo + cantidad
+                        Text(
+                            text = if (entry.tipo == FuelType.GASOLINA)
+                                "⛽ Gasolina • ${entry.cantidad.toSpanishDecimal()} L"
+                            else
+                                "🔋 Eléctrico • ${entry.cantidad.toSpanishDecimal()} kWh"
                         )
-                    ) {
-                        Column(Modifier.padding(16.dp)) {
 
-                            Text(text = "${entry.fecha}")
+                        // 🚗 Km
+                        Text("Km: ${entry.km.toSpanishDecimal()}")
 
-                            Text("Km: ${entry.km.toSpanishDecimal()}")
+                        Spacer(modifier = Modifier.height(6.dp))
 
-                            Text(
-                                text = if (entry.tipo == FuelType.GASOLINA)
-                                    "⛽ ${entry.cantidad.toSpanishDecimal()} L"
-                                else
-                                    "🔋 ${entry.cantidad.toSpanishDecimal()} kWh"
-                            )
+                        // 💰 Precio unitario
+                        val precioUnitario =
+                            if (entry.cantidad > 0) entry.precio / entry.cantidad else 0.0
 
-                            Text(
-                                if (entry.precio == 0.0)
-                                    "Gratis"
-                                else
-                                    "Precio: ${entry.precio.toSpanishDecimal()} €"
-                            )
+                        val unidad = if (entry.tipo == FuelType.GASOLINA) "€/L" else "€/kWh"
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                        Text("Precio: ${precioUnitario.toSpanishDecimal()} $unidad")
 
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        // 💶 Total
+                        Text("Total: ${entry.precio.toSpanishDecimal()} €")
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Botones
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Button(
+                                onClick = {
+                                    navController.navigate("edit_refuel/${entry.id}")
+                                },
+                                modifier = Modifier.weight(1f)
                             ) {
+                                Text("Editar")
+                            }
 
-                                // 🔥 EDITAR
-                                Button(
-                                    onClick = {
-                                        navController.navigate("edit_refuel/${entry.id}")
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text("Editar")
-                                }
-
-                                // 🔥 ELIMINAR
-                                OutlinedButton(
-                                    onClick = { entryToDelete = entry },
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text("Eliminar")
-                                }
+                            OutlinedButton(
+                                onClick = { entryToDelete = entry },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Eliminar")
                             }
                         }
                     }

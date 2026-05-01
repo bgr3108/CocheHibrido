@@ -37,29 +37,6 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Tarjeta resumen
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(6.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Resumen energético",
-                    style = MaterialTheme.typography.titleMedium
-                )
-
-                Text(
-                    text = "Coste por km calculado automáticamente",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         // 🔥 NUEVA TARJETA: cálculo real
         Card(
             modifier = Modifier.fillMaxWidth(),

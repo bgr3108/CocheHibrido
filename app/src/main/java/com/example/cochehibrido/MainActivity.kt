@@ -63,6 +63,7 @@ fun AppContent(
     tripViewModel: TripViewModel
 ) {
     val navController = rememberNavController()
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
     Scaffold(
         bottomBar = {
@@ -77,8 +78,10 @@ fun AppContent(
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                        )
+                        ),
                         selected = currentRoute == "home",
                         onClick = { navController.navigate("home") },
                         icon = { Icon(Icons.Default.Home, contentDescription = null) },
@@ -86,6 +89,13 @@ fun AppContent(
                     )
 
                     NavigationBarItem(
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                        ),
                         selected = currentRoute == "consumption",
                         onClick = { navController.navigate("consumption") },
                         icon = { Icon(Icons.Default.LocalGasStation, contentDescription = null) },
@@ -93,6 +103,13 @@ fun AppContent(
                     )
 
                     NavigationBarItem(
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                        ),
                         selected = currentRoute == "trips",
                         onClick = { navController.navigate("trips") },
                         icon = { Icon(Icons.Default.DirectionsCar, contentDescription = null) },

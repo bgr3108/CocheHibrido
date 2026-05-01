@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.ImeAction
 import com.example.cochehibrido.data.Trip
 import com.example.cochehibrido.viewmodel.TripViewModel
 import com.example.cochehibrido.util.toDoubleSafe
+import com.example.cochehibrido.util.toDateString
 
 import java.util.*
 
@@ -25,24 +26,29 @@ import java.util.*
 fun AddTripScreen(
     innerPadding: PaddingValues,
     viewModel: TripViewModel,
-    trip: Trip? = null, // 🔥 PARA EDITAR
+    trip: Trip? = null,
     onSaved: () -> Unit,
     onCancel: () -> Unit
 ) {
 
-    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
     val calendar = Calendar.getInstance()
-
-    var fecha by remember {
-        mutableStateOf(
-            trip?.fecha ?: "%02d-%02d-%04d".format(
-                calendar.get(Calendar.DAY_OF_MONTH),
-                calendar.get(Calendar.MONTH) + 1,
-                calendar.get(Calendar.YEAR)
-            )
-        )
+    var fechaMillis by remember {
+        mutableStateOf(trip?.fecha ?: System.currentTimeMillis())
     }
+
+    val datePickerDialog = DatePickerDialog(
+        context,
+        { _, y, m, d ->
+            val cal = Calendar.getInstance()
+            cal.set(y, m, d)
+            fechaMillis = cal.timeInMillis
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
 
     var km by remember {
         mutableStateOf(trip?.km?.toString()?.replace(".", ",") ?: "")
@@ -55,14 +61,6 @@ fun AddTripScreen(
     var consumoElectrico by remember {
         mutableStateOf(trip?.consumoElectrico?.toString()?.replace(".", ",") ?: "")
     }
-
-    val datePickerDialog = DatePickerDialog(
-        context,
-        { _, y, m, d -> fecha = "%02d-%02d-%04d".format(d, m + 1, y) },
-        calendar.get(Calendar.YEAR),
-        calendar.get(Calendar.MONTH),
-        calendar.get(Calendar.DAY_OF_MONTH)
-    )
 
     Column(
         modifier = Modifier
@@ -78,9 +76,8 @@ fun AddTripScreen(
             style = MaterialTheme.typography.headlineSmall
         )
 
-        // 📅 Fecha
         Button(onClick = { datePickerDialog.show() }) {
-            Text("Fecha: $fecha")
+            Text("Fecha: ${fechaMillis.toDateString()}")
         }
 
         // Km
@@ -95,7 +92,7 @@ fun AddTripScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Consumo gasolina
+        // Gasolina
         OutlinedTextField(
             value = consumoGasolina,
             onValueChange = { consumoGasolina = it },
@@ -107,7 +104,7 @@ fun AddTripScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Consumo eléctrico
+        // Eléctrico
         OutlinedTextField(
             value = consumoElectrico,
             onValueChange = { consumoElectrico = it },
@@ -115,7 +112,15 @@ fun AddTripScreen(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(
                 onDone = {
-                    guardarTrip(viewModel, trip, fecha, km, consumoGasolina, consumoElectrico, onSaved)
+                    guardarTrip(
+                        viewModel,
+                        trip,
+                        fechaMillis,
+                        km,
+                        consumoGasolina,
+                        consumoElectrico,
+                        onSaved
+                    )
                 }
             ),
             modifier = Modifier.fillMaxWidth()
@@ -125,7 +130,15 @@ fun AddTripScreen(
 
             Button(
                 onClick = {
-                    guardarTrip(viewModel, trip, fecha, km, consumoGasolina, consumoElectrico, onSaved)
+                    guardarTrip(
+                        viewModel,
+                        trip,
+                        fechaMillis,
+                        km,
+                        consumoGasolina,
+                        consumoElectrico,
+                        onSaved
+                    )
                 },
                 modifier = Modifier.weight(1f)
             ) {
@@ -145,15 +158,15 @@ fun AddTripScreen(
 private fun guardarTrip(
     viewModel: TripViewModel,
     trip: Trip?,
-    fecha: String,
+    fechaMillis: Long, // 🔥 AÑADIR
     km: String,
     consumoGasolina: String,
     consumoElectrico: String,
     onSaved: () -> Unit
 ) {
     val newTrip = Trip(
-        id = trip?.id ?: 0, // 🔥 clave para editar
-        fecha = fecha,
+        id = trip?.id ?: 0,
+        fecha = fechaMillis, // 🔥 clave
         km = km.toDoubleSafe(),
         consumoGasolina = consumoGasolina.toDoubleSafe(),
         consumoElectrico = consumoElectrico.toDoubleSafe()

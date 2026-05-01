@@ -8,7 +8,7 @@ data class Trip(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 
-    val fecha: String,
+    val fecha: Long,
 
     // 🔥 CAMBIO IMPORTANTE → ahora Double
     val km: Double,

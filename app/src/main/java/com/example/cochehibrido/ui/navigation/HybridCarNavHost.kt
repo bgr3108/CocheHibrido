@@ -53,6 +53,25 @@ fun HybridCarNavHost(
                 }
             )
         }
+        composable("edit_refuel/{id}") { backStackEntry ->
+
+            val id = backStackEntry.arguments?.getString("id")?.toIntOrNull()
+
+            val entry = fuelViewModel.entries
+                .collectAsState(initial = emptyList())
+                .value
+                .find { it.id == id }
+
+            entry?.let {
+                AddConsumptionScreen(
+                    viewModel = fuelViewModel,
+                    entry = it,
+                    onClose = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+        }
 
         // 🚗 VIAJES
         composable("trips") {
