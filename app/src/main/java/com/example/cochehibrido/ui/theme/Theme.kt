@@ -8,8 +8,8 @@ import androidx.compose.ui.graphics.Color
 private val LightColors = lightColorScheme(
     primary = BluePrimary,
     secondary = BlueSecondary,
-    background = BlueBackground,
-    surface = BlueSurface,
+    background = Color.White,           // fondo limpio
+    surface = Color(0xFFE3F2FD),        // azul muy suave (tarjetas)
     onPrimary = Color.White,
     onBackground = Color.Black,
     onSurface = Color.Black

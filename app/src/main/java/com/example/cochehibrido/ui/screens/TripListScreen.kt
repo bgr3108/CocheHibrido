@@ -9,11 +9,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.example.cochehibrido.ui.theme.CardBlueLight
+import com.example.cochehibrido.ui.theme.CardBlueDark
 
 import com.example.cochehibrido.data.Trip
 import com.example.cochehibrido.viewmodel.TripViewModel
 import com.example.cochehibrido.viewmodel.HomeViewModel
 import com.example.cochehibrido.util.toDateString
+
+
 
 @Composable
 fun TripListScreen(
@@ -24,7 +29,7 @@ fun TripListScreen(
     onAddClick: () -> Unit
 ) {
     val trips by viewModel.trips.collectAsStateWithLifecycle()
-
+    val isDark = isSystemInDarkTheme()
     val precioGasolina by homeViewModel.precioGasolina.collectAsStateWithLifecycle()
     val precioElectrico by homeViewModel.precioElectrico.collectAsStateWithLifecycle()
 
@@ -71,8 +76,9 @@ fun TripListScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
+                        containerColor = if (isDark) CardBlueDark else CardBlueLight
+                    ),
+                    elevation = CardDefaults.cardElevation(4.dp)
                 ) {
                     Column(Modifier.padding(16.dp)) {
 

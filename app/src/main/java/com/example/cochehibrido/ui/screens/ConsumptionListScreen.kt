@@ -9,6 +9,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.example.cochehibrido.ui.theme.CardBlueLight
+import com.example.cochehibrido.ui.theme.CardBlueDark
 
 import com.example.cochehibrido.data.FuelEntry
 import com.example.cochehibrido.data.FuelType
@@ -25,7 +28,7 @@ fun ConsumptionListScreen(
 ) {
     val entries by viewModel.entries.collectAsStateWithLifecycle()
     val sortedEntries = entries.sortedByDescending { it.fecha }
-
+    val isDark = isSystemInDarkTheme()
     var entryToDelete by remember { mutableStateOf<FuelEntry?>(null) }
 
     Column(
@@ -56,24 +59,32 @@ fun ConsumptionListScreen(
             ) {
                 items(sortedEntries, key = { it.id }) { entry ->
 
-                    Column(Modifier.padding(16.dp)) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isDark) CardBlueDark else CardBlueLight
+                        ),
+                        elevation = CardDefaults.cardElevation(4.dp)
+                    ) {
+                        Column(Modifier.padding(16.dp)) {
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                entry.fecha.toDateString(),
-                                style = MaterialTheme.typography.labelMedium
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    entry.fecha.toDateString(),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
 
-                            Text(
-                                "${entry.km.toSpanishDecimal()} km",
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                        }
+                                Text(
+                                    "${entry.km.toSpanishDecimal()} km",
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                            }
 
-                        Spacer(modifier = Modifier.height(6.dp))
+
+                            Spacer(modifier = Modifier.height(6.dp))
 
                         // ⛽/🔋 Tipo + cantidad
                         Text(
@@ -147,5 +158,6 @@ fun ConsumptionListScreen(
             title = { Text("Eliminar repostaje") },
             text = { Text("¿Seguro que quieres eliminar este registro?") }
         )
+    }
     }
 }

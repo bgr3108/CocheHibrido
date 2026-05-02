@@ -10,6 +10,9 @@ import com.example.cochehibrido.viewmodel.HomeViewModel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.example.cochehibrido.ui.theme.CardBlueLight
+import com.example.cochehibrido.ui.theme.CardBlueDark
 
 
 @Composable
@@ -22,7 +25,7 @@ fun HomeScreen(
     val precioElectrico by viewModel.precioElectrico.collectAsStateWithLifecycle()
     val costeGasolinaKm by viewModel.costeGasolinaKm.collectAsStateWithLifecycle(initialValue = 0.0)
     val costeElectricoKm by viewModel.costeElectricoKm.collectAsStateWithLifecycle(initialValue = 0.0)
-
+    val isDark = isSystemInDarkTheme()
 // 🟢 NUEVO (CÁLCULO REAL)
     val totalKm by viewModel.totalKm.collectAsStateWithLifecycle()
     val totalCost by viewModel.totalCost.collectAsStateWithLifecycle()
@@ -46,8 +49,11 @@ fun HomeScreen(
         // 🔥 NUEVA TARJETA: cálculo real
         Card(
             modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(6.dp)
-        ) {
+            colors = CardDefaults.cardColors(
+                containerColor = if (isDark) CardBlueDark else CardBlueLight
+            ),
+            elevation = CardDefaults.cardElevation(4.dp)
+        ){
             Column(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -73,6 +79,9 @@ fun HomeScreen(
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isDark) CardBlueDark else CardBlueLight
+                ),
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -100,6 +109,9 @@ fun HomeScreen(
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isDark) CardBlueDark else CardBlueLight
+                ),
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
