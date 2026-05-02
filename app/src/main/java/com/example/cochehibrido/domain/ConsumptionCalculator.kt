@@ -5,7 +5,7 @@ import com.example.cochehibrido.data.FuelType
 
 fun calculateConsumption(entries: List<FuelEntry>): ConsumptionStats {
 
-    if (entries.size < 2) {
+    if (entries.isEmpty()) {
         return ConsumptionStats(
             totalKm = 0.0,
             totalCost = 0.0,
@@ -15,26 +15,20 @@ fun calculateConsumption(entries: List<FuelEntry>): ConsumptionStats {
         )
     }
 
-    val sorted = entries.sortedBy { it.km }
+    val totalCost = entries.sumOf { it.precio }
 
-    val totalKm = sorted.last().km - sorted.first().km
-
-    val totalCost = sorted.sumOf { it.cantidad * it.precio }
-
-    val totalGasolina = sorted
+    val totalGasolina = entries
         .filter { it.tipo == FuelType.GASOLINA }
         .sumOf { it.cantidad }
 
-    val totalElectrico = sorted
+    val totalElectrico = entries
         .filter { it.tipo == FuelType.ELECTRICO }
         .sumOf { it.cantidad }
 
-    val costPerKm = if (totalKm > 0) totalCost / totalKm else 0.0
-
     return ConsumptionStats(
-        totalKm = totalKm,
+        totalKm = 0.0, // ❌ ya no usamos km aquí
         totalCost = totalCost,
-        costPerKm = costPerKm,
+        costPerKm = 0.0, // ❌ lo quitamos de aquí
         totalGasolina = totalGasolina,
         totalElectrico = totalElectrico
     )

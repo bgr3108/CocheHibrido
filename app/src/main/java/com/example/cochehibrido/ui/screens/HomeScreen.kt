@@ -7,20 +7,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.cochehibrido.viewmodel.HomeViewModel
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
+
 
 @Composable
 fun HomeScreen(
     innerPadding: PaddingValues,
     viewModel: HomeViewModel
 ) {
+    // 🔵 TARJETAS (NO TOCAR)
     val precioGasolina by viewModel.precioGasolina.collectAsStateWithLifecycle()
     val precioElectrico by viewModel.precioElectrico.collectAsStateWithLifecycle()
-
     val costeGasolinaKm by viewModel.costeGasolinaKm.collectAsStateWithLifecycle(initialValue = 0.0)
     val costeElectricoKm by viewModel.costeElectricoKm.collectAsStateWithLifecycle(initialValue = 0.0)
 
-    // 🔥 NUEVO: stats reales
-    val stats by viewModel.stats.collectAsStateWithLifecycle()
+// 🟢 NUEVO (CÁLCULO REAL)
+    val totalKm by viewModel.totalKm.collectAsStateWithLifecycle()
+    val totalCost by viewModel.totalCost.collectAsStateWithLifecycle()
+    val costPerKm by viewModel.costPerKm.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -52,11 +58,9 @@ fun HomeScreen(
                     style = MaterialTheme.typography.titleMedium
                 )
 
-                Text("Km totales: %.1f km".format(stats.totalKm))
-
-                Text("Coste total: %.2f €".format(stats.totalCost))
-
-                Text("€/km real: %.3f €".format(stats.costPerKm))
+                Text("Km totales: %.1f km".format(totalKm))
+                Text("Coste total: %.2f €".format(totalCost))
+                Text("€/km real: %.3f €".format(costPerKm))
             }
         }
 
