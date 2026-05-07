@@ -15,10 +15,8 @@ import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material3.Icon
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LocalGasStation
-import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material3.Icon
+
+
 
 import com.example.cochehibrido.ui.navigation.HybridCarNavHost
 import com.example.cochehibrido.ui.theme.CocheHibridoTheme
@@ -26,6 +24,10 @@ import com.example.cochehibrido.viewmodel.AppViewModelProvider
 import com.example.cochehibrido.viewmodel.FuelEntryViewModel
 import com.example.cochehibrido.viewmodel.HomeViewModel
 import com.example.cochehibrido.viewmodel.TripViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.cochehibrido.ui.screens.SetupScreen
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 
 class MainActivity : ComponentActivity() {
 
@@ -37,9 +39,11 @@ class MainActivity : ComponentActivity() {
         AppViewModelProvider.Factory
     }
 
+
     private val tripViewModel: TripViewModel by viewModels {
         AppViewModelProvider.Factory
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,7 +67,21 @@ fun AppContent(
     tripViewModel: TripViewModel
 ) {
     val navController = rememberNavController()
-    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+    val context = LocalContext.current
+
+    val hasBaseline by homeViewModel.hasBaseline.collectAsStateWithLifecycle()
+
+    if (!hasBaseline) {
+
+        SetupScreen(
+            baselineRepository = (context.applicationContext as HybridCarApplication)
+                .container
+                .baselineRepository,
+            onDone = {
+            }
+        )
+
+    } else {
 
     Scaffold(
         bottomBar = {
@@ -128,4 +146,5 @@ fun AppContent(
             tripViewModel = tripViewModel
         )
     }
+}
 }

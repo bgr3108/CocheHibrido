@@ -13,12 +13,14 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.ImeAction
 
 import com.example.cochehibrido.data.Trip
 import com.example.cochehibrido.viewmodel.TripViewModel
 import com.example.cochehibrido.util.toDoubleSafe
 import com.example.cochehibrido.util.toDateString
+
 
 import java.util.*
 
@@ -85,10 +87,18 @@ fun AddTripScreen(
             value = km,
             onValueChange = { km = it },
             label = { Text("Km") },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions {
-                focusManager.moveFocus(FocusDirection.Down)
-            },
+
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Decimal,
+                imeAction = ImeAction.Next
+            ),
+
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
+
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -97,10 +107,18 @@ fun AddTripScreen(
             value = consumoGasolina,
             onValueChange = { consumoGasolina = it },
             label = { Text("Gasolina (L/100km)") },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions {
-                focusManager.moveFocus(FocusDirection.Down)
-            },
+
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Decimal,
+                imeAction = ImeAction.Next
+            ),
+
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            ),
+
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -109,7 +127,12 @@ fun AddTripScreen(
             value = consumoElectrico,
             onValueChange = { consumoElectrico = it },
             label = { Text("Eléctrico (kWh/100km)") },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Decimal,
+                imeAction = ImeAction.Done
+            ),
+
             keyboardActions = KeyboardActions(
                 onDone = {
                     guardarTrip(
@@ -123,6 +146,7 @@ fun AddTripScreen(
                     )
                 }
             ),
+
             modifier = Modifier.fillMaxWidth()
         )
 

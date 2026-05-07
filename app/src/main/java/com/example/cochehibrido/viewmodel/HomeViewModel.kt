@@ -10,35 +10,57 @@ import com.example.cochehibrido.domain.calculateConsumption
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.combine
+import com.example.cochehibrido.data.BaselineRepository
+import com.example.cochehibrido.data.VehicleBaseline
 
 class HomeViewModel(
     private val fuelRepository: FuelRepository,
-    private val tripRepository: TripRepository
+    private val tripRepository: TripRepository,
+    private val baselineRepository: BaselineRepository
 ) : ViewModel() {
 
     val entries = fuelRepository.getAllEntries()
     val trips = tripRepository.getAllTrips()
+    val baseline = baselineRepository.baseline
+    val hasBaseline = baseline
+        .map { it.kmInicial > 0 }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            false
+        )
     // 🔥 CONSUMOS (AQUÍ)
-    val consumoGasolina = trips
-        .map { tripsList ->
-            val totalKm = tripsList.sumOf { it.km }
-            val totalGas = tripsList.sumOf { it.consumoGasolina * it.km / 100 }
+    val consumoGasolina = combine(trips, baseline) { tripList, base ->
 
-            if (totalKm > 0) (totalGas / totalKm) * 100 else 0.0
-        }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+        val kmViajes = tripList.sumOf { it.km }
+        val gasolinaViajes = tripList.sumOf { it.consumoGasolina * it.km / 100 }
 
-    val consumoElectrico = trips
-        .map { tripsList ->
-            val totalKm = tripsList.sumOf { it.km }
-            val totalElec = tripsList.sumOf { it.consumoElectrico * it.km / 100 }
+        val gasolinaBase = base.kmInicial * base.consumoGasolinaInicial / 100
 
-            if (totalKm > 0) (totalElec / totalKm) * 100 else 0.0
-        }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
-    val totalKm = trips
-        .map { list -> list.sumOf { it.km } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+        val totalKm = base.kmInicial + kmViajes
+        val totalGas = gasolinaBase + gasolinaViajes
+
+        if (totalKm > 0) (totalGas / totalKm) * 100 else 0.0
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+    val consumoElectrico = combine(trips, baseline) { tripList, base ->
+
+        val kmViajes = tripList.sumOf { it.km }
+        val elecViajes = tripList.sumOf { it.consumoElectrico * it.km / 100 }
+
+        val elecBase = base.kmInicial * base.consumoElectricoInicial / 100
+
+        val totalKm = base.kmInicial + kmViajes
+        val totalElec = elecBase + elecViajes
+
+        if (totalKm > 0) (totalElec / totalKm) * 100 else 0.0
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+    val totalKm = combine(trips, baseline) { tripList, base ->
+        base.kmInicial + tripList.sumOf { it.km }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        0.0
+    )
     val totalCost = entries
         .map { list -> list.sumOf { it.precio } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
