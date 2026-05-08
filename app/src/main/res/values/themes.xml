@@ -8,7 +8,6 @@
 
         <!-- Barra inferior -->
         <item name="android:navigationBarColor">#121212</item>
-        <item name="android:windowLightNavigationBar">false</item>
 
     </style>
 

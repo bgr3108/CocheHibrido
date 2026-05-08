@@ -7,9 +7,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.cochehibrido.viewmodel.HomeViewModel
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.SharingStarted
 import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.cochehibrido.ui.theme.CardBlueLight
 import com.example.cochehibrido.ui.theme.CardBlueDark

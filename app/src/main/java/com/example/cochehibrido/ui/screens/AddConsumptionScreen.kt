@@ -34,14 +34,14 @@ fun AddConsumptionScreen(
 
 // 🔥 ESTO VA PRIMERO
     var fechaMillis by remember {
-        mutableStateOf(System.currentTimeMillis())
+        mutableLongStateOf(System.currentTimeMillis())
     }
     var hour by remember {
-        mutableStateOf(calendar.get(Calendar.HOUR_OF_DAY))
+        mutableIntStateOf(calendar.get(Calendar.HOUR_OF_DAY))
     }
 
     var minute by remember {
-        mutableStateOf(calendar.get(Calendar.MINUTE))
+        mutableIntStateOf(calendar.get(Calendar.MINUTE))
     }
 
 // 🔥 DESPUÉS el DatePicker

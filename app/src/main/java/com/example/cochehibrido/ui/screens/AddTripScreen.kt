@@ -38,15 +38,15 @@ fun AddTripScreen(
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
     var fechaMillis by remember {
-        mutableStateOf(trip?.fecha ?: System.currentTimeMillis())
+        mutableLongStateOf(trip?.fecha ?: System.currentTimeMillis())
     }
 
     var hour by remember {
-        mutableStateOf(calendar.get(Calendar.HOUR_OF_DAY))
+        mutableIntStateOf(calendar.get(Calendar.HOUR_OF_DAY))
     }
 
     var minute by remember {
-        mutableStateOf(calendar.get(Calendar.MINUTE))
+        mutableIntStateOf(calendar.get(Calendar.MINUTE))
     }
 
     val datePickerDialog = DatePickerDialog(

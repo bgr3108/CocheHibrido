@@ -128,22 +128,26 @@ fun TripListScreen(
     }
 
     // 🔥 CONFIRMACIÓN ELIMINAR
-    tripToDelete?.let { trip ->
+    tripToDelete?.let { selectedTrip ->
+
         AlertDialog(
             onDismissRequest = { tripToDelete = null },
+
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.deleteTrip(trip)
+                    viewModel.deleteTrip(selectedTrip)
                     tripToDelete = null
                 }) {
                     Text("Eliminar")
                 }
             },
+
             dismissButton = {
                 TextButton(onClick = { tripToDelete = null }) {
                     Text("Cancelar")
                 }
             },
+
             title = { Text("Eliminar viaje") },
             text = { Text("¿Seguro que quieres eliminar este viaje?") }
         )
