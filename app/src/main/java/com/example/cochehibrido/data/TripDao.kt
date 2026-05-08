@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 interface TripDao {
 
     // 🔥 CORREGIDO → nombre tabla
-    @Query("SELECT * FROM trips ORDER BY id DESC")
+    @Query("SELECT * FROM trips ORDER BY fecha DESC")
     fun getAllTrips(): Flow<List<Trip>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

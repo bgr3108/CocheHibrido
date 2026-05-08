@@ -16,7 +16,7 @@ import com.example.cochehibrido.ui.theme.CardBlueDark
 import com.example.cochehibrido.data.Trip
 import com.example.cochehibrido.viewmodel.TripViewModel
 import com.example.cochehibrido.viewmodel.HomeViewModel
-import com.example.cochehibrido.util.toDateString
+import com.example.cochehibrido.util.toDateTimeString
 import com.example.cochehibrido.util.toSpanishDecimal
 
 
@@ -83,7 +83,7 @@ fun TripListScreen(
                 ) {
                     Column(Modifier.padding(16.dp)) {
 
-                        Text(trip.fecha.toDateString())
+                        Text(trip.fecha.toDateTimeString())
                         Text("Km: ${trip.km.toSpanishDecimal()}")
                         Text("Gasolina: ${trip.consumoGasolina.toSpanishDecimal()}")
                         Text("Eléctrico: ${trip.consumoElectrico.toSpanishDecimal()}")

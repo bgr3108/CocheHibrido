@@ -17,7 +17,7 @@ import com.example.cochehibrido.data.FuelEntry
 import com.example.cochehibrido.data.FuelType
 import com.example.cochehibrido.viewmodel.FuelEntryViewModel
 import com.example.cochehibrido.util.toSpanishDecimal
-import com.example.cochehibrido.util.toDateString
+import com.example.cochehibrido.util.toDateTimeString
 
 @Composable
 fun ConsumptionListScreen(
@@ -73,7 +73,7 @@ fun ConsumptionListScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    entry.fecha.toDateString(),
+                                    entry.fecha.toDateTimeString(),
                                     style = MaterialTheme.typography.labelMedium
                                 )
 

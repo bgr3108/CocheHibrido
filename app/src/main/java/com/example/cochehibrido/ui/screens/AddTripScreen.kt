@@ -19,7 +19,8 @@ import androidx.compose.ui.text.input.ImeAction
 import com.example.cochehibrido.data.Trip
 import com.example.cochehibrido.viewmodel.TripViewModel
 import com.example.cochehibrido.util.toDoubleSafe
-import com.example.cochehibrido.util.toDateString
+import com.example.cochehibrido.util.toDateTimeString
+import android.app.TimePickerDialog
 
 
 import java.util.*
@@ -38,6 +39,14 @@ fun AddTripScreen(
     val calendar = Calendar.getInstance()
     var fechaMillis by remember {
         mutableStateOf(trip?.fecha ?: System.currentTimeMillis())
+    }
+
+    var hour by remember {
+        mutableStateOf(calendar.get(Calendar.HOUR_OF_DAY))
+    }
+
+    var minute by remember {
+        mutableStateOf(calendar.get(Calendar.MINUTE))
     }
 
     val datePickerDialog = DatePickerDialog(
@@ -79,9 +88,37 @@ fun AddTripScreen(
         )
 
         Button(onClick = { datePickerDialog.show() }) {
-            Text("Fecha: ${fechaMillis.toDateString()}")
+            Text("Fecha: ${fechaMillis.toDateTimeString()}")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = {
+
+                TimePickerDialog(
+                    context,
+                    { _, selectedHour, selectedMinute ->
+                        hour = selectedHour
+                        minute = selectedMinute
+                    },
+                    hour,
+                    minute,
+                    true
+                ).show()
+
+            }
+        ) {
+            Text(
+                String.format(
+                    Locale.getDefault(),
+                    "Hora: %02d:%02d",
+                    hour,
+                    minute
+                )
+            )
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
         // Km
         OutlinedTextField(
             value = km,

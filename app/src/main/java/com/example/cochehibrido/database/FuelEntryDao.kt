@@ -11,10 +11,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface FuelEntryDao {
 
-    @Query("SELECT * FROM fuel_entries ORDER BY id DESC")
+    @Query("SELECT * FROM fuel_entries ORDER BY fecha DESC")
     fun getAllEntries(): Flow<List<FuelEntry>>
 
-    @Query("SELECT * FROM fuel_entries ORDER BY id DESC LIMIT 1")
+    @Query("SELECT * FROM fuel_entries ORDER BY fecha DESC LIMIT 1")
     fun getLatestEntry(): Flow<FuelEntry?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
