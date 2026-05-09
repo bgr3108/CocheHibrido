@@ -94,8 +94,6 @@ fun ConsumptionListScreen(
                                 "🔋 Eléctrico • ${entry.cantidad.toSpanishDecimal()} kWh"
                         )
 
-                        // 🚗 Km
-                        Text("Km: ${entry.km.toSpanishDecimal()}")
 
                         Spacer(modifier = Modifier.height(6.dp))
 

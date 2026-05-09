@@ -61,9 +61,103 @@ class HomeViewModel(
         SharingStarted.WhileSubscribed(5000),
         0.0
     )
+    val porcentajeElectrico = combine(trips, baseline) { tripList, base ->
+
+        val kmViajes = tripList.sumOf { it.km }
+
+        val kmElectricos =
+            tripList.sumOf {
+                if (it.consumoElectrico > 0) it.km else 0.0
+            }
+
+        val totalKm = base.kmInicial + kmViajes
+
+        if (totalKm > 0) {
+            (kmElectricos / totalKm) * 100
+        } else {
+            0.0
+        }
+
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        0.0
+    )
     val totalCost = entries
         .map { list -> list.sumOf { it.precio } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+    val kmEsteMes = trips
+        .map { tripList ->
+
+            val calendar = java.util.Calendar.getInstance()
+
+            val mesActual = calendar.get(java.util.Calendar.MONTH)
+            val añoActual = calendar.get(java.util.Calendar.YEAR)
+
+            tripList
+                .filter {
+
+                    val tripCalendar = java.util.Calendar.getInstance()
+                    tripCalendar.timeInMillis = it.fecha
+
+                    tripCalendar.get(java.util.Calendar.MONTH) == mesActual &&
+                            tripCalendar.get(java.util.Calendar.YEAR) == añoActual
+                }
+                .sumOf { it.km }
+
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+    val gastoEsteMes = entries
+        .map { entryList ->
+
+            val calendar = java.util.Calendar.getInstance()
+
+            val mesActual = calendar.get(java.util.Calendar.MONTH)
+            val añoActual = calendar.get(java.util.Calendar.YEAR)
+
+            entryList
+                .filter {
+
+                    val entryCalendar = java.util.Calendar.getInstance()
+                    entryCalendar.timeInMillis = it.fecha
+
+                    entryCalendar.get(java.util.Calendar.MONTH) == mesActual &&
+                            entryCalendar.get(java.util.Calendar.YEAR) == añoActual
+                }
+                .sumOf { it.precio }
+
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+    val totalLitrosGasolina = entries
+        .map { list ->
+
+            list
+                .filter { it.tipo == FuelType.GASOLINA }
+                .sumOf { it.cantidad }
+
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+    val totalKwhElectricos = entries
+        .map { list ->
+
+            list
+                .filter { it.tipo == FuelType.ELECTRICO }
+                .sumOf { it.cantidad }
+
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
     val costPerKm = combine(totalCost, totalKm) { cost, km ->
         if (km > 0) cost / km else 0.0
     }.stateIn(
