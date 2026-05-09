@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.cochehibrido.ui.screens.SetupScreen
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material.icons.filled.BarChart
 
 class MainActivity : ComponentActivity() {
 
@@ -117,7 +118,7 @@ fun AppContent(
                         selected = currentRoute == "consumption",
                         onClick = { navController.navigate("consumption") },
                         icon = { Icon(Icons.Default.LocalGasStation, contentDescription = null) },
-                        label = { Text("Repostajes") }
+                        label = { Text("Consumos") }
                     )
 
                     NavigationBarItem(
@@ -132,6 +133,19 @@ fun AppContent(
                         onClick = { navController.navigate("trips") },
                         icon = { Icon(Icons.Default.DirectionsCar, contentDescription = null) },
                         label = { Text("Viajes") }
+                    )
+                    NavigationBarItem(
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                        ),
+                        selected = currentRoute == "stats",
+                        onClick = { navController.navigate("stats") },
+                        icon = { Icon(Icons.Default.BarChart, contentDescription = null) },
+                        label = { Text("Estadísticas") }
                     )
                 }
             }

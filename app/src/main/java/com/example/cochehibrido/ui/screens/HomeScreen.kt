@@ -13,6 +13,9 @@ import com.example.cochehibrido.ui.theme.CardBlueDark
 import com.example.cochehibrido.util.toSpanishDecimal
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.ui.graphics.Color
+import com.example.cochehibrido.util.toDateTimeString
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 
 @Composable
@@ -46,10 +49,18 @@ fun HomeScreen(
     val gastoEsteMes by viewModel
         .gastoEsteMes
         .collectAsStateWithLifecycle()
+    val ultimoGasolina by viewModel
+        .ultimoGasolina
+        .collectAsStateWithLifecycle()
+
+    val ultimoElectrico by viewModel
+        .ultimoElectrico
+        .collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(innerPadding)
             .padding(16.dp)
     ) {
@@ -229,5 +240,96 @@ fun HomeScreen(
                 }
             }
         }
-    }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+
+                // 🔋 Última carga
+                Card(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp),
+
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isDark) CardBlueDark else CardBlueLight
+                    )
+                ) {
+
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+
+                        Text(
+                            "Última carga",
+                            style = MaterialTheme.typography.titleSmall
+                        )
+
+                        ultimoElectrico?.let { entry ->
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            Text(entry.fecha.toDateTimeString())
+
+                            Text(
+                                "${entry.cantidad.toSpanishDecimal()} kWh"
+                            )
+
+                            Text(
+                                "${entry.precio.toSpanishDecimal()} €"
+                            )
+
+                            if (entry.cantidad > 0) {
+                                Text(
+                                    "${(entry.precio / entry.cantidad).toSpanishDecimal()} €/kWh"
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // ⛽ Último repostaje
+                Card(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp),
+
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isDark) CardBlueDark else CardBlueLight
+                    )
+                ) {
+
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+
+                        Text(
+                            "Último repostaje",
+                            style = MaterialTheme.typography.titleSmall
+                        )
+
+                        ultimoGasolina?.let { entry ->
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            Text(entry.fecha.toDateTimeString())
+
+                            Text(
+                                "${entry.cantidad.toSpanishDecimal()} L"
+                            )
+
+                            Text(
+                                "${entry.precio.toSpanishDecimal()} €"
+                            )
+
+                            if (entry.cantidad > 0) {
+                                Text(
+                                    "${(entry.precio / entry.cantidad).toSpanishDecimal()} €/L"
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
 }

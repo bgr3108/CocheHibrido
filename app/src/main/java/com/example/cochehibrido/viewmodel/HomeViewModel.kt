@@ -2,21 +2,24 @@ package com.example.cochehibrido.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cochehibrido.data.BaselineRepository
 import com.example.cochehibrido.data.FuelRepository
 import com.example.cochehibrido.data.FuelType
 import com.example.cochehibrido.data.TripRepository
 import com.example.cochehibrido.domain.ConsumptionStats
 import com.example.cochehibrido.domain.calculateConsumption
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import com.example.cochehibrido.data.BaselineRepository
-import com.example.cochehibrido.data.VehicleBaseline
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class HomeViewModel(
     private val fuelRepository: FuelRepository,
-    private val tripRepository: TripRepository,
-    private val baselineRepository: BaselineRepository
+    tripRepository: TripRepository,
+    baselineRepository: BaselineRepository
 ) : ViewModel() {
 
     val entries = fuelRepository.getAllEntries()
@@ -92,7 +95,7 @@ class HomeViewModel(
             val calendar = java.util.Calendar.getInstance()
 
             val mesActual = calendar.get(java.util.Calendar.MONTH)
-            val añoActual = calendar.get(java.util.Calendar.YEAR)
+            val anioActual = calendar.get(java.util.Calendar.YEAR)
 
             tripList
                 .filter {
@@ -101,7 +104,7 @@ class HomeViewModel(
                     tripCalendar.timeInMillis = it.fecha
 
                     tripCalendar.get(java.util.Calendar.MONTH) == mesActual &&
-                            tripCalendar.get(java.util.Calendar.YEAR) == añoActual
+                            tripCalendar.get(java.util.Calendar.YEAR) == anioActual
                 }
                 .sumOf { it.km }
 
@@ -116,7 +119,7 @@ class HomeViewModel(
             val calendar = java.util.Calendar.getInstance()
 
             val mesActual = calendar.get(java.util.Calendar.MONTH)
-            val añoActual = calendar.get(java.util.Calendar.YEAR)
+            val anioActual = calendar.get(java.util.Calendar.YEAR)
 
             entryList
                 .filter {
@@ -125,7 +128,7 @@ class HomeViewModel(
                     entryCalendar.timeInMillis = it.fecha
 
                     entryCalendar.get(java.util.Calendar.MONTH) == mesActual &&
-                            entryCalendar.get(java.util.Calendar.YEAR) == añoActual
+                            entryCalendar.get(java.util.Calendar.YEAR) ==anioActual
                 }
                 .sumOf { it.precio }
 
@@ -158,6 +161,30 @@ class HomeViewModel(
             SharingStarted.WhileSubscribed(5000),
             0.0
         )
+    val ultimoGasolina = entries
+        .map { list ->
+
+            list
+                .filter { it.tipo == FuelType.GASOLINA }
+                .maxByOrNull { it.fecha }
+
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            null
+        )
+    val ultimoElectrico = entries
+        .map { list ->
+
+            list
+                .filter { it.tipo == FuelType.ELECTRICO }
+                .maxByOrNull { it.fecha }
+
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            null
+        )
     val costPerKm = combine(totalCost, totalKm) { cost, km ->
         if (km > 0) cost / km else 0.0
     }.stateIn(
@@ -176,7 +203,7 @@ class HomeViewModel(
     private val _stats = MutableStateFlow(
         ConsumptionStats(0.0, 0.0, 0.0, 0.0, 0.0)
     )
-    val stats: StateFlow<ConsumptionStats> = _stats
+    //val stats: StateFlow<ConsumptionStats> = _stats
 
     // 🔥 COSTES (AHORA BIEN COLOCADOS)
     val costeGasolinaKm = combine(precioGasolina, consumoGasolina) { precio, consumo ->
