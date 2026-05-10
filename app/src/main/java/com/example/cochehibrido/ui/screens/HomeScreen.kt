@@ -11,8 +11,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.cochehibrido.ui.theme.CardBlueLight
 import com.example.cochehibrido.ui.theme.CardBlueDark
 import com.example.cochehibrido.util.toSpanishDecimal
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.ui.graphics.Color
 import com.example.cochehibrido.util.toDateTimeString
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -39,8 +37,6 @@ fun HomeScreen(
     val totalKm by viewModel.totalKm.collectAsStateWithLifecycle()
     val totalCost by viewModel.totalCost.collectAsStateWithLifecycle()
     val costPerKm by viewModel.costPerKm.collectAsStateWithLifecycle()
-    val consumoGasolina by viewModel.consumoGasolina.collectAsStateWithLifecycle()
-    val consumoElectrico by viewModel.consumoElectrico.collectAsStateWithLifecycle()
     val porcentajeElectrico by viewModel.porcentajeElectrico.collectAsStateWithLifecycle()
     val kmEsteMes by viewModel
         .kmEsteMes
@@ -129,34 +125,7 @@ fun HomeScreen(
                 Text("Km totales: %.1f km".format(totalKm))
                 Text("Coste total: %.2f €".format(totalCost))
                 Text("€/km real: %.3f €".format(costPerKm))
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 6.dp),
-                    color = Color.White.copy(alpha = 0.1f)
-                )
 
-                Text(
-                    text = "Consumo gasolina: ${
-                        consumoGasolina.toSpanishDecimal()
-                    } L/100km",
-
-                    style = MaterialTheme.typography.bodyMedium
-                )
-
-                Text(
-                    text = "Consumo eléctrico: ${
-                        consumoElectrico.toSpanishDecimal()
-                    } kWh/100km",
-
-                    style = MaterialTheme.typography.bodyMedium
-                )
-
-                Text(
-                    text = "Uso eléctrico: ${
-                        porcentajeElectrico.toSpanishDecimal()
-                    }%",
-
-                    style = MaterialTheme.typography.bodyMedium
-                )
             }
         }
 

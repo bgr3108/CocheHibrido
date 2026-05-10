@@ -118,7 +118,9 @@ fun HybridCarNavHost(
             }
         }
         composable("stats") {
-            StatisticsScreen()
+            StatisticsScreen(
+                viewModel = homeViewModel
+            )
         }
     }
 }
