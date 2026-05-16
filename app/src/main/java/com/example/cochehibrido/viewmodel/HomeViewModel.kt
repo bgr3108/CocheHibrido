@@ -6,6 +6,7 @@ import com.example.cochehibrido.data.BaselineRepository
 import com.example.cochehibrido.data.FuelRepository
 import com.example.cochehibrido.data.FuelType
 import com.example.cochehibrido.data.TripRepository
+import com.example.cochehibrido.data.VehicleRepository
 import com.example.cochehibrido.domain.ConsumptionStats
 import com.example.cochehibrido.domain.calculateConsumption
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,8 +20,9 @@ import kotlinx.coroutines.launch
 class HomeViewModel(
     private val fuelRepository: FuelRepository,
     tripRepository: TripRepository,
-    baselineRepository: BaselineRepository
-) : ViewModel() {
+    baselineRepository: BaselineRepository,
+    private val vehicleRepository: VehicleRepository
+) : ViewModel(){
 
     val entries = fuelRepository.getAllEntries()
     val trips = tripRepository.getAllTrips()
@@ -32,6 +34,8 @@ class HomeViewModel(
             SharingStarted.WhileSubscribed(5000),
             false
         )
+    val vehicle = vehicleRepository.vehicle
+
     // 🔥 CONSUMOS (AQUÍ)
     val consumoGasolina = combine(trips, baseline) { tripList, base ->
 
@@ -57,13 +61,16 @@ class HomeViewModel(
 
         if (totalKm > 0) (totalElec / totalKm) * 100 else 0.0
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
-    val totalKm = combine(trips, baseline) { tripList, base ->
-        base.kmInicial + tripList.sumOf { it.km }
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        0.0
-    )
+    val totalKm = entries
+        .map { list ->
+
+            list.maxByOrNull { it.km }?.km ?: 0.0
+
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
     val porcentajeElectrico = combine(trips, baseline) { tripList, base ->
 
         val kmViajes = tripList.sumOf { it.km }
@@ -89,24 +96,30 @@ class HomeViewModel(
     val totalCost = entries
         .map { list -> list.sumOf { it.precio } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
-    val kmEsteMes = trips
-        .map { tripList ->
+    val kmEsteMes = entries
+        .map { entryList ->
 
             val calendar = java.util.Calendar.getInstance()
 
             val mesActual = calendar.get(java.util.Calendar.MONTH)
             val anioActual = calendar.get(java.util.Calendar.YEAR)
 
-            tripList
+            val entradasMes = entryList
                 .filter {
 
-                    val tripCalendar = java.util.Calendar.getInstance()
-                    tripCalendar.timeInMillis = it.fecha
+                    val entryCalendar = java.util.Calendar.getInstance()
+                    entryCalendar.timeInMillis = it.fecha
 
-                    tripCalendar.get(java.util.Calendar.MONTH) == mesActual &&
-                            tripCalendar.get(java.util.Calendar.YEAR) == anioActual
+                    entryCalendar.get(java.util.Calendar.MONTH) == mesActual &&
+                            entryCalendar.get(java.util.Calendar.YEAR) == anioActual
                 }
-                .sumOf { it.km }
+                .sortedBy { it.km }
+
+            if (entradasMes.size >= 2) {
+                entradasMes.last().km - entradasMes.first().km
+            } else {
+                0.0
+            }
 
         }.stateIn(
             viewModelScope,

@@ -19,4 +19,6 @@ class AppContainer(context: Context) {
         TripRepository(database.tripDao())
     }
     val baselineRepository = BaselineRepository(context)
+
+    val vehicleRepository = VehicleRepository()
 }
