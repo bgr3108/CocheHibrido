@@ -28,10 +28,6 @@ fun StatisticsScreen(
         .consumoElectrico
         .collectAsStateWithLifecycle()
 
-    val porcentajeElectrico by viewModel
-        .porcentajeElectrico
-        .collectAsStateWithLifecycle()
-
     val ultimoGasolina by viewModel
         .ultimoGasolina
         .collectAsStateWithLifecycle()
@@ -164,12 +160,6 @@ fun StatisticsScreen(
                     "Eléctrico: ${
                         consumoElectrico.toSpanishDecimal()
                     } kWh/100km"
-                )
-
-                Text(
-                    "Uso eléctrico: ${
-                        porcentajeElectrico.toSpanishDecimal()
-                    }%"
                 )
             }
         }

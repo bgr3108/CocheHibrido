@@ -24,7 +24,8 @@ object AppViewModelProvider {
             HomeViewModel(
                 hybridCarApplication().container.fuelRepository,
                 hybridCarApplication().container.tripRepository,
-                hybridCarApplication().container.baselineRepository
+                hybridCarApplication().container.baselineRepository,
+                hybridCarApplication().container.vehicleRepository
             )
         }
 

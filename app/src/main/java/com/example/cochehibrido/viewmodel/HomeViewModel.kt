@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import android.util.Log
 
 class HomeViewModel(
     private val fuelRepository: FuelRepository,
@@ -71,28 +72,6 @@ class HomeViewModel(
             SharingStarted.WhileSubscribed(5000),
             0.0
         )
-    val porcentajeElectrico = combine(trips, baseline) { tripList, base ->
-
-        val kmViajes = tripList.sumOf { it.km }
-
-        val kmElectricos =
-            tripList.sumOf {
-                if (it.consumoElectrico > 0) it.km else 0.0
-            }
-
-        val totalKm = base.kmInicial + kmViajes
-
-        if (totalKm > 0) {
-            (kmElectricos / totalKm) * 100
-        } else {
-            0.0
-        }
-
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        0.0
-    )
     val totalCost = entries
         .map { list -> list.sumOf { it.precio } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
@@ -237,8 +216,16 @@ class HomeViewModel(
 
     init {
         observarDatos()
-    }
 
+        val vehicles = vehicleRepository
+            .vehicleDataSource
+            .loadVehicles()
+
+        Log.d(
+            "VEHICLES",
+            vehicles.joinToString { it.model }
+        )
+    }
     private fun observarDatos() {
         viewModelScope.launch {
             fuelRepository.getAllEntries().collect { lista ->

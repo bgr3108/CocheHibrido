@@ -1,0 +1,122 @@
+[
+  {
+    "brand": "SEAT",
+    "model": "Ibiza",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 40
+  },
+  {
+    "brand": "Peugeot",
+    "model": "3008 BlueHDi",
+    "year": 2023,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 53
+  },
+  {
+    "brand": "Toyota",
+    "model": "Yaris Cross",
+    "year": 2024,
+    "type": "HIBRIDO",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 36
+  },
+  {
+    "brand": "Kia",
+    "model": "Sportage PHEV",
+    "year": 2025,
+    "type": "HIBRIDO_ENCHUFABLE",
+    "batteryCapacity": 13.8,
+    "fuelTankCapacity": 42
+  },
+  {
+    "brand": "Tesla",
+    "model": "Model 3",
+    "year": 2024,
+    "type": "ELECTRICO",
+    "batteryCapacity": 60.0,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "Hyundai",
+    "model": "Tucson",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 54
+  },
+  {
+    "brand": "Volkswagen",
+    "model": "Golf TDI",
+    "year": 2023,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Renault",
+    "model": "Austral E-Tech",
+    "year": 2024,
+    "type": "HIBRIDO",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Cupra",
+    "model": "Formentor VZ e-Hybrid",
+    "year": 2024,
+    "type": "HIBRIDO_ENCHUFABLE",
+    "batteryCapacity": 12.8,
+    "fuelTankCapacity": 40
+  },
+  {
+    "brand": "MG",
+    "model": "MG4 Electric",
+    "year": 2024,
+    "type": "ELECTRICO",
+    "batteryCapacity": 51.0,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "Dacia",
+    "model": "Sandero Stepway",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Audi",
+    "model": "A4 Avant TDI",
+    "year": 2024,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 54
+  },
+  {
+    "brand": "Toyota",
+    "model": "Corolla Hybrid",
+    "year": 2024,
+    "type": "HIBRIDO",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 43
+  },
+  {
+    "brand": "Mercedes-Benz",
+    "model": "GLC 300 de (Diésel/Eléctrico)",
+    "year": 2025,
+    "type": "HIBRIDO_ENCHUFABLE",
+    "batteryCapacity": 31.2,
+    "fuelTankCapacity": 62
+  },
+  {
+    "brand": "BYD",
+    "model": "Atto 3",
+    "year": 2024,
+    "type": "ELECTRICO",
+    "batteryCapacity": 60.5,
+    "fuelTankCapacity": null
+  }
+]

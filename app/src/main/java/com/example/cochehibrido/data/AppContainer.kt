@@ -20,5 +20,7 @@ class AppContainer(context: Context) {
     }
     val baselineRepository = BaselineRepository(context)
 
-    val vehicleRepository = VehicleRepository()
+    val vehicleRepository = VehicleRepository(
+        VehicleDataSource(context)
+    )
 }

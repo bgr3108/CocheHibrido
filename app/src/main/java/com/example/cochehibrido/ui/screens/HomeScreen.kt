@@ -37,7 +37,6 @@ fun HomeScreen(
     val totalKm by viewModel.totalKm.collectAsStateWithLifecycle()
     val totalCost by viewModel.totalCost.collectAsStateWithLifecycle()
     val costPerKm by viewModel.costPerKm.collectAsStateWithLifecycle()
-    val porcentajeElectrico by viewModel.porcentajeElectrico.collectAsStateWithLifecycle()
     val kmEsteMes by viewModel
         .kmEsteMes
         .collectAsStateWithLifecycle()
@@ -164,10 +163,6 @@ fun HomeScreen(
                         "${totalKwhElectricos.toSpanishDecimal()} kWh totales",
                         style = MaterialTheme.typography.bodyMedium
                     )
-                    Text(
-                        "${porcentajeElectrico.toSpanishDecimal()}% uso",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
                 }
             }
 
@@ -200,10 +195,6 @@ fun HomeScreen(
                     )
                     Text(
                         "${totalLitrosGasolina.toSpanishDecimal()} L totales",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        "${(100 - porcentajeElectrico).toSpanishDecimal()}% uso",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
