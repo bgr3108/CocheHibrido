@@ -78,10 +78,17 @@ fun AppContent(
             baselineRepository = (context.applicationContext as HybridCarApplication)
                 .container
                 .baselineRepository,
+
+            vehicleRepository =
+                (context.applicationContext as HybridCarApplication)
+                    .container
+                    .vehicleRepository,
+
+            homeViewModel = homeViewModel,
+
             onDone = {
             }
         )
-
     } else {
 
     Scaffold(

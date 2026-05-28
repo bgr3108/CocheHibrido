@@ -10,7 +10,6 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.cochehibrido.data.FuelEntry
 import com.example.cochehibrido.data.FuelType
 import com.example.cochehibrido.viewmodel.FuelEntryViewModel
-import com.example.cochehibrido.util.toDateTimeString
 import java.util.Calendar
 import com.example.cochehibrido.util.toDoubleSafe
 import androidx.compose.foundation.text.KeyboardActions
@@ -21,16 +20,24 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
 import android.app.TimePickerDialog
 import java.util.Locale
+import com.example.cochehibrido.viewmodel.HomeViewModel
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+import com.example.cochehibrido.data.VehicleType
 
 @Composable
 fun AddConsumptionScreen(
     viewModel: FuelEntryViewModel,
+    homeViewModel: HomeViewModel,
     entry: FuelEntry? = null,
     onClose: () -> Unit
 ){
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
     val focusManager = LocalFocusManager.current
+    val currentVehicle by homeViewModel
+        .vehicle
+        .collectAsState()
 
 // 🔥 ESTO VA PRIMERO
     var fechaMillis by remember {
@@ -44,13 +51,27 @@ fun AddConsumptionScreen(
         mutableIntStateOf(calendar.get(Calendar.MINUTE))
     }
 
-// 🔥 DESPUÉS el DatePicker
     val datePickerDialog = android.app.DatePickerDialog(
         context,
         { _, y, m, d ->
+
             val cal = Calendar.getInstance()
+
             cal.set(y, m, d)
+
             fechaMillis = cal.timeInMillis
+
+            TimePickerDialog(
+                context,
+                { _, selectedHour, selectedMinute ->
+
+                    hour = selectedHour
+                    minute = selectedMinute
+                },
+                hour,
+                minute,
+                true
+            ).show()
         },
         calendar.get(Calendar.YEAR),
         calendar.get(Calendar.MONTH),
@@ -59,6 +80,13 @@ fun AddConsumptionScreen(
 
     var cantidad by remember {
         mutableStateOf(entry?.cantidad?.toString()?.replace(".", ",") ?: "")
+    }
+    var porcentajeInicio by remember {
+        mutableStateOf("")
+    }
+
+    var porcentajeFin by remember {
+        mutableStateOf("")
     }
 
     var precio by remember {
@@ -79,31 +107,23 @@ fun AddConsumptionScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Button(onClick = { datePickerDialog.show() }) {
-            Text("Fecha: ${fechaMillis.toDateTimeString()}")
-        }
-        Spacer(modifier = Modifier.height(8.dp))
 
         Button(
             onClick = {
-
-                TimePickerDialog(
-                    context,
-                    { _, selectedHour, selectedMinute ->
-                        hour = selectedHour
-                        minute = selectedMinute
-                    },
-                    hour,
-                    minute,
-                    true
-                ).show()
-
+                datePickerDialog.show()
             }
         ) {
+
             Text(
                 String.format(
                     Locale.getDefault(),
-                    "Hora: %02d:%02d",
+                    "%s %02d:%02d",
+
+                    java.text.SimpleDateFormat(
+                        "dd/MM/yyyy",
+                        Locale.getDefault()
+                    ).format(fechaMillis),
+
                     hour,
                     minute
                 )
@@ -112,8 +132,71 @@ fun AddConsumptionScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-
         Text("Nuevo repostaje", style = MaterialTheme.typography.headlineSmall)
+
+        if (tipoSeleccionado == FuelType.ELECTRICO) {
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+
+                OutlinedTextField(
+                    value = porcentajeInicio,
+                    onValueChange = {
+                        porcentajeInicio = it
+                    },
+                    label = {
+                        Text("% inicio")
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number
+                    ),
+                    modifier = Modifier.weight(1f)
+                )
+                if (
+                    cantidad.isBlank() &&
+                    porcentajeInicio.isNotBlank() &&
+                    porcentajeFin.isNotBlank()
+                ) {
+
+                    val inicio =
+                        porcentajeInicio.toDoubleOrNull() ?: 0.0
+
+                    val fin =
+                        porcentajeFin.toDoubleOrNull() ?: 0.0
+
+                    val porcentajeCargado = fin - inicio
+
+                    val kwhEstimados =
+                        (currentVehicle.batteryCapacity * porcentajeCargado) / 100.0
+
+                    Text(
+                        text = "≈ ${
+                            String.format(
+                                Locale.getDefault(),
+                                "%.1f",
+                                kwhEstimados
+                            )
+                        } kWh estimados",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
+                OutlinedTextField(
+                    value = porcentajeFin,
+                    onValueChange = {
+                        porcentajeFin = it
+                    },
+                    label = {
+                        Text("% fin")
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number
+                    ),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
 
         OutlinedTextField(
             value = cantidad,
@@ -171,10 +254,30 @@ fun AddConsumptionScreen(
                         set(Calendar.HOUR_OF_DAY, hour)
                         set(Calendar.MINUTE, minute)
                     }
+                    val cantidadFinal = if (
+
+                        cantidad.isNotBlank()
+
+                    ) {
+
+                        cantidad.toDoubleSafe()
+
+                    } else {
+
+                        val inicio =
+                            porcentajeInicio.toDoubleOrNull() ?: 0.0
+
+                        val fin =
+                            porcentajeFin.toDoubleOrNull() ?: 0.0
+
+                        val porcentajeCargado = fin - inicio
+
+                        (currentVehicle.batteryCapacity * porcentajeCargado) / 100.0
+                    }
                     val newEntry = FuelEntry(
                         id = entry?.id ?: 0,
                         fecha = finalCalendar.timeInMillis,
-                        cantidad = cantidad.toDoubleSafe(),
+                        cantidad = cantidadFinal,
                         precio = precio.toDoubleSafe(),
                         tipo = tipoSeleccionado,
                         km = km.toDoubleSafe()
@@ -189,40 +292,63 @@ fun AddConsumptionScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
 
-            Button(
-                onClick = { tipoSeleccionado = FuelType.GASOLINA },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (tipoSeleccionado == FuelType.GASOLINA)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.surface,
-                    contentColor = if (tipoSeleccionado == FuelType.GASOLINA)
-                        MaterialTheme.colorScheme.onPrimary
-                    else
-                        MaterialTheme.colorScheme.onSurface
-                ),
-                modifier = Modifier.weight(1f)
+            if (
+                currentVehicle.type != VehicleType.ELECTRICO
             ) {
-                Text("Gasolina")
+
+                Button(
+                    onClick = {
+                        tipoSeleccionado = FuelType.GASOLINA
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor =
+                            if (tipoSeleccionado == FuelType.GASOLINA)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.surface,
+
+                        contentColor =
+                            if (tipoSeleccionado == FuelType.GASOLINA)
+                                MaterialTheme.colorScheme.onPrimary
+                            else
+                                MaterialTheme.colorScheme.onSurface
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Gasolina/Diésel/GLP")
+                }
             }
 
-            Button(
-                onClick = { tipoSeleccionado = FuelType.ELECTRICO },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (tipoSeleccionado == FuelType.ELECTRICO)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.surface,
-                    contentColor = if (tipoSeleccionado == FuelType.ELECTRICO)
-                        MaterialTheme.colorScheme.onPrimary
-                    else
-                        MaterialTheme.colorScheme.onSurface
-                ),
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("Eléctrico")
+            if (
+                currentVehicle.type == VehicleType.ELECTRICO ||
+                currentVehicle.type == VehicleType.HIBRIDO_ENCHUFABLE
+            ){
+
+                Button(
+                    onClick = {
+                        tipoSeleccionado = FuelType.ELECTRICO
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor =
+                            if (tipoSeleccionado == FuelType.ELECTRICO)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.surface,
+
+                        contentColor =
+                            if (tipoSeleccionado == FuelType.ELECTRICO)
+                                MaterialTheme.colorScheme.onPrimary
+                            else
+                                MaterialTheme.colorScheme.onSurface
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Eléctrico")
+                }
             }
         }
 
@@ -236,10 +362,30 @@ fun AddConsumptionScreen(
                     set(Calendar.HOUR_OF_DAY, hour)
                     set(Calendar.MINUTE, minute)
                 }
+                val cantidadFinal = if (
+
+                    cantidad.isNotBlank()
+
+                ) {
+
+                    cantidad.toDoubleSafe()
+
+                } else {
+
+                    val inicio =
+                        porcentajeInicio.toDoubleOrNull() ?: 0.0
+
+                    val fin =
+                        porcentajeFin.toDoubleOrNull() ?: 0.0
+
+                    val porcentajeCargado = fin - inicio
+
+                    (currentVehicle.batteryCapacity * porcentajeCargado) / 100.0
+                }
                 val newEntry = FuelEntry(
                     id = entry?.id ?: 0, // 🔥 CLAVE
                     fecha = finalCalendar.timeInMillis,
-                    cantidad = cantidad.toDoubleSafe(),
+                    cantidad = cantidadFinal,
                     precio = precio.toDoubleSafe(),
                     tipo = tipoSeleccionado,
                     km = km.toDoubleSafe()

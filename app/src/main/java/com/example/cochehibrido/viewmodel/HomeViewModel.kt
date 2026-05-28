@@ -16,13 +16,13 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import android.util.Log
+
 
 class HomeViewModel(
     private val fuelRepository: FuelRepository,
     tripRepository: TripRepository,
     baselineRepository: BaselineRepository,
-    private val vehicleRepository: VehicleRepository
+    vehicleRepository: VehicleRepository
 ) : ViewModel(){
 
     val entries = fuelRepository.getAllEntries()
@@ -36,6 +36,11 @@ class HomeViewModel(
             false
         )
     val vehicle = vehicleRepository.vehicle
+    val availableVehicles = MutableStateFlow(
+        vehicleRepository
+            .vehicleDataSource
+            .loadVehicles()
+    )
 
     // 🔥 CONSUMOS (AQUÍ)
     val consumoGasolina = combine(trips, baseline) { tripList, base ->
@@ -216,15 +221,6 @@ class HomeViewModel(
 
     init {
         observarDatos()
-
-        val vehicles = vehicleRepository
-            .vehicleDataSource
-            .loadVehicles()
-
-        Log.d(
-            "VEHICLES",
-            vehicles.joinToString { it.model }
-        )
     }
     private fun observarDatos() {
         viewModelScope.launch {

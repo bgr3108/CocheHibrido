@@ -47,6 +47,7 @@ fun HybridCarNavHost(
         composable("add_refuel") {
             AddConsumptionScreen(
                 viewModel = fuelViewModel,
+                homeViewModel = homeViewModel,
                 onClose = {
                     navController.popBackStack()
                 }
@@ -64,6 +65,7 @@ fun HybridCarNavHost(
             entry?.let {
                 AddConsumptionScreen(
                     viewModel = fuelViewModel,
+                    homeViewModel = homeViewModel,
                     entry = it,
                     onClose = {
                         navController.popBackStack()
