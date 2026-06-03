@@ -14,6 +14,7 @@ import com.example.cochehibrido.util.toSpanishDecimal
 import com.example.cochehibrido.util.toDateTimeString
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import com.example.cochehibrido.data.VehicleType
 
 
 @Composable
@@ -23,8 +24,6 @@ fun HomeScreen(
 ) {
     // 🔵 TARJETAS (NO TOCAR)
     val precioGasolina by viewModel.precioGasolina.collectAsStateWithLifecycle()
-    val precioElectrico by viewModel.precioElectrico.collectAsStateWithLifecycle()
-    val costeGasolinaKm by viewModel.costeGasolinaKm.collectAsStateWithLifecycle(initialValue = 0.0)
     val totalLitrosGasolina by viewModel
         .totalLitrosGasolina
         .collectAsStateWithLifecycle()
@@ -52,6 +51,24 @@ fun HomeScreen(
         .ultimoElectrico
         .collectAsStateWithLifecycle()
 
+    val vehicle by viewModel
+        .vehicle
+        .collectAsStateWithLifecycle()
+
+    val showFuel =
+        vehicle.type != VehicleType.ELECTRICO
+
+    val showElectric =
+        vehicle.type == VehicleType.ELECTRICO ||
+                vehicle.type == VehicleType.HIBRIDO_ENCHUFABLE
+    val gastoGasolinaTotal by viewModel
+        .gastoGasolinaTotal
+        .collectAsStateWithLifecycle(initialValue = 0.0)
+
+    val gastoElectricoTotal by viewModel
+        .gastoElectricoTotal
+        .collectAsStateWithLifecycle(initialValue = 0.0)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -67,7 +84,6 @@ fun HomeScreen(
         )
 
         Spacer(modifier = Modifier.height(16.dp))
-
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -131,12 +147,14 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(modifier = Modifier.fillMaxWidth()) {
-
+            if (showElectric) {
             // 🔋 ELÉCTRICO
             Card(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(end = 8.dp),
+                    .padding(
+                        end = if (showFuel) 8.dp else 0.dp
+                    ),
                 colors = CardDefaults.cardColors(
                     containerColor = if (isDark) CardBlueDark else CardBlueLight
                 ),
@@ -149,8 +167,13 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
-                        text = "%.2f €/kWh".format(precioElectrico),
-                        style = MaterialTheme.typography.titleMedium
+                        "${totalKwhElectricos.toSpanishDecimal()} kWh cargados",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Text(
+                        "${gastoElectricoTotal.toSpanishDecimal()} € gastados",
+                        style = MaterialTheme.typography.bodyMedium
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -165,12 +188,15 @@ fun HomeScreen(
                     )
                 }
             }
-
+            }
+            if (showFuel) {
             // ⛽ GASOLINA
             Card(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 8.dp),
+                    .padding(
+                        start = if (showElectric) 8.dp else 0.dp
+                    ),
                 colors = CardDefaults.cardColors(
                     containerColor = if (isDark) CardBlueDark else CardBlueLight
                 ),
@@ -190,26 +216,30 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = "%.3f €/km".format(costeGasolinaKm),
+                        "${totalLitrosGasolina.toSpanishDecimal()} L repostados",
                         style = MaterialTheme.typography.bodyMedium
                     )
+
                     Text(
-                        "${totalLitrosGasolina.toSpanishDecimal()} L totales",
+                        "${gastoGasolinaTotal.toSpanishDecimal()} € gastados",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }
         }
+        }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(modifier = Modifier.fillMaxWidth()) {
-
+                if (showElectric) {
                 // 🔋 Última carga
                 Card(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(end = 8.dp),
+                        .padding(
+                            end = if (showFuel) 8.dp else 0.dp
+                        ),
 
                     colors = CardDefaults.cardColors(
                         containerColor = if (isDark) CardBlueDark else CardBlueLight
@@ -247,12 +277,15 @@ fun HomeScreen(
                         }
                     }
                 }
-
+                }
+                if (showFuel) {
                 // ⛽ Último repostaje
                 Card(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(start = 8.dp),
+                        .padding(
+                            start = if (showElectric) 8.dp else 0.dp
+                        ),
 
                     colors = CardDefaults.cardColors(
                         containerColor = if (isDark) CardBlueDark else CardBlueLight
@@ -290,6 +323,7 @@ fun HomeScreen(
                         }
                     }
                 }
+            }
             }
         }
 }

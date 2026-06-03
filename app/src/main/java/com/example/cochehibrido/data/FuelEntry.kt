@@ -13,12 +13,14 @@ data class FuelEntry(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 
-    val fecha: Long, // 🔥 ahora es timestamp
+    val fecha: Long,
 
     val cantidad: Double,
     val precio: Double,
 
     val tipo: FuelType,
 
-    val km: Double
+    val km: Double,
+
+    val fullTank: Boolean = true
 )

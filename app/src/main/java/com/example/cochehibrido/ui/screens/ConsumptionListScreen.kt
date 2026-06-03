@@ -107,6 +107,12 @@ fun ConsumptionListScreen(
 
                         // 💶 Total
                         Text("Total: ${entry.precio.toSpanishDecimal()} €")
+                            Text(
+                                if (entry.fullTank)
+                                    "☑ Lleno"
+                                else
+                                    "◻ Parcial"
+                            )
 
                         Spacer(modifier = Modifier.height(8.dp))
 

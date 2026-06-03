@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.Alignment
 import android.app.TimePickerDialog
 import java.util.Locale
 import com.example.cochehibrido.viewmodel.HomeViewModel
@@ -99,6 +100,10 @@ fun AddConsumptionScreen(
 
     var tipoSeleccionado by remember {
         mutableStateOf(entry?.tipo ?: FuelType.GASOLINA)
+    }
+
+    var fullTank by remember {
+        mutableStateOf(true)
     }
 
     Column(
@@ -198,20 +203,22 @@ fun AddConsumptionScreen(
             }
         }
 
+        val textoCantidad =
+            if (tipoSeleccionado == FuelType.ELECTRICO)
+                "Cantidad (kWh)"
+            else
+                "Cantidad (L)"
+
         OutlinedTextField(
             value = cantidad,
             onValueChange = { cantidad = it },
-            label = { Text("Cantidad (L o kWh)") },
+
+            label = {
+                Text(textoCantidad)
+            },
 
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal,
-                imeAction = ImeAction.Next
-            ),
-
-            keyboardActions = KeyboardActions(
-                onNext = {
-                    focusManager.moveFocus(FocusDirection.Down)
-                }
+                keyboardType = KeyboardType.Decimal
             ),
 
             modifier = Modifier.fillMaxWidth()
@@ -246,51 +253,28 @@ fun AddConsumptionScreen(
                 imeAction = ImeAction.Done
             ),
 
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    val finalCalendar = Calendar.getInstance().apply {
-                        timeInMillis = fechaMillis
-
-                        set(Calendar.HOUR_OF_DAY, hour)
-                        set(Calendar.MINUTE, minute)
-                    }
-                    val cantidadFinal = if (
-
-                        cantidad.isNotBlank()
-
-                    ) {
-
-                        cantidad.toDoubleSafe()
-
-                    } else {
-
-                        val inicio =
-                            porcentajeInicio.toDoubleOrNull() ?: 0.0
-
-                        val fin =
-                            porcentajeFin.toDoubleOrNull() ?: 0.0
-
-                        val porcentajeCargado = fin - inicio
-
-                        (currentVehicle.batteryCapacity * porcentajeCargado) / 100.0
-                    }
-                    val newEntry = FuelEntry(
-                        id = entry?.id ?: 0,
-                        fecha = finalCalendar.timeInMillis,
-                        cantidad = cantidadFinal,
-                        precio = precio.toDoubleSafe(),
-                        tipo = tipoSeleccionado,
-                        km = km.toDoubleSafe()
-                    )
-
-                    viewModel.saveEntry(newEntry) {
-                        onClose()
-                    }
-                }
-            ),
-
             modifier = Modifier.fillMaxWidth()
         )
+
+        if (tipoSeleccionado != FuelType.ELECTRICO) {
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Text(
+                    text = "Depósito lleno",
+                    modifier = Modifier.weight(1f)
+                )
+
+                Checkbox(
+                    checked = fullTank,
+                    onCheckedChange = {
+                        fullTank = it
+                    }
+                )
+            }
+        }
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -383,12 +367,13 @@ fun AddConsumptionScreen(
                     (currentVehicle.batteryCapacity * porcentajeCargado) / 100.0
                 }
                 val newEntry = FuelEntry(
-                    id = entry?.id ?: 0, // 🔥 CLAVE
+                    id = entry?.id ?: 0,
                     fecha = finalCalendar.timeInMillis,
                     cantidad = cantidadFinal,
                     precio = precio.toDoubleSafe(),
                     tipo = tipoSeleccionado,
-                    km = km.toDoubleSafe()
+                    km = km.toDoubleSafe(),
+                    fullTank = fullTank
                 )
 
                 viewModel.saveEntry(newEntry) {

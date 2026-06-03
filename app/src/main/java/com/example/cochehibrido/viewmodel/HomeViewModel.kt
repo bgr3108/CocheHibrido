@@ -16,14 +16,14 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-
+import com.example.cochehibrido.data.FuelEntry
 
 class HomeViewModel(
     private val fuelRepository: FuelRepository,
     tripRepository: TripRepository,
     baselineRepository: BaselineRepository,
     vehicleRepository: VehicleRepository
-) : ViewModel(){
+) : ViewModel() {
 
     val entries = fuelRepository.getAllEntries()
     val trips = tripRepository.getAllTrips()
@@ -43,7 +43,7 @@ class HomeViewModel(
     )
 
     // 🔥 CONSUMOS (AQUÍ)
-    val consumoGasolina = combine(trips, baseline) { tripList, base ->
+    /*val consumoGasolina = combine(trips, baseline) { tripList, base ->
 
         val kmViajes = tripList.sumOf { it.km }
         val gasolinaViajes = tripList.sumOf { it.consumoGasolina * it.km / 100 }
@@ -54,7 +54,57 @@ class HomeViewModel(
         val totalGas = gasolinaBase + gasolinaViajes
 
         if (totalKm > 0) (totalGas / totalKm) * 100 else 0.0
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)*/
+    val consumoGasolina = entries
+        .map { list ->
+
+            val fuelEntries = list
+                .filter { it.tipo == FuelType.GASOLINA }
+                .sortedBy { it.km }
+
+            var litrosConsumidos = 0.0
+            var kmRecorridos = 0.0
+
+            var ultimoLleno: FuelEntry? = null
+            var litrosAcumulados = 0.0
+
+            fuelEntries.forEach { entry ->
+
+                if (ultimoLleno == null) {
+
+                    if (entry.fullTank) {
+                        ultimoLleno = entry
+                    }
+
+                } else {
+
+                    litrosAcumulados += entry.cantidad
+
+                    if (entry.fullTank) {
+
+                        kmRecorridos +=
+                            entry.km - ultimoLleno.km
+
+                        litrosConsumidos +=
+                            litrosAcumulados
+
+                        ultimoLleno = entry
+                        litrosAcumulados = 0.0
+                    }
+                }
+            }
+
+            if (kmRecorridos > 0) {
+                (litrosConsumidos / kmRecorridos) * 100
+            } else {
+                0.0
+            }
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
     val consumoElectrico = combine(trips, baseline) { tripList, base ->
 
         val kmViajes = tripList.sumOf { it.km }
@@ -67,6 +117,27 @@ class HomeViewModel(
 
         if (totalKm > 0) (totalElec / totalKm) * 100 else 0.0
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+
+    val litrosTotales = entries.map { list ->
+        list
+            .filter { it.tipo == FuelType.GASOLINA }
+            .sumOf { it.cantidad }
+    }
+    val gastoGasolinaTotal = entries.map { list ->
+        list
+            .filter { it.tipo == FuelType.GASOLINA }
+            .sumOf { it.precio }
+    }
+    val kwhTotales = entries.map { list ->
+        list
+            .filter { it.tipo == FuelType.ELECTRICO }
+            .sumOf { it.cantidad }
+    }
+    val gastoElectricoTotal = entries.map { list ->
+        list
+            .filter { it.tipo == FuelType.ELECTRICO }
+            .sumOf { it.precio }
+    }
     val totalKm = entries
         .map { list ->
 
@@ -125,7 +196,7 @@ class HomeViewModel(
                     entryCalendar.timeInMillis = it.fecha
 
                     entryCalendar.get(java.util.Calendar.MONTH) == mesActual &&
-                            entryCalendar.get(java.util.Calendar.YEAR) ==anioActual
+                            entryCalendar.get(java.util.Calendar.YEAR) == anioActual
                 }
                 .sumOf { it.precio }
 
@@ -203,15 +274,9 @@ class HomeViewModel(
     //val stats: StateFlow<ConsumptionStats> = _stats
 
     // 🔥 COSTES (AHORA BIEN COLOCADOS)
-    val costeGasolinaKm = combine(precioGasolina, consumoGasolina) { precio, consumo ->
-        (precio * consumo) / 100
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        0.0
-    )
 
-    val costeElectricoKm = combine(precioElectrico, consumoElectrico) { precio, consumo ->
+    val flow = precioElectrico
+    val costeElectricoKm = combine(flow, consumoElectrico) { precio, consumo ->
         (precio * consumo) / 100
     }.stateIn(
         viewModelScope,
@@ -222,6 +287,7 @@ class HomeViewModel(
     init {
         observarDatos()
     }
+
     private fun observarDatos() {
         viewModelScope.launch {
             fuelRepository.getAllEntries().collect { lista ->
@@ -235,25 +301,29 @@ class HomeViewModel(
 
                 _stats.value = calculateConsumption(lista)
 
-                val ultimoGasolina = lista
+                val gasolinaEntries = lista
                     .filter { it.tipo == FuelType.GASOLINA }
-                    .maxByOrNull { it.fecha }
 
-                ultimoGasolina?.let {
-                    if (it.cantidad > 0) {
-                        _precioGasolina.value = it.precio / it.cantidad
-                    }
-                }
+                val totalLitrosGasolina = gasolinaEntries.sumOf { it.cantidad }
+                val gastoTotal = gasolinaEntries.sumOf { it.precio }
 
-                val ultimoElectrico = lista
+                _precioGasolina.value =
+                    if (totalLitrosGasolina > 0)
+                        gastoTotal / totalLitrosGasolina
+                    else
+                        0.0
+
+                val electricEntries = lista
                     .filter { it.tipo == FuelType.ELECTRICO }
-                    .maxByOrNull { it.fecha }
 
-                ultimoElectrico?.let {
-                    if (it.cantidad > 0) {
-                        _precioElectrico.value = it.precio / it.cantidad
-                    }
-                }
+                val totalKwhElectricos = electricEntries.sumOf { it.cantidad }
+                val gastoElectrico = electricEntries.sumOf { it.precio }
+
+                _precioElectrico.value =
+                    if (totalKwhElectricos > 0)
+                        gastoElectrico / totalKwhElectricos
+                    else
+                        0.0
             }
         }
     }

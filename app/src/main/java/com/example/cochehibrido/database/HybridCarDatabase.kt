@@ -11,7 +11,7 @@ import com.example.cochehibrido.data.Trip
 
 @Database(
     entities = [Car::class, FuelEntry::class, Trip::class],
-    version = 6, // 🔥 IMPORTANTE (sube versión)
+    version = 7, // 🔥 IMPORTANTE (sube versión)
     exportSchema = false
 )
 @TypeConverters(Converters::class)

@@ -15,6 +15,7 @@ import com.example.cochehibrido.util.toDateTimeString
 import androidx.compose.runtime.getValue
 import com.example.cochehibrido.ui.theme.CardBlueDark
 import com.example.cochehibrido.ui.theme.CardBlueLight
+import com.example.cochehibrido.data.VehicleType
 
 @Composable
 fun StatisticsScreen(
@@ -28,6 +29,34 @@ fun StatisticsScreen(
         .consumoElectrico
         .collectAsStateWithLifecycle()
 
+    val precioGasolina by viewModel
+        .precioGasolina
+        .collectAsStateWithLifecycle()
+
+    val precioElectrico by viewModel
+        .precioElectrico
+        .collectAsStateWithLifecycle()
+
+    val costPerKm by viewModel
+        .costPerKm
+        .collectAsStateWithLifecycle()
+
+    val litrosTotales by viewModel
+        .litrosTotales
+        .collectAsStateWithLifecycle(0.0)
+
+    val gastoGasolinaTotal by viewModel
+        .gastoGasolinaTotal
+        .collectAsStateWithLifecycle(0.0)
+
+    val kwhTotales by viewModel
+        .kwhTotales
+        .collectAsStateWithLifecycle(0.0)
+
+    val gastoElectricoTotal by viewModel
+        .gastoElectricoTotal
+        .collectAsStateWithLifecycle(0.0)
+
     val ultimoGasolina by viewModel
         .ultimoGasolina
         .collectAsStateWithLifecycle()
@@ -35,7 +64,19 @@ fun StatisticsScreen(
     val ultimoElectrico by viewModel
         .ultimoElectrico
         .collectAsStateWithLifecycle()
+
     val isDark = isSystemInDarkTheme()
+
+    val vehicle by viewModel
+        .vehicle
+        .collectAsStateWithLifecycle()
+
+    val showFuel =
+        vehicle.type != VehicleType.ELECTRICO
+
+    val showElectric =
+        vehicle.type == VehicleType.ELECTRICO ||
+                vehicle.type == VehicleType.HIBRIDO_ENCHUFABLE
 
     Column(
         modifier = Modifier
@@ -56,10 +97,13 @@ fun StatisticsScreen(
         Row(modifier = Modifier.fillMaxWidth()) {
 
             // 🔋 Última carga
+            if (showElectric) {
             Card(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(end = 8.dp),
+                    .padding(
+                        end = if (showFuel) 8.dp else 0.dp
+                    ),
 
                 colors = CardDefaults.cardColors(
                     containerColor = if (isDark) CardBlueDark else CardBlueLight
@@ -92,12 +136,15 @@ fun StatisticsScreen(
                     }
                 }
             }
+        }
 
-            // ⛽ Último repostaje
+            if (showFuel) {
             Card(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 8.dp),
+                    .padding(
+                        start = if (showElectric) 8.dp else 0.dp
+                    ),
 
                 colors = CardDefaults.cardColors(
                     containerColor = if (isDark) CardBlueDark else CardBlueLight
@@ -131,6 +178,7 @@ fun StatisticsScreen(
                 }
             }
         }
+        }
         Card(
             modifier = Modifier.fillMaxWidth(),
 
@@ -142,24 +190,118 @@ fun StatisticsScreen(
         ) {
 
             Column(
-                modifier = Modifier.padding(20.dp),
+                modifier = Modifier.padding(20.dp)
             ) {
 
                 Text(
-                    text = "Consumos",
+                    text = "Totales históricos",
                     style = MaterialTheme.typography.titleMedium
                 )
 
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (showFuel) {
+
+                    if (consumoGasolina > 0) {
+
+                        Text(
+                            "Gasolina/Diésel/GLP: ${
+                                consumoGasolina.toSpanishDecimal()
+                            } L/100km"
+                        )
+
+                    } else {
+
+                        Text(
+                            "Consumo aún no disponible"
+                        )
+                    }
+                }
+
+                if (showElectric) {
+
+                    if (consumoElectrico > 0) {
+
+                        Text(
+                            "Eléctrico: ${
+                                consumoElectrico.toSpanishDecimal()
+                            } kWh/100km"
+                        )
+
+                    } else {
+
+                        Text(
+                            "Consumo aún no disponible"
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (showFuel) {
+
+                    Text(
+                        text = "Combustible",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+
+                    Text(
+                        "Total repostado: ${
+                            litrosTotales.toSpanishDecimal()
+                        } L"
+                    )
+
+                    Text(
+                        "Gasto total: ${
+                            gastoGasolinaTotal.toSpanishDecimal()
+                        } €"
+                    )
+                    Text(
+                        "Precio medio: ${
+                            precioGasolina.toSpanishDecimal()
+                        } €/L"
+                    )
+                }
+
+                if (showFuel && showElectric) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                if (showElectric) {
+
+                    Text(
+                        text = "Electricidad",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+
+                    Text(
+                        "Total cargado: ${
+                            kwhTotales.toSpanishDecimal()
+                        } kWh"
+                    )
+
+                    Text(
+                        "Gasto total: ${
+                            gastoElectricoTotal.toSpanishDecimal()
+                        } €"
+                    )
+                    Text(
+                        "Precio medio: ${
+                            precioElectrico.toSpanishDecimal()
+                        } €/kWh"
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+
                 Text(
-                    "Gasolina: ${
-                        consumoGasolina.toSpanishDecimal()
-                    } L/100km"
+                    text = "Coste global",
+                    style = MaterialTheme.typography.titleSmall
                 )
 
                 Text(
-                    "Eléctrico: ${
-                        consumoElectrico.toSpanishDecimal()
-                    } kWh/100km"
+                    "Coste por km: ${
+                        costPerKm.toSpanishDecimal()
+                    } €/km"
                 )
             }
         }
