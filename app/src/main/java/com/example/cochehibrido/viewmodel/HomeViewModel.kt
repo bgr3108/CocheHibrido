@@ -41,20 +41,6 @@ class HomeViewModel(
             .vehicleDataSource
             .loadVehicles()
     )
-
-    // 🔥 CONSUMOS (AQUÍ)
-    /*val consumoGasolina = combine(trips, baseline) { tripList, base ->
-
-        val kmViajes = tripList.sumOf { it.km }
-        val gasolinaViajes = tripList.sumOf { it.consumoGasolina * it.km / 100 }
-
-        val gasolinaBase = base.kmInicial * base.consumoGasolinaInicial / 100
-
-        val totalKm = base.kmInicial + kmViajes
-        val totalGas = gasolinaBase + gasolinaViajes
-
-        if (totalKm > 0) (totalGas / totalKm) * 100 else 0.0
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)*/
     val consumoGasolina = entries
         .map { list ->
 
@@ -82,11 +68,16 @@ class HomeViewModel(
 
                     if (entry.fullTank) {
 
-                        kmRecorridos +=
-                            entry.km - ultimoLleno.km
+                        val llenoAnterior = ultimoLleno
 
-                        litrosConsumidos +=
-                            litrosAcumulados
+                        if (llenoAnterior != null) {
+
+                            kmRecorridos +=
+                                entry.km - llenoAnterior.km
+
+                            litrosConsumidos +=
+                                litrosAcumulados
+                        }
 
                         ultimoLleno = entry
                         litrosAcumulados = 0.0
@@ -105,7 +96,7 @@ class HomeViewModel(
             SharingStarted.WhileSubscribed(5000),
             0.0
         )
-    val consumoElectrico = combine(trips, baseline) { tripList, base ->
+    /*val consumoElectrico = combine(trips, baseline) { tripList, base ->
 
         val kmViajes = tripList.sumOf { it.km }
         val elecViajes = tripList.sumOf { it.consumoElectrico * it.km / 100 }
@@ -116,7 +107,37 @@ class HomeViewModel(
         val totalElec = elecBase + elecViajes
 
         if (totalKm > 0) (totalElec / totalKm) * 100 else 0.0
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)*/
+
+    val consumoElectrico = entries
+        .map { list ->
+
+            val electricEntries = list
+                .filter { it.tipo == FuelType.ELECTRICO }
+                .sortedBy { it.km }
+
+            if (electricEntries.size < 2) {
+                return@map 0.0
+            }
+
+            val kmRecorridos =
+                electricEntries.last().km -
+                        electricEntries.first().km
+
+            val kwhConsumidos =
+                electricEntries.sumOf { it.cantidad }
+
+            if (kmRecorridos > 0) {
+                (kwhConsumidos / kmRecorridos) * 100
+            } else {
+                0.0
+            }
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
 
     val litrosTotales = entries.map { list ->
         list

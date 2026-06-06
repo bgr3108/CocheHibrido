@@ -107,12 +107,16 @@ fun ConsumptionListScreen(
 
                         // 💶 Total
                         Text("Total: ${entry.precio.toSpanishDecimal()} €")
-                            Text(
-                                if (entry.fullTank)
-                                    "☑ Lleno"
-                                else
-                                    "◻ Parcial"
-                            )
+
+                            if (entry.tipo == FuelType.GASOLINA) {
+
+                                Text(
+                                    if (entry.fullTank)
+                                        "☑ Lleno"
+                                    else
+                                        "◻ Parcial"
+                                )
+                            }
 
                         Spacer(modifier = Modifier.height(8.dp))
 
