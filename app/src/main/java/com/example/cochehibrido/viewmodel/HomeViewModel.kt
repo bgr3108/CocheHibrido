@@ -70,14 +70,11 @@ class HomeViewModel(
 
                         val llenoAnterior = ultimoLleno
 
-                        if (llenoAnterior != null) {
+                        kmRecorridos +=
+                            entry.km - llenoAnterior.km
 
-                            kmRecorridos +=
-                                entry.km - llenoAnterior.km
-
-                            litrosConsumidos +=
-                                litrosAcumulados
-                        }
+                        litrosConsumidos +=
+                            litrosAcumulados
 
                         ultimoLleno = entry
                         litrosAcumulados = 0.0
