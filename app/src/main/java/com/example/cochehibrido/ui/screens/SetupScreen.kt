@@ -5,7 +5,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.cochehibrido.data.BaselineRepository
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import com.example.cochehibrido.viewmodel.HomeViewModel
@@ -20,7 +19,6 @@ import com.example.cochehibrido.data.Vehicle
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetupScreen(
-    baselineRepository: BaselineRepository,
     vehicleRepository: VehicleRepository,
     homeViewModel: HomeViewModel,
     onDone: () -> Unit
@@ -290,12 +288,6 @@ fun SetupScreen(
                 containerColor = MaterialTheme.colorScheme.primary
             ),
             onClick = {
-
-                baselineRepository.saveBaseline(
-                    km.toDoubleOrNull() ?: 0.0,
-                    0.0,
-                    0.0
-                )
 
                 selectedVehicle?.let {
 

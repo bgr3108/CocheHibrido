@@ -2,7 +2,6 @@ package com.example.cochehibrido.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cochehibrido.data.BaselineRepository
 import com.example.cochehibrido.data.FuelRepository
 import com.example.cochehibrido.data.FuelType
 import com.example.cochehibrido.data.TripRepository
@@ -21,20 +20,11 @@ import com.example.cochehibrido.data.FuelEntry
 class HomeViewModel(
     private val fuelRepository: FuelRepository,
     tripRepository: TripRepository,
-    baselineRepository: BaselineRepository,
     vehicleRepository: VehicleRepository
 ) : ViewModel() {
 
     val entries = fuelRepository.getAllEntries()
     val trips = tripRepository.getAllTrips()
-    val baseline = baselineRepository.baseline
-    val hasBaseline = baseline
-        .map { it.kmInicial > 0 }
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            false
-        )
     val vehicle = vehicleRepository.vehicle
     val availableVehicles = MutableStateFlow(
         vehicleRepository
@@ -68,7 +58,7 @@ class HomeViewModel(
 
                     if (entry.fullTank) {
 
-                        val llenoAnterior = ultimoLleno
+                        val llenoAnterior = requireNotNull(ultimoLleno)
 
                         kmRecorridos +=
                             entry.km - llenoAnterior.km
@@ -93,18 +83,6 @@ class HomeViewModel(
             SharingStarted.WhileSubscribed(5000),
             0.0
         )
-    /*val consumoElectrico = combine(trips, baseline) { tripList, base ->
-
-        val kmViajes = tripList.sumOf { it.km }
-        val elecViajes = tripList.sumOf { it.consumoElectrico * it.km / 100 }
-
-        val elecBase = base.kmInicial * base.consumoElectricoInicial / 100
-
-        val totalKm = base.kmInicial + kmViajes
-        val totalElec = elecBase + elecViajes
-
-        if (totalKm > 0) (totalElec / totalKm) * 100 else 0.0
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)*/
 
     val consumoElectrico = entries
         .map { list ->

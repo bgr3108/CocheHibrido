@@ -18,8 +18,6 @@ class AppContainer(context: Context) {
     val tripRepository: TripRepository by lazy {
         TripRepository(database.tripDao())
     }
-    val baselineRepository = BaselineRepository(context)
-
     val vehicleRepository = VehicleRepository(
         VehicleDataSource(context),
         VehiclePreferences(context)

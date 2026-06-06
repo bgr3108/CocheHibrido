@@ -70,15 +70,11 @@ fun AppContent(
     val navController = rememberNavController()
     val context = LocalContext.current
 
-    val hasBaseline by homeViewModel.hasBaseline.collectAsStateWithLifecycle()
+    val vehicle by homeViewModel.vehicle.collectAsStateWithLifecycle()
 
-    if (!hasBaseline) {
+    if (vehicle.type == null) {
 
         SetupScreen(
-            baselineRepository = (context.applicationContext as HybridCarApplication)
-                .container
-                .baselineRepository,
-
             vehicleRepository =
                 (context.applicationContext as HybridCarApplication)
                     .container
