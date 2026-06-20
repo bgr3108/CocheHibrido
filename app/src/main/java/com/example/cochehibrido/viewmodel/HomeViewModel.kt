@@ -26,6 +26,8 @@ class HomeViewModel(
     val entries = fuelRepository.getAllEntries()
     val trips = tripRepository.getAllTrips()
     val vehicle = vehicleRepository.vehicle
+    val isVehicleLoading =
+        vehicleRepository.isLoading
     val availableVehicles = MutableStateFlow(
         vehicleRepository
             .vehicleDataSource

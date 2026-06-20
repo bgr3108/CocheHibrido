@@ -14,6 +14,9 @@ class VehicleRepository(
 ) {
 
     private val _vehicle = MutableStateFlow(Vehicle())
+    private val _isLoading = MutableStateFlow(true)
+
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     val vehicle: StateFlow<Vehicle> = _vehicle
 
@@ -23,6 +26,8 @@ class VehicleRepository(
 
             _vehicle.value =
                 vehiclePreferences.loadVehicle()
+
+            _isLoading.value = false
         }
     }
 

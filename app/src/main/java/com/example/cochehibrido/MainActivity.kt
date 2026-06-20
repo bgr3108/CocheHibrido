@@ -69,10 +69,16 @@ fun AppContent(
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
-
+    val isVehicleLoading by homeViewModel
+        .isVehicleLoading
+        .collectAsStateWithLifecycle()
     val vehicle by homeViewModel.vehicle.collectAsStateWithLifecycle()
 
-    if (vehicle.type == null) {
+    if (isVehicleLoading) {
+
+        CircularProgressIndicator()
+
+    } else if (vehicle.type == null) {
 
         SetupScreen(
             vehicleRepository =
@@ -85,6 +91,7 @@ fun AppContent(
             onDone = {
             }
         )
+
     } else {
 
     Scaffold(
