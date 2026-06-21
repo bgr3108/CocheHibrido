@@ -7,11 +7,11 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.cochehibrido.data.Car
 import com.example.cochehibrido.data.FuelEntry
-import com.example.cochehibrido.data.Trip
+
 
 @Database(
-    entities = [Car::class, FuelEntry::class, Trip::class],
-    version = 7, // 🔥 IMPORTANTE (sube versión)
+    entities = [Car::class, FuelEntry::class],
+    version = 9, // 🔥 IMPORTANTE (sube versión)
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -19,7 +19,6 @@ abstract class HybridCarDatabase : RoomDatabase() {
 
     abstract fun carDao(): CarDao
     abstract fun fuelEntryDao(): FuelEntryDao
-    abstract fun tripDao(): TripDao
 
     companion object {
         @Volatile

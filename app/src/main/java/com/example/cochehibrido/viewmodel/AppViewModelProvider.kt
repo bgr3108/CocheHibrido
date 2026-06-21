@@ -23,15 +23,9 @@ object AppViewModelProvider {
         initializer {
             HomeViewModel(
                 hybridCarApplication().container.fuelRepository,
-                hybridCarApplication().container.tripRepository,
                 hybridCarApplication().container.vehicleRepository
             )
         }
 
-        initializer {
-            TripViewModel(
-                hybridCarApplication().container.tripRepository
-            )
-        }
     }
 }

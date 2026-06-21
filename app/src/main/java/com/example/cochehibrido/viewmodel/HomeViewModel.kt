@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cochehibrido.data.FuelRepository
 import com.example.cochehibrido.data.FuelType
-import com.example.cochehibrido.data.TripRepository
 import com.example.cochehibrido.data.VehicleRepository
 import com.example.cochehibrido.domain.ConsumptionStats
 import com.example.cochehibrido.domain.calculateConsumption
@@ -19,12 +18,10 @@ import com.example.cochehibrido.data.FuelEntry
 
 class HomeViewModel(
     private val fuelRepository: FuelRepository,
-    tripRepository: TripRepository,
     vehicleRepository: VehicleRepository
 ) : ViewModel() {
 
     val entries = fuelRepository.getAllEntries()
-    val trips = tripRepository.getAllTrips()
     val vehicle = vehicleRepository.vehicle
     val isVehicleLoading =
         vehicleRepository.isLoading

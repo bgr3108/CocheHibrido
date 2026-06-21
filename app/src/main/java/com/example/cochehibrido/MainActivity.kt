@@ -12,7 +12,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocalGasStation
-import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material3.Icon
 import androidx.navigation.compose.currentBackStackEntryAsState
 
@@ -23,7 +22,6 @@ import com.example.cochehibrido.ui.theme.CocheHibridoTheme
 import com.example.cochehibrido.viewmodel.AppViewModelProvider
 import com.example.cochehibrido.viewmodel.FuelEntryViewModel
 import com.example.cochehibrido.viewmodel.HomeViewModel
-import com.example.cochehibrido.viewmodel.TripViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.cochehibrido.ui.screens.SetupScreen
 import androidx.compose.runtime.getValue
@@ -40,12 +38,6 @@ class MainActivity : ComponentActivity() {
         AppViewModelProvider.Factory
     }
 
-
-    private val tripViewModel: TripViewModel by viewModels {
-        AppViewModelProvider.Factory
-    }
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -53,8 +45,7 @@ class MainActivity : ComponentActivity() {
             CocheHibridoTheme {
                 AppContent(
                     fuelViewModel = fuelViewModel,
-                    homeViewModel = homeViewModel,
-                    tripViewModel = tripViewModel
+                    homeViewModel = homeViewModel
                 )
             }
         }
@@ -64,8 +55,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppContent(
     fuelViewModel: FuelEntryViewModel,
-    homeViewModel: HomeViewModel,
-    tripViewModel: TripViewModel
+    homeViewModel: HomeViewModel
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
@@ -130,20 +120,6 @@ fun AppContent(
                         icon = { Icon(Icons.Default.LocalGasStation, contentDescription = null) },
                         label = { Text("Consumos") }
                     )
-
-                    NavigationBarItem(
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                        ),
-                        selected = currentRoute == "trips",
-                        onClick = { navController.navigate("trips") },
-                        icon = { Icon(Icons.Default.DirectionsCar, contentDescription = null) },
-                        label = { Text("Viajes") }
-                    )
                     NavigationBarItem(
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
@@ -166,8 +142,7 @@ fun AppContent(
             navController = navController,
             innerPadding = innerPadding,
             fuelViewModel = fuelViewModel,
-            homeViewModel = homeViewModel,
-            tripViewModel = tripViewModel
+            homeViewModel = homeViewModel
         )
     }
 }

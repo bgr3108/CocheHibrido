@@ -15,9 +15,6 @@ class AppContainer(context: Context) {
         FuelRepository(database.fuelEntryDao())
     }
 
-    val tripRepository: TripRepository by lazy {
-        TripRepository(database.tripDao())
-    }
     val vehicleRepository = VehicleRepository(
         VehicleDataSource(context),
         VehiclePreferences(context)
