@@ -39,6 +39,7 @@ fun AddConsumptionScreen(
     val currentVehicle by homeViewModel
         .vehicle
         .collectAsState()
+    val entries by viewModel.entries.collectAsState()
 
 // 🔥 ESTO VA PRIMERO
     var fechaMillis by remember {
@@ -104,6 +105,18 @@ fun AddConsumptionScreen(
 
     var fullTank by remember {
         mutableStateOf(true)
+    }
+
+    var errorCapacidad by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    var errorPorcentaje by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    var errorKm by remember {
+        mutableStateOf<String?>(null)
     }
 
     Column(
@@ -223,6 +236,14 @@ fun AddConsumptionScreen(
 
             modifier = Modifier.fillMaxWidth()
         )
+        Text(
+            text =
+                if (tipoSeleccionado == FuelType.ELECTRICO)
+                    "Capacidad batería: ${currentVehicle.batteryCapacity} kWh"
+                else
+                    "Capacidad depósito: ${currentVehicle.fuelTankCapacity} L",
+            style = MaterialTheme.typography.bodySmall
+        )
 
         OutlinedTextField(
             value = precio,
@@ -338,6 +359,32 @@ fun AddConsumptionScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        errorKm?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        errorPorcentaje?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        errorCapacidad?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+
         Button(
             onClick = {
                 val finalCalendar = Calendar.getInstance().apply {
@@ -346,6 +393,37 @@ fun AddConsumptionScreen(
                     set(Calendar.HOUR_OF_DAY, hour)
                     set(Calendar.MINUTE, minute)
                 }
+
+                errorPorcentaje = null
+                errorKm = null
+
+                if (tipoSeleccionado == FuelType.ELECTRICO) {
+
+                    val inicio = porcentajeInicio.toDoubleOrNull()
+                    val fin = porcentajeFin.toDoubleOrNull()
+
+                    if (
+                        inicio != null &&
+                        fin != null
+                    ) {
+
+                        if (inicio < 0 || inicio > 100) {
+                            errorPorcentaje = "El % inicial debe estar entre 0 y 100"
+                            return@Button
+                        }
+
+                        if (fin < 0 || fin > 100) {
+                            errorPorcentaje = "El % final debe estar entre 0 y 100"
+                            return@Button
+                        }
+
+                        if (fin < inicio) {
+                            errorPorcentaje = "El % final no puede ser menor que el inicial"
+                            return@Button
+                        }
+                    }
+                }
+
                 val cantidadFinal = if (
 
                     cantidad.isNotBlank()
@@ -366,6 +444,45 @@ fun AddConsumptionScreen(
 
                     (currentVehicle.batteryCapacity * porcentajeCargado) / 100.0
                 }
+
+                errorCapacidad = null
+
+                if (
+                    tipoSeleccionado == FuelType.GASOLINA &&
+                    cantidadFinal > currentVehicle.fuelTankCapacity &&
+                    currentVehicle.fuelTankCapacity > 0
+                ) {
+                    errorCapacidad =
+                        "La cantidad supera la capacidad del depósito (${currentVehicle.fuelTankCapacity} L)"
+                    return@Button
+                }
+
+                if (
+                    tipoSeleccionado == FuelType.ELECTRICO &&
+                    cantidadFinal > currentVehicle.batteryCapacity &&
+                    currentVehicle.batteryCapacity > 0
+                ) {
+                    errorCapacidad =
+                        "La cantidad supera la capacidad de la batería (${currentVehicle.batteryCapacity} kWh)"
+                    return@Button
+                }
+
+                val kmNuevo = km.toDoubleSafe()
+
+                val ultimoKm =
+                    entries
+                        .filter { it.id != (entry?.id ?: 0) }
+                        .maxOfOrNull { it.km }
+                        ?: 0.0
+
+                if (kmNuevo < ultimoKm) {
+
+                    errorKm =
+                        "Los kilómetros no pueden ser inferiores al último registro ($ultimoKm km)"
+
+                    return@Button
+                }
+
                 val newEntry = FuelEntry(
                     id = entry?.id ?: 0,
                     fecha = finalCalendar.timeInMillis,
