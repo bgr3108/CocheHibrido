@@ -262,5 +262,149 @@
     "type": "ELECTRICO",
     "batteryCapacity": 64.7,
     "fuelTankCapacity": null
+  },
+  {
+    "brand": "Mazda",
+    "model": "CX-30 e-Skyactiv G",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 51
+  },
+  {
+    "brand": "Ford",
+    "model": "Focus EcoBlue",
+    "year": 2024,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 47
+  },
+  {
+    "brand": "Hyundai",
+    "model": "Kona Hybrid",
+    "year": 2025,
+    "type": "HIBRIDO",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 38
+  },
+  {
+    "brand": "Volvo",
+    "model": "XC60 T6 PHEV",
+    "year": 2025,
+    "type": "HIBRIDO_ENCHUFABLE",
+    "batteryCapacity": 14.7,
+    "fuelTankCapacity": 71
+  },
+  {
+    "brand": "Kia",
+    "model": "EV6",
+    "year": 2025,
+    "type": "ELECTRICO",
+    "batteryCapacity": 80.0,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "Skoda",
+    "model": "Fabia TSI",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 40
+  },
+  {
+    "brand": "Seat",
+    "model": "Ateca TDI",
+    "year": 2024,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Swift Hybrid",
+    "year": 2025,
+    "type": "HIBRIDO",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 37
+  },
+  {
+    "brand": "Audi",
+    "model": "A3 Sportback TFSIe",
+    "year": 2025,
+    "type": "HIBRIDO_ENCHUFABLE",
+    "batteryCapacity": 19.7,
+    "fuelTankCapacity": 40
+  },
+  {
+    "brand": "Volkswagen",
+    "model": "ID.4",
+    "year": 2024,
+    "type": "ELECTRICO",
+    "batteryCapacity": 77.0,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa Turbo",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 44
+  },
+  {
+    "brand": "BMW",
+    "model": "X3 xDrive20d",
+    "year": 2024,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 67
+  },
+  {
+    "brand": "Dacia",
+    "model": "Jogger Hybrid",
+    "year": 2024,
+    "type": "HIBRIDO",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Jeep",
+    "model": "Compass 4xe",
+    "year": 2024,
+    "type": "HIBRIDO_ENCHUFABLE",
+    "batteryCapacity": 9.1,
+    "fuelTankCapacity": 36
+  },
+  {
+    "brand": "Renault",
+    "model": "Megane E-Tech",
+    "year": 2024,
+    "type": "ELECTRICO",
+    "batteryCapacity": 60.0,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "Ford",
+    "model": "Puma EcoBoost",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 42
+  },
+  {
+    "brand": "Citroën",
+    "model": "C3 Aircross BlueHDi",
+    "year": 2024,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Lexus",
+    "model": "LBX Hybrid",
+    "year": 2025,
+    "type": "HIBRIDO",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 36
   }
 ]
