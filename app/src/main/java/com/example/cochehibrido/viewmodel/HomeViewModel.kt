@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import com.example.cochehibrido.data.FuelEntry
+import com.example.cochehibrido.data.MonthlyPrice
 
 class HomeViewModel(
     private val fuelRepository: FuelRepository,
@@ -262,6 +263,20 @@ class HomeViewModel(
     private val _precioElectrico = MutableStateFlow(0.0)
     val precioElectrico: StateFlow<Double> = _precioElectrico
 
+    private val _monthlyGasolinePrices =
+        MutableStateFlow<List<MonthlyPrice>>(emptyList())
+
+    val monthlyGasolinePrices:
+            StateFlow<List<MonthlyPrice>> =
+        _monthlyGasolinePrices
+
+    private val _monthlyElectricPrices =
+        MutableStateFlow<List<MonthlyPrice>>(emptyList())
+
+    val monthlyElectricPrices:
+            StateFlow<List<MonthlyPrice>> =
+        _monthlyElectricPrices
+
     // 🔥 STATS REALES
     private val _stats = MutableStateFlow(
         ConsumptionStats(0.0, 0.0, 0.0, 0.0, 0.0)
@@ -319,6 +334,61 @@ class HomeViewModel(
                         gastoElectrico / totalKwhElectricos
                     else
                         0.0
+                _monthlyGasolinePrices.value =
+                    gasolinaEntries
+                        .groupBy {
+
+                            java.text.SimpleDateFormat(
+                                "MM/yyyy",
+                                java.util.Locale.getDefault()
+                            ).format(java.util.Date(it.fecha))
+                        }
+                        .map { (mes, entries) ->
+
+                            val cantidad =
+                                entries.sumOf { it.cantidad }
+
+                            val precio =
+                                entries.sumOf { it.precio }
+
+                            MonthlyPrice(
+                                month = mes,
+                                averagePrice =
+                                    if (cantidad > 0)
+                                        precio / cantidad
+                                    else
+                                        0.0
+                            )
+                        }
+                        .sortedBy { it.month }
+
+                _monthlyElectricPrices.value =
+                    electricEntries
+                        .groupBy {
+
+                            java.text.SimpleDateFormat(
+                                "MM/yyyy",
+                                java.util.Locale.getDefault()
+                            ).format(java.util.Date(it.fecha))
+                        }
+                        .map { (mes, entries) ->
+
+                            val cantidad =
+                                entries.sumOf { it.cantidad }
+
+                            val precio =
+                                entries.sumOf { it.precio }
+
+                            MonthlyPrice(
+                                month = mes,
+                                averagePrice =
+                                    if (cantidad > 0)
+                                        precio / cantidad
+                                    else
+                                        0.0
+                            )
+                        }
+                        .sortedBy { it.month }
             }
         }
     }

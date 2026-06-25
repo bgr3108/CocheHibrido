@@ -36,21 +36,33 @@ fun AddConsumptionScreen(
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
     val focusManager = LocalFocusManager.current
+
     val currentVehicle by homeViewModel
         .vehicle
         .collectAsState()
+
     val entries by viewModel.entries.collectAsState()
 
-// 🔥 ESTO VA PRIMERO
-    var fechaMillis by remember {
-        mutableLongStateOf(System.currentTimeMillis())
+    entry?.let {
+        calendar.timeInMillis = it.fecha
     }
+
+    var fechaMillis by remember {
+        mutableLongStateOf(
+            entry?.fecha ?: System.currentTimeMillis()
+        )
+    }
+
     var hour by remember {
-        mutableIntStateOf(calendar.get(Calendar.HOUR_OF_DAY))
+        mutableIntStateOf(
+            calendar.get(Calendar.HOUR_OF_DAY)
+        )
     }
 
     var minute by remember {
-        mutableIntStateOf(calendar.get(Calendar.MINUTE))
+        mutableIntStateOf(
+            calendar.get(Calendar.MINUTE)
+        )
     }
 
     val datePickerDialog = android.app.DatePickerDialog(
@@ -59,7 +71,11 @@ fun AddConsumptionScreen(
 
             val cal = Calendar.getInstance()
 
-            cal.set(y, m, d)
+            cal.timeInMillis = fechaMillis
+
+            cal.set(Calendar.YEAR, y)
+            cal.set(Calendar.MONTH, m)
+            cal.set(Calendar.DAY_OF_MONTH, d)
 
             fechaMillis = cal.timeInMillis
 
@@ -469,16 +485,50 @@ fun AddConsumptionScreen(
 
                 val kmNuevo = km.toDoubleSafe()
 
-                val ultimoKm =
-                    entries
-                        .filter { it.id != (entry?.id ?: 0) }
-                        .maxOfOrNull { it.km }
-                        ?: 0.0
+                val fechaNueva = finalCalendar.timeInMillis
 
-                if (kmNuevo < ultimoKm) {
+                val otrosRegistros =
+                    entries.filter { it.id != (entry?.id ?: 0) }
+
+                val registroAnterior =
+                    otrosRegistros
+                        .filter { it.fecha < fechaNueva }
+                        .maxByOrNull { it.fecha }
+
+                val registroPosterior =
+                    otrosRegistros
+                        .filter { it.fecha > fechaNueva }
+                        .minByOrNull { it.fecha }
+
+// 🔥 Siempre comprobar km inicial del Setup
+                if (kmNuevo < currentVehicle.currentKm) {
 
                     errorKm =
-                        "Los kilómetros no pueden ser inferiores al último registro ($ultimoKm km)"
+                        "Los kilómetros no pueden ser inferiores al kilometraje inicial (${currentVehicle.currentKm} km)"
+
+                    return@Button
+                }
+
+// 🔥 Comprobar registro anterior
+                if (
+                    registroAnterior != null &&
+                    kmNuevo < registroAnterior.km
+                ) {
+
+                    errorKm =
+                        "Los kilómetros no pueden ser inferiores al registro anterior (${registroAnterior.km} km)"
+
+                    return@Button
+                }
+
+// 🔥 Comprobar registro posterior
+                if (
+                    registroPosterior != null &&
+                    kmNuevo > registroPosterior.km
+                ) {
+
+                    errorKm =
+                        "Los kilómetros no pueden ser superiores al registro posterior (${registroPosterior.km} km)"
 
                     return@Button
                 }

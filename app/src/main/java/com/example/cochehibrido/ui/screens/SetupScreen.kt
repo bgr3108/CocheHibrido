@@ -298,7 +298,8 @@ fun SetupScreen(
                             year = it.year,
                             type = it.type,
                             batteryCapacity = it.batteryCapacity,
-                            fuelTankCapacity = it.fuelTankCapacity
+                            fuelTankCapacity = it.fuelTankCapacity,
+                            currentKm = km.toDoubleOrNull() ?: 0.0
                         )
                     )
                 }

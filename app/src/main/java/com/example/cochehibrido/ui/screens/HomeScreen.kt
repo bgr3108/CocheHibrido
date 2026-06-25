@@ -15,6 +15,8 @@ import com.example.cochehibrido.util.toDateTimeString
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import com.example.cochehibrido.data.VehicleType
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DirectionsCar
 
 
 @Composable
@@ -69,6 +71,10 @@ fun HomeScreen(
         .gastoElectricoTotal
         .collectAsStateWithLifecycle(initialValue = 0.0)
 
+    var showVehicleDialog by remember {
+        mutableStateOf(false)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -78,10 +84,27 @@ fun HomeScreen(
     ) {
 
         // Título
-        Text(
-            text = "Inicio",
-            style = MaterialTheme.typography.headlineSmall
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+
+            Text(
+                text = "Inicio",
+                style = MaterialTheme.typography.headlineSmall
+            )
+
+            IconButton(
+                onClick = {
+                    showVehicleDialog = true
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DirectionsCar,
+                    contentDescription = "Vehículo"
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
         Card(
@@ -326,4 +349,63 @@ fun HomeScreen(
             }
             }
         }
+    if (showVehicleDialog) {
+
+        AlertDialog(
+            onDismissRequest = {
+                showVehicleDialog = false
+            },
+
+            title = {
+                Text("Vehículo actual")
+            },
+
+            text = {
+
+                Column {
+
+                    Text("${vehicle.brand} ${vehicle.model}")
+
+                    vehicle.year?.let {
+                        Text("Año: $it")
+                    }
+
+                    Text(
+                        "Tipo: ${
+                            vehicle.type?.name
+                                ?.lowercase()
+                                ?.replace("_", " ")
+                                ?.replaceFirstChar { it.uppercase() }
+                                ?.replace("hibrido", "Híbrido")
+                                ?.replace("enchufable", "Enchufable")
+                                ?.replace("electrico", "Eléctrico")
+                                ?.replace("diesel", "Diésel")
+                                ?: "-"
+                        }"
+                    )
+
+                    if (vehicle.batteryCapacity > 0) {
+                        Text("Batería: ${vehicle.batteryCapacity} kWh")
+                    }
+
+                    if (vehicle.fuelTankCapacity > 0) {
+                        Text("Depósito: ${vehicle.fuelTankCapacity} L")
+                    }
+
+                    Text("Km iniciales: ${vehicle.currentKm}")
+                }
+            },
+
+            confirmButton = {
+
+                TextButton(
+                    onClick = {
+                        showVehicleDialog = false
+                    }
+                ) {
+                    Text("Cerrar")
+                }
+            }
+        )
+    }
 }
