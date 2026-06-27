@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import com.example.cochehibrido.data.VehicleType
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.foundation.layout.width
 
 
 @Composable
@@ -72,6 +73,10 @@ fun HomeScreen(
         .collectAsStateWithLifecycle(initialValue = 0.0)
 
     var showVehicleDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var showResetDialog by remember {
         mutableStateOf(false)
     }
 
@@ -364,46 +369,180 @@ fun HomeScreen(
 
                 Column {
 
-                    Text("${vehicle.brand} ${vehicle.model}")
-
-                    vehicle.year?.let {
-                        Text("Año: $it")
-                    }
-
                     Text(
-                        "Tipo: ${
-                            vehicle.type?.name
-                                ?.lowercase()
-                                ?.replace("_", " ")
-                                ?.replaceFirstChar { it.uppercase() }
-                                ?.replace("hibrido", "Híbrido")
-                                ?.replace("enchufable", "Enchufable")
-                                ?.replace("electrico", "Eléctrico")
-                                ?.replace("diesel", "Diésel")
-                                ?: "-"
-                        }"
+                        text = "${vehicle.brand} ${vehicle.model}",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    val tipoTexto =
+                        vehicle.type?.name
+                            ?.lowercase()
+                            ?.replace("_", " ")
+                            ?.replace("hibrido", "híbrido")
+                            ?.replace("enchufable", "enchufable")
+                            ?.replace("electrico", "eléctrico")
+                            ?.replace("diesel", "diésel")
+                            ?.replaceFirstChar { it.titlecase() }
+                            ?: "-"
+
+                    Row {
+                        Text(
+                            text = "Año:",
+                            modifier = Modifier.width(110.dp),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+
+                        Text(
+                            text = vehicle.year?.toString() ?: "-",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row {
+                        Text(
+                            text = "Tipo:",
+                            modifier = Modifier.width(110.dp),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+
+                        Text(
+                            text = tipoTexto,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+
                     if (vehicle.batteryCapacity > 0) {
-                        Text("Batería: ${vehicle.batteryCapacity} kWh")
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Row {
+                            Text(
+                                text = "Batería:",
+                                modifier = Modifier.width(110.dp),
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+
+                            Text(
+                                text = "${vehicle.batteryCapacity.toSpanishDecimal()} kWh",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
 
                     if (vehicle.fuelTankCapacity > 0) {
-                        Text("Depósito: ${vehicle.fuelTankCapacity} L")
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Row {
+                            Text(
+                                text = "Depósito:",
+                                modifier = Modifier.width(110.dp),
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+
+                            Text(
+                                text = "${vehicle.fuelTankCapacity.toSpanishDecimal()} L",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
 
-                    Text("Km iniciales: ${vehicle.currentKm}")
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row {
+                        Text(
+                            text = "Km iniciales:",
+                            modifier = Modifier.width(110.dp),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+
+                        Text(
+                            text = vehicle.currentKm.toSpanishDecimal(),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
             },
 
             confirmButton = {
-
                 TextButton(
                     onClick = {
                         showVehicleDialog = false
                     }
                 ) {
                     Text("Cerrar")
+                }
+            },
+
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showResetDialog = true
+                    }
+                ) {
+                    Text("Restablecer")
+                }
+            }
+        )
+    }
+
+    if (showResetDialog) {
+
+        AlertDialog(
+            onDismissRequest = {
+                showResetDialog = false
+            },
+
+            title = {
+                Text("Restablecer aplicación")
+            },
+
+            text = {
+                Text(
+                    "Se eliminarán:\n\n" +
+                            "• El vehículo configurado\n" +
+                            "• Todos los repostajes y cargas\n\n" +
+                            "La aplicación volverá a la pantalla de configuración inicial.\n\n" +
+                            "Esta acción no se puede deshacer."
+                )
+            },
+
+            confirmButton = {
+                TextButton(
+                    onClick = {
+
+                        // Aquí irá el borrado
+
+                        showResetDialog = false
+                        showVehicleDialog = false
+                    }
+                ) {
+                    Text("Restablecer")
+                }
+            },
+
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showResetDialog = false
+                    }
+                ) {
+                    Text("Cancelar")
                 }
             }
         )

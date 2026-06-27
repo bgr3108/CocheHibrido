@@ -14,8 +14,11 @@ class FuelRepository(
         fuelEntryDao.insertEntry(entry)
     }
 
-    // 🔥 AÑADE ESTO
     suspend fun delete(entry: FuelEntry) {
         fuelEntryDao.delete(entry)
+    }
+
+    suspend fun deleteAll() {
+        fuelEntryDao.deleteAll()
     }
 }

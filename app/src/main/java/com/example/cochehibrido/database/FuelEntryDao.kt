@@ -20,7 +20,9 @@ interface FuelEntryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntry(entry: FuelEntry)
 
-    // 🔥 AÑADE ESTO
     @Delete
     suspend fun delete(entry: FuelEntry)
+
+    @Query("DELETE FROM fuel_entries")
+    suspend fun deleteAll()
 }

@@ -35,6 +35,9 @@ class VehiclePreferences(
 
         val TANK =
             doublePreferencesKey("tank")
+
+        val CURRENT_KM =
+            doublePreferencesKey("current_km")
     }
 
     suspend fun saveVehicle(
@@ -55,6 +58,9 @@ class VehiclePreferences(
 
             prefs[Keys.TANK] =
                 vehicle.fuelTankCapacity
+
+            prefs[Keys.CURRENT_KM] =
+                vehicle.currentKm
         }
     }
 
@@ -85,7 +91,17 @@ class VehiclePreferences(
                 prefs[Keys.BATTERY] ?: 0.0,
 
             fuelTankCapacity =
-                prefs[Keys.TANK] ?: 0.0
+                prefs[Keys.TANK] ?: 0.0,
+
+                currentKm =
+                prefs[Keys.CURRENT_KM] ?: 0.0
         )
+    }
+    suspend fun clearVehicle() {
+
+        context.dataStore.edit {
+
+            it.clear()
+        }
     }
 }
