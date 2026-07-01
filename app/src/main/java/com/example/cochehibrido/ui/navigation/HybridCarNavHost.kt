@@ -72,6 +72,7 @@ fun HybridCarNavHost(
         }
         composable("stats") {
             StatisticsScreen(
+                innerPadding = innerPadding,
                 viewModel = homeViewModel
             )
         }
