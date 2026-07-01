@@ -40,4 +40,13 @@ class VehicleRepository(
             vehiclePreferences.saveVehicle(vehicle)
         }
     }
+    fun clearVehicle() {
+
+        _vehicle.value = Vehicle()
+
+        CoroutineScope(Dispatchers.IO).launch {
+
+            vehiclePreferences.clearVehicle()
+        }
+    }
 }

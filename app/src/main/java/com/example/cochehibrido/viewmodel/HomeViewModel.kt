@@ -19,7 +19,7 @@ import com.example.cochehibrido.data.MonthlyPrice
 
 class HomeViewModel(
     private val fuelRepository: FuelRepository,
-    vehicleRepository: VehicleRepository
+    private val vehicleRepository: VehicleRepository
 ) : ViewModel() {
 
     val entries = fuelRepository.getAllEntries()
@@ -147,84 +147,7 @@ class HomeViewModel(
     val totalCost = entries
         .map { list -> list.sumOf { it.precio } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
-    val kmEsteMes = entries
-        .map { entryList ->
 
-            val calendar = java.util.Calendar.getInstance()
-
-            val mesActual = calendar.get(java.util.Calendar.MONTH)
-            val anioActual = calendar.get(java.util.Calendar.YEAR)
-
-            val entradasMes = entryList
-                .filter {
-
-                    val entryCalendar = java.util.Calendar.getInstance()
-                    entryCalendar.timeInMillis = it.fecha
-
-                    entryCalendar.get(java.util.Calendar.MONTH) == mesActual &&
-                            entryCalendar.get(java.util.Calendar.YEAR) == anioActual
-                }
-                .sortedBy { it.km }
-
-            if (entradasMes.size >= 2) {
-                entradasMes.last().km - entradasMes.first().km
-            } else {
-                0.0
-            }
-
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            0.0
-        )
-    val gastoEsteMes = entries
-        .map { entryList ->
-
-            val calendar = java.util.Calendar.getInstance()
-
-            val mesActual = calendar.get(java.util.Calendar.MONTH)
-            val anioActual = calendar.get(java.util.Calendar.YEAR)
-
-            entryList
-                .filter {
-
-                    val entryCalendar = java.util.Calendar.getInstance()
-                    entryCalendar.timeInMillis = it.fecha
-
-                    entryCalendar.get(java.util.Calendar.MONTH) == mesActual &&
-                            entryCalendar.get(java.util.Calendar.YEAR) == anioActual
-                }
-                .sumOf { it.precio }
-
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            0.0
-        )
-    val totalLitrosGasolina = entries
-        .map { list ->
-
-            list
-                .filter { it.tipo == FuelType.GASOLINA }
-                .sumOf { it.cantidad }
-
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            0.0
-        )
-    val totalKwhElectricos = entries
-        .map { list ->
-
-            list
-                .filter { it.tipo == FuelType.ELECTRICO }
-                .sumOf { it.cantidad }
-
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            0.0
-        )
     val ultimoGasolina = entries
         .map { list ->
 
@@ -281,19 +204,8 @@ class HomeViewModel(
     private val _stats = MutableStateFlow(
         ConsumptionStats(0.0, 0.0, 0.0, 0.0, 0.0)
     )
-    //val stats: StateFlow<ConsumptionStats> = _stats
-
-    // 🔥 COSTES (AHORA BIEN COLOCADOS)
 
     val flow = precioElectrico
-    val costeElectricoKm = combine(flow, consumoElectrico) { precio, consumo ->
-        (precio * consumo) / 100
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        0.0
-    )
-
     init {
         observarDatos()
     }
@@ -390,6 +302,15 @@ class HomeViewModel(
                         }
                         .sortedBy { it.month }
             }
+        }
+    }
+    fun resetApplication() {
+
+        viewModelScope.launch {
+
+            fuelRepository.deleteAll()
+
+            vehicleRepository.clearVehicle()
         }
     }
 }

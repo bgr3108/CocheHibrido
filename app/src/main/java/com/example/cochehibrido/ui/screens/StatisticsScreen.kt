@@ -11,11 +11,11 @@ import androidx.compose.ui.unit.dp
 import com.example.cochehibrido.viewmodel.HomeViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.cochehibrido.util.toSpanishDecimal
-import com.example.cochehibrido.util.toDateTimeString
 import androidx.compose.runtime.getValue
 import com.example.cochehibrido.ui.theme.CardBlueDark
 import com.example.cochehibrido.ui.theme.CardBlueLight
 import com.example.cochehibrido.data.VehicleType
+import com.example.cochehibrido.ui.components.DashboardCard
 
 @Composable
 fun StatisticsScreen(
@@ -57,14 +57,6 @@ fun StatisticsScreen(
         .gastoElectricoTotal
         .collectAsStateWithLifecycle(0.0)
 
-    val ultimoGasolina by viewModel
-        .ultimoGasolina
-        .collectAsStateWithLifecycle()
-
-    val ultimoElectrico by viewModel
-        .ultimoElectrico
-        .collectAsStateWithLifecycle()
-
     val isDark = isSystemInDarkTheme()
 
     val vehicle by viewModel
@@ -94,90 +86,31 @@ fun StatisticsScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
 
-            // 🔋 Última carga
-            if (showElectric) {
-            Card(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(
-                        end = if (showFuel) 8.dp else 0.dp
-                    ),
+            DashboardCard(
+                title = "Consumos",
+                value =
+                    if (showFuel)
+                        "${consumoGasolina.toSpanishDecimal()} L/100"
+                    else
+                        "${consumoElectrico.toSpanishDecimal()} kWh/100",
 
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isDark) CardBlueDark else CardBlueLight
-                )
-            ) {
+                subtitle = "Consumo medio"
+            )
 
+            DashboardCard(
+                title = "Precios",
+                value =
+                    if (showFuel)
+                        "${precioGasolina.toSpanishDecimal()} €/L"
+                    else
+                        "${precioElectrico.toSpanishDecimal()} €/kWh",
 
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-
-                    Text(
-                        "Última carga",
-                        style = MaterialTheme.typography.titleSmall
-                    )
-
-                    ultimoElectrico?.let { entry ->
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Text(entry.fecha.toDateTimeString())
-
-                        Text(
-                            "${entry.cantidad.toSpanishDecimal()} kWh"
-                        )
-
-                        Text(
-                            "${entry.precio.toSpanishDecimal()} €"
-                        )
-                    }
-                }
-            }
-        }
-
-            if (showFuel) {
-            Card(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(
-                        start = if (showElectric) 8.dp else 0.dp
-                    ),
-
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isDark) CardBlueDark else CardBlueLight
-                )
-            ) {
-
-
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-
-                    Text(
-                        "Último repostaje",
-                        style = MaterialTheme.typography.titleSmall
-                    )
-
-                    ultimoGasolina?.let { entry ->
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Text(entry.fecha.toDateTimeString())
-
-                        Text(
-                            "${entry.cantidad.toSpanishDecimal()} L"
-                        )
-
-                        Text(
-                            "${entry.precio.toSpanishDecimal()} €"
-                        )
-                    }
-                }
-            }
-        }
+                subtitle = "Precio medio"
+            )
         }
         Card(
             modifier = Modifier.fillMaxWidth(),

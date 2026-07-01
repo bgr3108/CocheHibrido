@@ -1,23 +1,42 @@
 package com.example.cochehibrido.ui.screens
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.LocalGasStation
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.cochehibrido.viewmodel.HomeViewModel
-import androidx.compose.foundation.isSystemInDarkTheme
-import com.example.cochehibrido.ui.theme.CardBlueLight
-import com.example.cochehibrido.ui.theme.CardBlueDark
-import com.example.cochehibrido.util.toSpanishDecimal
-import com.example.cochehibrido.util.toDateTimeString
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import com.example.cochehibrido.data.VehicleType
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.foundation.layout.width
+import com.example.cochehibrido.ui.components.HomeInfoCard
+import com.example.cochehibrido.util.toDateTimeString
+import com.example.cochehibrido.util.toSpanishDecimal
+import com.example.cochehibrido.viewmodel.HomeViewModel
 
 
 @Composable
@@ -25,27 +44,10 @@ fun HomeScreen(
     innerPadding: PaddingValues,
     viewModel: HomeViewModel
 ) {
-    // 🔵 TARJETAS (NO TOCAR)
-    val precioGasolina by viewModel.precioGasolina.collectAsStateWithLifecycle()
-    val totalLitrosGasolina by viewModel
-        .totalLitrosGasolina
-        .collectAsStateWithLifecycle()
-    val totalKwhElectricos by viewModel
-        .totalKwhElectricos
-        .collectAsStateWithLifecycle()
-    val costeElectricoKm by viewModel.costeElectricoKm.collectAsStateWithLifecycle(initialValue = 0.0)
-    val isDark = isSystemInDarkTheme()
-// 🟢 NUEVO (CÁLCULO REAL)
-    val totalKm by viewModel.totalKm.collectAsStateWithLifecycle()
-    val totalCost by viewModel.totalCost.collectAsStateWithLifecycle()
-    val costPerKm by viewModel.costPerKm.collectAsStateWithLifecycle()
-    val kmEsteMes by viewModel
-        .kmEsteMes
-        .collectAsStateWithLifecycle()
 
-    val gastoEsteMes by viewModel
-        .gastoEsteMes
-        .collectAsStateWithLifecycle()
+    val precioGasolina by viewModel.precioGasolina.collectAsStateWithLifecycle()
+    val precioElectrico by viewModel.precioElectrico.collectAsStateWithLifecycle()
+    val costPerKm by viewModel.costPerKm.collectAsStateWithLifecycle()
     val ultimoGasolina by viewModel
         .ultimoGasolina
         .collectAsStateWithLifecycle()
@@ -64,13 +66,6 @@ fun HomeScreen(
     val showElectric =
         vehicle.type == VehicleType.ELECTRICO ||
                 vehicle.type == VehicleType.HIBRIDO_ENCHUFABLE
-    val gastoGasolinaTotal by viewModel
-        .gastoGasolinaTotal
-        .collectAsStateWithLifecycle(initialValue = 0.0)
-
-    val gastoElectricoTotal by viewModel
-        .gastoElectricoTotal
-        .collectAsStateWithLifecycle(initialValue = 0.0)
 
     var showVehicleDialog by remember {
         mutableStateOf(false)
@@ -112,248 +107,189 @@ fun HomeScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
 
-            colors = CardDefaults.cardColors(
-                containerColor = if (isDark) CardBlueDark else CardBlueLight
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            Column(
-                modifier = Modifier.padding(16.dp)
+            HomeInfoCard(
+                modifier = Modifier.weight(1f),
+                title = "Precio medio",
+                icon = Icons.Default.AccountBalanceWallet
             ) {
 
-                Text(
-                    text = "Este mes",
-                    style = MaterialTheme.typography.titleMedium
-                )
+                if (showFuel) {
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Gasolina",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
 
-                Text(
-                    "Km recorridos: ${
-                        kmEsteMes.toSpanishDecimal()
-                    } km"
-                )
+                    Text(
+                        "${precioGasolina.toSpanishDecimal()} €/L",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
 
-                Text(
-                    "Gasto: ${
-                        gastoEsteMes.toSpanishDecimal()
-                    } €"
-                )
+                if (showElectric) {
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        "Electricidad",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Text(
+                        "${precioElectrico.toSpanishDecimal()} €/kWh",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
             }
-        }
 
-        // 🔥 NUEVA TARJETA: cálculo real
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = if (isDark) CardBlueDark else CardBlueLight
-            ),
-            elevation = CardDefaults.cardElevation(4.dp)
-        ){
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-
-                Text(
-                    text = "Cálculo total",
-                    style = MaterialTheme.typography.titleMedium
-                )
-
-                Text("Km totales: %.1f km".format(totalKm))
-                Text("Coste total: %.2f €".format(totalCost))
-                Text("€/km real: %.3f €".format(costPerKm))
-
-            }
+            HomeInfoCard(
+                modifier = Modifier.weight(1f),
+                title = "Coste por km",
+                icon = Icons.AutoMirrored.Filled.TrendingUp,
+                value = "${costPerKm.toSpanishDecimal()} €/km"
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(modifier = Modifier.fillMaxWidth()) {
-            if (showElectric) {
-            // 🔋 ELÉCTRICO
-            Card(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(
-                        end = if (showFuel) 8.dp else 0.dp
-                    ),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isDark) CardBlueDark else CardBlueLight
-                ),
-                elevation = CardDefaults.cardElevation(4.dp)
+        if (showFuel && showElectric) {
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
 
-                    Text("🔋 Eléctrico")
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Text(
-                        "${totalKwhElectricos.toSpanishDecimal()} kWh cargados",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    Text(
-                        "${gastoElectricoTotal.toSpanishDecimal()} € gastados",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = "%.3f €/km".format(costeElectricoKm),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        "${totalKwhElectricos.toSpanishDecimal()} kWh totales",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-            }
-            if (showFuel) {
-            // ⛽ GASOLINA
-            Card(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(
-                        start = if (showElectric) 8.dp else 0.dp
-                    ),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isDark) CardBlueDark else CardBlueLight
-                ),
-                elevation = CardDefaults.cardElevation(4.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-
-                    Text("⛽ Gasolina")
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Text(
-                        text = "%.2f €/L".format(precioGasolina),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        "${totalLitrosGasolina.toSpanishDecimal()} L repostados",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    Text(
-                        "${gastoGasolinaTotal.toSpanishDecimal()} € gastados",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-        }
-        }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(modifier = Modifier.fillMaxWidth()) {
-                if (showElectric) {
-                // 🔋 Última carga
-                Card(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(
-                            end = if (showFuel) 8.dp else 0.dp
-                        ),
-
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (isDark) CardBlueDark else CardBlueLight
-                    )
+                HomeInfoCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Última carga",
+                    icon = Icons.Default.Bolt
                 ) {
 
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
+                    ultimoElectrico?.let { entry ->
 
-                        Text(
-                            "Última carga",
-                            style = MaterialTheme.typography.titleSmall
-                        )
+                        Text(entry.fecha.toDateTimeString())
 
-                        ultimoElectrico?.let { entry ->
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                            Spacer(modifier = Modifier.height(6.dp))
+                        Text("${entry.cantidad.toSpanishDecimal()} kWh")
 
-                            Text(entry.fecha.toDateTimeString())
+                        Text("${entry.precio.toSpanishDecimal()} €")
+
+                        if (entry.cantidad > 0) {
 
                             Text(
-                                "${entry.cantidad.toSpanishDecimal()} kWh"
+                                "${(entry.precio / entry.cantidad).toSpanishDecimal()} €/kWh"
                             )
-
-                            Text(
-                                "${entry.precio.toSpanishDecimal()} €"
-                            )
-
-                            if (entry.cantidad > 0) {
-                                Text(
-                                    "${(entry.precio / entry.cantidad).toSpanishDecimal()} €/kWh"
-                                )
-                            }
                         }
-                    }
-                }
-                }
-                if (showFuel) {
-                // ⛽ Último repostaje
-                Card(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(
-                            start = if (showElectric) 8.dp else 0.dp
-                        ),
 
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (isDark) CardBlueDark else CardBlueLight
+                    } ?: Text(
+                        "Sin registros",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+
+                HomeInfoCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Último repostaje",
+                    icon = Icons.Default.LocalGasStation
                 ) {
 
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
+                    ultimoGasolina?.let { entry ->
 
-                        Text(
-                            "Último repostaje",
-                            style = MaterialTheme.typography.titleSmall
-                        )
+                        Text(entry.fecha.toDateTimeString())
 
-                        ultimoGasolina?.let { entry ->
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                            Spacer(modifier = Modifier.height(6.dp))
+                        Text("${entry.cantidad.toSpanishDecimal()} L")
 
-                            Text(entry.fecha.toDateTimeString())
+                        Text("${entry.precio.toSpanishDecimal()} €")
+
+                        if (entry.cantidad > 0) {
 
                             Text(
-                                "${entry.cantidad.toSpanishDecimal()} L"
+                                "${(entry.precio / entry.cantidad).toSpanishDecimal()} €/L"
                             )
-
-                            Text(
-                                "${entry.precio.toSpanishDecimal()} €"
-                            )
-
-                            if (entry.cantidad > 0) {
-                                Text(
-                                    "${(entry.precio / entry.cantidad).toSpanishDecimal()} €/L"
-                                )
-                            }
                         }
-                    }
+
+                    } ?: Text(
+                        "Sin registros",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
+
+        } else if (showFuel) {
+
+            HomeInfoCard(
+                modifier = Modifier.fillMaxWidth(),
+                title = "Último repostaje",
+                icon = Icons.Default.LocalGasStation
+            ) {
+
+                ultimoGasolina?.let { entry ->
+
+                    Text(entry.fecha.toDateTimeString())
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text("${entry.cantidad.toSpanishDecimal()} L")
+
+                    Text("${entry.precio.toSpanishDecimal()} €")
+
+                    if (entry.cantidad > 0) {
+
+                        Text(
+                            "${(entry.precio / entry.cantidad).toSpanishDecimal()} €/L"
+                        )
+                    }
+
+                } ?: Text(
+                    "Sin registros",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+        } else {
+
+            HomeInfoCard(
+                modifier = Modifier.fillMaxWidth(),
+                title = "Última carga",
+                icon = Icons.Default.Bolt
+            ) {
+
+                ultimoElectrico?.let { entry ->
+
+                    Text(entry.fecha.toDateTimeString())
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text("${entry.cantidad.toSpanishDecimal()} kWh")
+
+                    Text("${entry.precio.toSpanishDecimal()} €")
+
+                    if (entry.cantidad > 0) {
+
+                        Text(
+                            "${(entry.precio / entry.cantidad).toSpanishDecimal()} €/kWh"
+                        )
+                    }
+
+                } ?: Text(
+                    "Sin registros",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
+    }
+
     if (showVehicleDialog) {
 
         AlertDialog(
@@ -526,10 +462,7 @@ fun HomeScreen(
                 TextButton(
                     onClick = {
 
-                        // Aquí irá el borrado
-
-                        showResetDialog = false
-                        showVehicleDialog = false
+                        viewModel.resetApplication()
                     }
                 ) {
                     Text("Restablecer")
