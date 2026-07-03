@@ -3,17 +3,11 @@ package com.example.cochehibrido.ui.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.cochehibrido.ui.theme.CardBlueDark
 import com.example.cochehibrido.ui.theme.CardBlueLight
@@ -24,10 +18,6 @@ fun DashboardCard(
     modifier: Modifier = Modifier,
 
     title: String,
-
-    value: String,
-
-    subtitle: String = "",
 
     icon: ImageVector? = null,
 
@@ -41,17 +31,17 @@ fun DashboardCard(
                 CardBlueDark
             else
                 CardBlueLight
-    )
+    ),
+
+    content: @Composable ColumnScope.() -> Unit
 
 ) {
 
     Card(
 
         modifier = modifier
-            .height(145.dp)
-            .clickable {
-                onClick()
-            },
+            .fillMaxWidth()
+            .clickable { onClick() },
 
         colors = colors,
 
@@ -64,8 +54,8 @@ fun DashboardCard(
         Column(
 
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
+                .fillMaxWidth()
+                .padding(20.dp)
 
         ) {
 
@@ -73,11 +63,9 @@ fun DashboardCard(
 
                 modifier = Modifier.fillMaxWidth(),
 
-                horizontalArrangement =
-                    Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.SpaceBetween,
 
-                verticalAlignment =
-                    Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically
 
             ) {
 
@@ -103,37 +91,13 @@ fun DashboardCard(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-
-                text = value,
-
-                style = MaterialTheme.typography.headlineMedium,
-
-                fontWeight = FontWeight.Bold
-
-            )
-
-            if (subtitle.isNotBlank()) {
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-
-                    text = subtitle,
-
-                    style = MaterialTheme.typography.bodyMedium,
-
-                    color =
-                        MaterialTheme.colorScheme.onSurfaceVariant
-
-                )
-            }
+            content()
 
             if (showDetailArrow) {
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
 

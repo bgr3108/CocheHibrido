@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import com.example.cochehibrido.ui.screens.*
 import com.example.cochehibrido.viewmodel.FuelEntryViewModel
 import com.example.cochehibrido.viewmodel.HomeViewModel
+import com.example.cochehibrido.ui.screens.ConsumptionDetailScreen
 
 @Composable
 fun HybridCarNavHost(
@@ -73,8 +74,21 @@ fun HybridCarNavHost(
         composable("stats") {
             StatisticsScreen(
                 innerPadding = innerPadding,
-                viewModel = homeViewModel
+                viewModel = homeViewModel,
+                onOpenConsumption = {
+                    navController.navigate("consumption_detail")
+                }
             )
+        }
+        composable("consumption_detail") {
+
+            ConsumptionDetailScreen(
+                viewModel = homeViewModel,
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+
         }
     }
 }
