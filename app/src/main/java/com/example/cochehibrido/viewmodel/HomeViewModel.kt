@@ -14,6 +14,29 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.example.cochehibrido.domain.calculateAverageElectricConsumption
+import com.example.cochehibrido.domain.calculateAverageFuelConsumption
+import com.example.cochehibrido.domain.calculateBestElectricConsumption
+import com.example.cochehibrido.domain.calculateBestFuelConsumption
+import com.example.cochehibrido.domain.calculateElectricSegmentCount
+import com.example.cochehibrido.domain.calculateFuelSegmentCount
+import com.example.cochehibrido.domain.calculateWorstElectricConsumption
+import com.example.cochehibrido.domain.calculateWorstFuelConsumption
+import com.example.cochehibrido.domain.calculateAverageElectricPrice
+import com.example.cochehibrido.domain.calculateAverageFuelPrice
+import com.example.cochehibrido.domain.calculateElectricCharges
+import com.example.cochehibrido.domain.calculateFuelRefuels
+import com.example.cochehibrido.domain.calculateMaxElectricPrice
+import com.example.cochehibrido.domain.calculateMaxFuelPrice
+import com.example.cochehibrido.domain.calculateMinElectricPrice
+import com.example.cochehibrido.domain.calculateMinFuelPrice
+import com.example.cochehibrido.domain.calculateCheapestPaidCharge
+import com.example.cochehibrido.domain.calculateCheapestRefuel
+import com.example.cochehibrido.domain.calculateFreeCharges
+import com.example.cochehibrido.domain.calculateMostExpensiveCharge
+import com.example.cochehibrido.domain.calculateMostExpensiveRefuel
+import com.example.cochehibrido.domain.calculateTotalElectricCost
+import com.example.cochehibrido.domain.calculateTotalFuelCost
 
 class HomeViewModel(
     private val fuelRepository: FuelRepository,
@@ -48,51 +71,7 @@ class HomeViewModel(
     // ============================================================
 
     val consumoGasolina = entries
-        .map { list ->
-
-            val fuelEntries = list
-                .filter { it.tipo == FuelType.GASOLINA }
-                .sortedBy { it.km }
-
-            var litrosConsumidos = 0.0
-            var kmRecorridos = 0.0
-
-            var ultimoLleno: FuelEntry? = null
-            var litrosAcumulados = 0.0
-
-            fuelEntries.forEach { entry ->
-
-                if (ultimoLleno == null) {
-
-                    if (entry.fullTank) {
-                        ultimoLleno = entry
-                    }
-
-                } else {
-
-                    litrosAcumulados += entry.cantidad
-
-                    if (entry.fullTank) {
-
-                        val llenoAnterior = requireNotNull(ultimoLleno)
-
-                        kmRecorridos +=
-                            entry.km - llenoAnterior.km
-
-                        litrosConsumidos +=
-                            litrosAcumulados
-
-                        ultimoLleno = entry
-                        litrosAcumulados = 0.0
-                    }
-                }
-            }
-
-            if (kmRecorridos > 0)
-                (litrosConsumidos / kmRecorridos) * 100
-            else
-                0.0
-        }
+        .map(::calculateAverageFuelConsumption)
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -100,31 +79,59 @@ class HomeViewModel(
         )
 
     val consumoElectrico = entries
-        .map { list ->
-
-            val electricEntries = list
-                .filter { it.tipo == FuelType.ELECTRICO }
-                .sortedBy { it.km }
-
-            if (electricEntries.size < 2)
-                return@map 0.0
-
-            val kmRecorridos =
-                electricEntries.last().km -
-                        electricEntries.first().km
-
-            val kwhConsumidos =
-                electricEntries.sumOf { it.cantidad }
-
-            if (kmRecorridos > 0)
-                (kwhConsumidos / kmRecorridos) * 100
-            else
-                0.0
-        }
+        .map(::calculateAverageElectricConsumption)
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             0.0
+        )
+
+    val mejorConsumoGasolina = entries
+        .map(::calculateBestFuelConsumption)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+
+    val peorConsumoGasolina = entries
+        .map(::calculateWorstFuelConsumption)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+
+    val numeroTramosGasolina = entries
+        .map(::calculateFuelSegmentCount)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0
+        )
+
+    val mejorConsumoElectrico = entries
+        .map(::calculateBestElectricConsumption)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+
+    val peorConsumoElectrico = entries
+        .map(::calculateWorstElectricConsumption)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+
+    val numeroTramosElectricos = entries
+        .map(::calculateElectricSegmentCount)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0
         )
 
     // ============================================================
@@ -229,10 +236,53 @@ class HomeViewModel(
     private val _precioElectrico = MutableStateFlow(0.0)
     val precioElectrico: StateFlow<Double> = _precioElectrico
 
-    // ============================================================
-    // Estadísticas mensuales
-    // ============================================================
+    val precioMinimoGasolina = entries
+        .map(::calculateMinFuelPrice)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
 
+    val precioMaximoGasolina = entries
+        .map(::calculateMaxFuelPrice)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+
+    val numeroRepostajes = entries
+        .map(::calculateFuelRefuels)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0
+        )
+
+    val precioMinimoElectrico = entries
+        .map(::calculateMinElectricPrice)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+
+    val precioMaximoElectrico = entries
+        .map(::calculateMaxElectricPrice)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+
+    val numeroCargas = entries
+        .map(::calculateElectricCharges)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0
+        )
     private val _monthlyGasolinePrices =
         MutableStateFlow<List<MonthlyPrice>>(emptyList())
 
@@ -250,6 +300,62 @@ class HomeViewModel(
     init {
         observarDatos()
     }
+
+    val costeTotalGasolina = entries
+        .map(::calculateTotalFuelCost)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+
+    val repostajeMasCaro = entries
+        .map(::calculateMostExpensiveRefuel)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+
+    val repostajeMasBarato = entries
+        .map(::calculateCheapestRefuel)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+
+    val costeTotalElectrico = entries
+        .map(::calculateTotalElectricCost)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+
+    val cargaMasCara = entries
+        .map(::calculateMostExpensiveCharge)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+
+    val cargaMasBarataDePago = entries
+        .map(::calculateCheapestPaidCharge)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0.0
+        )
+
+    val cargasGratuitas = entries
+        .map(::calculateFreeCharges)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            0
+        )
 
     // ============================================================
     // Funciones privadas
@@ -320,41 +426,11 @@ class HomeViewModel(
                             it.tipo == FuelType.ELECTRICO
                         }
 
-                    // Precio medio gasolina
-
-                    val litros =
-                        gasolinaEntries.sumOf {
-                            it.cantidad
-                        }
-
-                    val gastoGasolina =
-                        gasolinaEntries.sumOf {
-                            it.precio
-                        }
-
                     _precioGasolina.value =
-                        if (litros > 0)
-                            gastoGasolina / litros
-                        else
-                            0.0
-
-                    // Precio medio electricidad
-
-                    val kwh =
-                        electricEntries.sumOf {
-                            it.cantidad
-                        }
-
-                    val gastoElectrico =
-                        electricEntries.sumOf {
-                            it.precio
-                        }
+                        calculateAverageFuelPrice(lista)
 
                     _precioElectrico.value =
-                        if (kwh > 0)
-                            gastoElectrico / kwh
-                        else
-                            0.0
+                        calculateAverageElectricPrice(lista)
 
                     // Precios medios mensuales
 

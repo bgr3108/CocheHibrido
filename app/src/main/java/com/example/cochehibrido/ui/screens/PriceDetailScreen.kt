@@ -37,41 +37,41 @@ import com.example.cochehibrido.ui.theme.CardBlueLight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConsumptionDetailScreen(
+fun PriceDetailScreen(
     viewModel: HomeViewModel,
     onBack: () -> Unit
 ) {
 
-    val consumoGasolina by viewModel
-        .consumoGasolina
+    val precioGasolina by viewModel
+        .precioGasolina
         .collectAsStateWithLifecycle()
 
-    val consumoElectrico by viewModel
-        .consumoElectrico
+    val precioMinimoGasolina by viewModel
+        .precioMinimoGasolina
         .collectAsStateWithLifecycle()
 
-    val mejorConsumoGasolina by viewModel
-        .mejorConsumoGasolina
+    val precioMaximoGasolina by viewModel
+        .precioMaximoGasolina
         .collectAsStateWithLifecycle()
 
-    val peorConsumoGasolina by viewModel
-        .peorConsumoGasolina
+    val numeroRepostajes by viewModel
+        .numeroRepostajes
         .collectAsStateWithLifecycle()
 
-    val numeroTramosGasolina by viewModel
-        .numeroTramosGasolina
+    val precioElectrico by viewModel
+        .precioElectrico
         .collectAsStateWithLifecycle()
 
-    val mejorConsumoElectrico by viewModel
-        .mejorConsumoElectrico
+    val precioMinimoElectrico by viewModel
+        .precioMinimoElectrico
         .collectAsStateWithLifecycle()
 
-    val peorConsumoElectrico by viewModel
-        .peorConsumoElectrico
+    val precioMaximoElectrico by viewModel
+        .precioMaximoElectrico
         .collectAsStateWithLifecycle()
 
-    val numeroTramosElectricos by viewModel
-        .numeroTramosElectricos
+    val numeroCargas by viewModel
+        .numeroCargas
         .collectAsStateWithLifecycle()
 
     Scaffold(
@@ -81,7 +81,7 @@ fun ConsumptionDetailScreen(
             CenterAlignedTopAppBar(
 
                 title = {
-                    Text("Consumos")
+                    Text("Precios")
                 },
 
                 navigationIcon = {
@@ -103,19 +103,19 @@ fun ConsumptionDetailScreen(
 
     ) { innerPadding ->
 
-        ConsumptionContent(
+        PriceContent(
 
-            innerPadding = innerPadding,
+                innerPadding = innerPadding,
 
-            consumoGasolina = consumoGasolina,
-            mejorConsumoGasolina = mejorConsumoGasolina,
-            peorConsumoGasolina = peorConsumoGasolina,
-            numeroTramosGasolina = numeroTramosGasolina,
+            precioGasolina = precioGasolina,
+            precioMinimoGasolina = precioMinimoGasolina,
+            precioMaximoGasolina = precioMaximoGasolina,
+            numeroRepostajes = numeroRepostajes,
 
-            consumoElectrico = consumoElectrico,
-            mejorConsumoElectrico = mejorConsumoElectrico,
-            peorConsumoElectrico = peorConsumoElectrico,
-            numeroTramosElectricos = numeroTramosElectricos
+            precioElectrico = precioElectrico,
+            precioMinimoElectrico = precioMinimoElectrico,
+            precioMaximoElectrico = precioMaximoElectrico,
+            numeroCargas = numeroCargas
 
         )
 
@@ -123,19 +123,19 @@ fun ConsumptionDetailScreen(
 }
 
 @Composable
-private fun ConsumptionContent(
+private fun PriceContent(
 
     innerPadding: PaddingValues,
 
-    consumoGasolina: Double,
-    mejorConsumoGasolina: Double,
-    peorConsumoGasolina: Double,
-    numeroTramosGasolina: Int,
+    precioGasolina: Double,
+    precioMinimoGasolina: Double,
+    precioMaximoGasolina: Double,
+    numeroRepostajes: Int,
 
-    consumoElectrico: Double,
-    mejorConsumoElectrico: Double,
-    peorConsumoElectrico: Double,
-    numeroTramosElectricos: Int
+    precioElectrico: Double,
+    precioMinimoElectrico: Double,
+    precioMaximoElectrico: Double,
+    numeroCargas: Int
 
 ) {
 
@@ -173,45 +173,52 @@ private fun ConsumptionContent(
             ) {
 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement =
+                        Arrangement.spacedBy(8.dp)
                 ) {
 
                     Icon(
 
-                        imageVector = Icons.Default.LocalGasStation,
+                        imageVector =
+                            Icons.Default.LocalGasStation,
 
                         contentDescription = null,
 
-                        tint = MaterialTheme.colorScheme.primary
+                        tint =
+                            MaterialTheme.colorScheme.primary
 
                     )
 
                     Text(
-                        "Gasolina",
-                        style = MaterialTheme.typography.titleLarge
+
+                        text = "Gasolina",
+
+                        style =
+                            MaterialTheme.typography.titleLarge
+
                     )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 StatisticRow(
-                    "Consumo medio",
-                    "${consumoGasolina.toSpanishDecimal()} L/100 km"
+                    "Precio medio",
+                    "${precioGasolina.toSpanishDecimal()} €/L"
                 )
 
                 StatisticRow(
-                    "Mejor consumo",
-                    "${mejorConsumoGasolina.toSpanishDecimal()} L/100 km"
+                    "Precio mínimo",
+                    "${precioMinimoGasolina.toSpanishDecimal()} €/L"
                 )
 
                 StatisticRow(
-                    "Peor consumo",
-                    "${peorConsumoGasolina.toSpanishDecimal()} L/100 km"
+                    "Precio máximo",
+                    "${precioMaximoGasolina.toSpanishDecimal()} €/L"
                 )
 
                 StatisticRow(
-                    "Tramos calculados",
-                    numeroTramosGasolina.toString()
+                    "Repostajes",
+                    numeroRepostajes.toString()
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -221,8 +228,12 @@ private fun ConsumptionContent(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
-                    "Gráfico próximamente",
-                    color = MaterialTheme.colorScheme.primary
+
+                    text = "Gráfico próximamente",
+
+                    color =
+                        MaterialTheme.colorScheme.primary
+
                 )
             }
         }
@@ -250,45 +261,52 @@ private fun ConsumptionContent(
             ) {
 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement =
+                        Arrangement.spacedBy(8.dp)
                 ) {
 
                     Icon(
 
-                        imageVector = Icons.Default.Bolt,
+                        imageVector =
+                            Icons.Default.Bolt,
 
                         contentDescription = null,
 
-                        tint = MaterialTheme.colorScheme.primary
+                        tint =
+                            MaterialTheme.colorScheme.primary
 
                     )
 
                     Text(
-                        "Electricidad",
-                        style = MaterialTheme.typography.titleLarge
+
+                        text = "Electricidad",
+
+                        style =
+                            MaterialTheme.typography.titleLarge
+
                     )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 StatisticRow(
-                    "Consumo medio",
-                    "${consumoElectrico.toSpanishDecimal()} kWh/100 km"
+                    "Precio medio",
+                    "${precioElectrico.toSpanishDecimal()} €/kWh"
                 )
 
                 StatisticRow(
-                    "Mejor consumo",
-                    "${mejorConsumoElectrico.toSpanishDecimal()} kWh/100 km"
+                    "Precio mínimo",
+                    "${precioMinimoElectrico.toSpanishDecimal()} €/kWh"
                 )
 
                 StatisticRow(
-                    "Peor consumo",
-                    "${peorConsumoElectrico.toSpanishDecimal()} kWh/100 km"
+                    "Precio máximo",
+                    "${precioMaximoElectrico.toSpanishDecimal()} €/kWh"
                 )
 
                 StatisticRow(
-                    "Tramos calculados",
-                    numeroTramosElectricos.toString()
+                    "Cargas",
+                    numeroCargas.toString()
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -298,8 +316,12 @@ private fun ConsumptionContent(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
-                    "Gráfico próximamente",
-                    color = MaterialTheme.colorScheme.primary
+
+                    text = "Gráfico próximamente",
+
+                    color =
+                        MaterialTheme.colorScheme.primary
+
                 )
             }
         }

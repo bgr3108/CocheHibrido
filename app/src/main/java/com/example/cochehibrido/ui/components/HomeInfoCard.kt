@@ -25,6 +25,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.CardColors
 import com.example.cochehibrido.ui.theme.CardBlueDark
 import com.example.cochehibrido.ui.theme.CardBlueLight
+import androidx.compose.foundation.layout.heightIn
 
 @Composable
 fun HomeInfoCard(
@@ -46,7 +47,7 @@ fun HomeInfoCard(
 
     Card(
         modifier = modifier
-            .height(180.dp)
+            .heightIn(min = 180.dp)
             .then(
                 if (onClick != null)
                     Modifier.clickable { onClick() }

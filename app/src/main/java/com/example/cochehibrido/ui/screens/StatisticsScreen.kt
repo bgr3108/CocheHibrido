@@ -32,8 +32,10 @@ import com.example.cochehibrido.viewmodel.HomeViewModel
 fun StatisticsScreen(
     innerPadding: PaddingValues,
     viewModel: HomeViewModel,
-    onOpenConsumption: () -> Unit
-) {
+    onOpenConsumption: () -> Unit,
+    onOpenPrice: () -> Unit,
+    onOpenCost: () -> Unit
+){
 
     val consumoGasolina by viewModel
         .consumoGasolina
@@ -150,7 +152,8 @@ fun StatisticsScreen(
         DashboardCard(
             title = "Precios",
             icon = Icons.Default.AccountBalanceWallet,
-            showDetailArrow = true
+            showDetailArrow = true,
+            onClick = onOpenPrice
         ) {
 
             if (showFuel) {
@@ -203,6 +206,51 @@ fun StatisticsScreen(
         }
 
         DashboardCard(
+            title = "Costes",
+            icon = Icons.Default.Payments,
+            showDetailArrow = true,
+            onClick = onOpenCost,
+        ) {
+
+            if (showFuel) {
+
+                Text(
+                    "Gasolina"
+                )
+
+                Text(
+                    "${gastoGasolinaTotal.toSpanishDecimal()} €",
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            if (showElectric) {
+
+                Text(
+                    "Electricidad"
+                )
+
+                Text(
+                    "${gastoElectricoTotal.toSpanishDecimal()} €",
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            Text(
+                "Coste por km"
+            )
+
+            Text(
+                "${costPerKm.toSpanishDecimal()} €/km",
+                style = MaterialTheme.typography.titleLarge
+            )
+
+        }
+        DashboardCard(
             title = "Totales",
             icon = Icons.Default.Route,
             showDetailArrow = true
@@ -242,51 +290,6 @@ fun StatisticsScreen(
 
             Text(
                 "${totalKm.toSpanishDecimal()} km",
-                style = MaterialTheme.typography.titleLarge
-            )
-
-        }
-
-        DashboardCard(
-            title = "Costes",
-            icon = Icons.Default.Payments,
-            showDetailArrow = true
-        ) {
-
-            if (showFuel) {
-
-                Text(
-                    "Gasolina"
-                )
-
-                Text(
-                    "${gastoGasolinaTotal.toSpanishDecimal()} €",
-                    style = MaterialTheme.typography.titleLarge
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            if (showElectric) {
-
-                Text(
-                    "Electricidad"
-                )
-
-                Text(
-                    "${gastoElectricoTotal.toSpanishDecimal()} €",
-                    style = MaterialTheme.typography.titleLarge
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            Text(
-                "Coste por km"
-            )
-
-            Text(
-                "${costPerKm.toSpanishDecimal()} €/km",
                 style = MaterialTheme.typography.titleLarge
             )
 

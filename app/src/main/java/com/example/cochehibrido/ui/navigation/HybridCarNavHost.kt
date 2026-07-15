@@ -10,6 +10,7 @@ import com.example.cochehibrido.ui.screens.*
 import com.example.cochehibrido.viewmodel.FuelEntryViewModel
 import com.example.cochehibrido.viewmodel.HomeViewModel
 import com.example.cochehibrido.ui.screens.ConsumptionDetailScreen
+import com.example.cochehibrido.ui.screens.CostDetailScreen
 
 @Composable
 fun HybridCarNavHost(
@@ -77,6 +78,12 @@ fun HybridCarNavHost(
                 viewModel = homeViewModel,
                 onOpenConsumption = {
                     navController.navigate("consumption_detail")
+                },
+                onOpenPrice = {
+                    navController.navigate("price_detail")
+                },
+                onOpenCost = {
+                    navController.navigate("cost_detail")
                 }
             )
         }
@@ -89,6 +96,20 @@ fun HybridCarNavHost(
                 }
             )
 
+        }
+        composable("price_detail") {
+            PriceDetailScreen(
+                viewModel = homeViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("cost_detail") {
+            CostDetailScreen(
+                viewModel = homeViewModel,
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }
