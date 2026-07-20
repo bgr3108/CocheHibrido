@@ -35,6 +35,7 @@ import com.example.cochehibrido.ui.theme.CardBlueDark
 import com.example.cochehibrido.ui.theme.CardBlueLight
 import com.example.cochehibrido.util.toSpanishDecimal
 import com.example.cochehibrido.viewmodel.HomeViewModel
+import com.example.cochehibrido.ui.components.charts.LineChart
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -228,8 +229,16 @@ private fun ConsumptionContent(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    Spacer(
-                        modifier = Modifier.height(220.dp)
+                    LineChart(
+                        values = listOf(
+                            6.4f,
+                            5.8f,
+                            6.1f,
+                            5.5f,
+                            5.9f,
+                            5.3f,
+                            5.6f
+                        )
                     )
                 }
             }
