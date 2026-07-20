@@ -34,7 +34,8 @@ fun StatisticsScreen(
     viewModel: HomeViewModel,
     onOpenConsumption: () -> Unit,
     onOpenPrice: () -> Unit,
-    onOpenCost: () -> Unit
+    onOpenCost: () -> Unit,
+    onOpenTotal: () -> Unit
 ){
 
     val consumoGasolina by viewModel
@@ -253,7 +254,8 @@ fun StatisticsScreen(
         DashboardCard(
             title = "Totales",
             icon = Icons.Default.Route,
-            showDetailArrow = true
+            showDetailArrow = true,
+            onClick = onOpenTotal
         ) {
 
             if (showFuel) {

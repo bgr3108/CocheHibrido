@@ -161,6 +161,25 @@ class HomeViewModel(
             .filter { it.tipo == FuelType.ELECTRICO }
             .sumOf { it.precio }
     }
+    val gastoTotalVehiculo = combine(
+
+        gastoGasolinaTotal,
+
+        gastoElectricoTotal
+
+    ) { gasolina, electrico ->
+
+        gasolina + electrico
+
+    }.stateIn(
+
+        viewModelScope,
+
+        SharingStarted.WhileSubscribed(5000),
+
+        0.0
+
+    )
 
     val totalKm = entries
         .map { list ->

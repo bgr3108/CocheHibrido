@@ -6,11 +6,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.cochehibrido.ui.screens.*
+import com.example.cochehibrido.ui.screens.AddConsumptionScreen
+import com.example.cochehibrido.ui.screens.ConsumptionDetailScreen
+import com.example.cochehibrido.ui.screens.ConsumptionListScreen
+import com.example.cochehibrido.ui.screens.CostDetailScreen
+import com.example.cochehibrido.ui.screens.HomeScreen
+import com.example.cochehibrido.ui.screens.PriceDetailScreen
+import com.example.cochehibrido.ui.screens.StatisticsScreen
+import com.example.cochehibrido.ui.screens.TotalDetailScreen
 import com.example.cochehibrido.viewmodel.FuelEntryViewModel
 import com.example.cochehibrido.viewmodel.HomeViewModel
-import com.example.cochehibrido.ui.screens.ConsumptionDetailScreen
-import com.example.cochehibrido.ui.screens.CostDetailScreen
 
 @Composable
 fun HybridCarNavHost(
@@ -84,6 +89,9 @@ fun HybridCarNavHost(
                 },
                 onOpenCost = {
                     navController.navigate("cost_detail")
+                },
+                onOpenTotal = {
+                    navController.navigate("total_detail")
                 }
             )
         }
@@ -105,6 +113,14 @@ fun HybridCarNavHost(
         }
         composable("cost_detail") {
             CostDetailScreen(
+                viewModel = homeViewModel,
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable("total_detail") {
+            TotalDetailScreen(
                 viewModel = homeViewModel,
                 onBack = {
                     navController.popBackStack()

@@ -406,5 +406,53 @@
     "type": "HIBRIDO",
     "batteryCapacity": null,
     "fuelTankCapacity": 36
+  },
+  {
+    "brand": "Volkswagen",
+    "model": "Polo TSI",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Omoda",
+    "model": "7 SHS",
+    "year": 2026,
+    "type": "HIBRIDO_ENCHUFABLE",
+    "batteryCapacity": 18.4,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "SEAT",
+    "model": "Ibiza TSI",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Opel",
+    "model": "Astra 1.6",
+    "year": 2013,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 56
+  },
+  {
+    "brand": "Nissan",
+    "model": "Juke 1.6",
+    "year": 2013,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 46
+  },
+  {
+    "brand": "Hyundai",
+    "model": "i20 1.2",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 40
   }
 ]

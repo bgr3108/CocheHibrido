@@ -1,12 +1,15 @@
 package com.example.cochehibrido.ui.screens
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bolt
@@ -28,12 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.cochehibrido.ui.components.StatisticRow
-import com.example.cochehibrido.util.toSpanishDecimal
-import com.example.cochehibrido.viewmodel.HomeViewModel
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.cochehibrido.ui.theme.CardBlueDark
 import com.example.cochehibrido.ui.theme.CardBlueLight
+import com.example.cochehibrido.util.toSpanishDecimal
+import com.example.cochehibrido.viewmodel.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -139,169 +140,177 @@ private fun ConsumptionContent(
 
 ) {
 
-    Column(
+    LazyColumn(
 
         modifier = Modifier
             .fillMaxSize()
-            .padding(innerPadding)
-            .padding(16.dp),
+            .padding(innerPadding),
+
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            end = 16.dp,
+            top = 16.dp,
+            bottom = 16.dp
+        ),
 
         verticalArrangement = Arrangement.spacedBy(16.dp)
 
     ) {
 
-        Card(
+        item {
+            Card(
 
-            colors = CardDefaults.cardColors(
+                colors = CardDefaults.cardColors(
 
-                containerColor =
-                    if (isSystemInDarkTheme())
-                        CardBlueDark
-                    else
-                        CardBlueLight
+                    containerColor =
+                        if (isSystemInDarkTheme())
+                            CardBlueDark
+                        else
+                            CardBlueLight
 
-            ),
+                ),
 
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 4.dp
-            )
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 4.dp
+                )
 
-        ) {
-
-            Column(
-                modifier = Modifier.padding(16.dp)
             ) {
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                Column(
+                    modifier = Modifier.padding(16.dp)
                 ) {
 
-                    Icon(
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
 
-                        imageVector = Icons.Default.LocalGasStation,
+                        Icon(
 
-                        contentDescription = null,
+                            imageVector = Icons.Default.LocalGasStation,
 
-                        tint = MaterialTheme.colorScheme.primary
+                            contentDescription = null,
 
+                            tint = MaterialTheme.colorScheme.primary
+
+                        )
+
+                        Text(
+                            "Gasolina",
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    StatisticRow(
+                        "Consumo medio",
+                        "${consumoGasolina.toSpanishDecimal()} L/100 km"
                     )
 
-                    Text(
-                        "Gasolina",
-                        style = MaterialTheme.typography.titleLarge
+                    StatisticRow(
+                        "Mejor consumo",
+                        "${mejorConsumoGasolina.toSpanishDecimal()} L/100 km"
+                    )
+
+                    StatisticRow(
+                        "Peor consumo",
+                        "${peorConsumoGasolina.toSpanishDecimal()} L/100 km"
+                    )
+
+                    StatisticRow(
+                        "Tramos calculados",
+                        numeroTramosGasolina.toString()
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    HorizontalDivider()
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Spacer(
+                        modifier = Modifier.height(220.dp)
                     )
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                StatisticRow(
-                    "Consumo medio",
-                    "${consumoGasolina.toSpanishDecimal()} L/100 km"
-                )
-
-                StatisticRow(
-                    "Mejor consumo",
-                    "${mejorConsumoGasolina.toSpanishDecimal()} L/100 km"
-                )
-
-                StatisticRow(
-                    "Peor consumo",
-                    "${peorConsumoGasolina.toSpanishDecimal()} L/100 km"
-                )
-
-                StatisticRow(
-                    "Tramos calculados",
-                    numeroTramosGasolina.toString()
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                HorizontalDivider()
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Text(
-                    "Gráfico próximamente",
-                    color = MaterialTheme.colorScheme.primary
-                )
             }
         }
+        item {
+            Card(
 
-        Card(
+                colors = CardDefaults.cardColors(
 
-            colors = CardDefaults.cardColors(
+                    containerColor =
+                        if (isSystemInDarkTheme())
+                            CardBlueDark
+                        else
+                            CardBlueLight
 
-                containerColor =
-                    if (isSystemInDarkTheme())
-                        CardBlueDark
-                    else
-                        CardBlueLight
+                ),
 
-            ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 4.dp
+                )
 
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 4.dp
-            )
-
-        ) {
-
-            Column(
-                modifier = Modifier.padding(16.dp)
             ) {
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                Column(
+                    modifier = Modifier.padding(16.dp)
                 ) {
 
-                    Icon(
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
 
-                        imageVector = Icons.Default.Bolt,
+                        Icon(
 
-                        contentDescription = null,
+                            imageVector = Icons.Default.Bolt,
 
-                        tint = MaterialTheme.colorScheme.primary
+                            contentDescription = null,
 
+                            tint = MaterialTheme.colorScheme.primary
+
+                        )
+
+                        Text(
+                            "Electricidad",
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    StatisticRow(
+                        "Consumo medio",
+                        "${consumoElectrico.toSpanishDecimal()} kWh/100 km"
                     )
 
-                    Text(
-                        "Electricidad",
-                        style = MaterialTheme.typography.titleLarge
+                    StatisticRow(
+                        "Mejor consumo",
+                        "${mejorConsumoElectrico.toSpanishDecimal()} kWh/100 km"
+                    )
+
+                    StatisticRow(
+                        "Peor consumo",
+                        "${peorConsumoElectrico.toSpanishDecimal()} kWh/100 km"
+                    )
+
+                    StatisticRow(
+                        "Tramos calculados",
+                        numeroTramosElectricos.toString()
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    HorizontalDivider()
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Spacer(
+                        modifier = Modifier.height(220.dp)
                     )
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                StatisticRow(
-                    "Consumo medio",
-                    "${consumoElectrico.toSpanishDecimal()} kWh/100 km"
-                )
-
-                StatisticRow(
-                    "Mejor consumo",
-                    "${mejorConsumoElectrico.toSpanishDecimal()} kWh/100 km"
-                )
-
-                StatisticRow(
-                    "Peor consumo",
-                    "${peorConsumoElectrico.toSpanishDecimal()} kWh/100 km"
-                )
-
-                StatisticRow(
-                    "Tramos calculados",
-                    numeroTramosElectricos.toString()
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                HorizontalDivider()
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Text(
-                    "Gráfico próximamente",
-                    color = MaterialTheme.colorScheme.primary
-                )
             }
         }
     }
+    Spacer(modifier = Modifier.height(300.dp))
 }
