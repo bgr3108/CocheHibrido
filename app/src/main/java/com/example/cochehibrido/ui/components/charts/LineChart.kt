@@ -70,23 +70,28 @@ fun LineChart(
         val maxValue = rawMax + padding
         val minValue = rawMin - padding
 
+        val yAxis = buildAxis(
+            min = minValue.toDouble(),
+            max = maxValue.toDouble()
+        )
+
         val rawMinX = points.minOf { it.x }
         val rawMaxX = points.maxOf { it.x }
 
-        val paddingX =
-            if (rawMaxX == rawMinX) 100.0
-            else (rawMaxX - rawMinX) * 0.05
+        val xAxis = buildAxis(rawMinX, rawMaxX)
 
-        val minX = rawMinX
-        val maxX = rawMaxX + paddingX
+        val xRange = xAxis.max - xAxis.min
 
-        val rangeX = maxX - minX
+        fun mapX(value: Double): Float =
+            leftPadding +
+                    (((value - xAxis.min) / xRange) * chartWidth).toFloat()
 
-        val range =
-            if (maxValue == minValue)
-                1f
-            else
-                maxValue - minValue
+        val yRange = yAxis.max - yAxis.min
+
+        fun mapY(value: Double): Float =
+            topPadding +
+                    chartHeight -
+                    (((value - yAxis.min) / yRange) * chartHeight).toFloat()
 
         drawLine(
             color = AxisColor,
@@ -94,11 +99,10 @@ fun LineChart(
             end = Offset(leftPadding, topPadding + chartHeight),
             strokeWidth = 2f
         )
-        val yTicks = 4
 
-        repeat(yTicks + 1) { i ->
+        yAxis.ticks.forEach { tick ->
 
-            val y = topPadding + (chartHeight / yTicks) * i
+            val y = mapY(tick)
 
             drawLine(
                 color = AxisColor,
@@ -107,15 +111,12 @@ fun LineChart(
                 strokeWidth = 2f
             )
         }
-        repeat(yTicks + 1) { i ->
+        yAxis.ticks.forEach { tick ->
 
-            val y = topPadding + (chartHeight / yTicks) * i
-
-            val value =
-                maxValue - ((maxValue - minValue) / yTicks) * i
+            val y = mapY(tick)
 
             drawContext.canvas.nativeCanvas.drawText(
-                String.format(Locale.getDefault(), "%.1f", value),
+                String.format(Locale.getDefault(), "%.1f", tick),
                 leftPadding - 14.dp.toPx(),
                 y + 4.dp.toPx(),
                 textPaint
@@ -128,11 +129,10 @@ fun LineChart(
             end = Offset(leftPadding + chartWidth, topPadding + chartHeight),
             strokeWidth = 2f
         )
-        val xTicks = 4
 
-        repeat(xTicks + 1) { i ->
+        xAxis.ticks.forEach { tick ->
 
-            val x = leftPadding + (chartWidth / xTicks) * i
+            val x = mapX(tick)
 
             drawLine(
                 color = AxisColor,
@@ -141,55 +141,42 @@ fun LineChart(
                 strokeWidth = 2f
             )
         }
-        points.forEachIndexed { index, point ->
 
-            val x = leftPadding +
-                    (((point.x - minX) / rangeX) * chartWidth).toFloat()
+        xAxis.ticks.forEach { tick ->
 
-            xTextPaint.textAlign =
-                when (index) {
-                    0 -> Paint.Align.LEFT
-                    points.lastIndex -> Paint.Align.RIGHT
-                    else -> Paint.Align.CENTER
-                }
+            val x = mapX(tick)
 
             drawContext.canvas.nativeCanvas.drawText(
-                NumberFormat.getIntegerInstance().format(point.x),
+                NumberFormat.getIntegerInstance().format(tick.toInt()),
                 x,
                 topPadding + chartHeight + 18.dp.toPx(),
                 xTextPaint
             )
         }
 
+        yAxis.ticks.forEach { tick ->
+
+            val y = mapY(tick)
+
+            drawLine(
+                color = AxisColor.copy(alpha = 0.20f),
+                start = Offset(leftPadding, y),
+                end = Offset(leftPadding + chartWidth, y),
+                strokeWidth = 1f
+            )
+        }
+
         for (i in 0 until points.lastIndex) {
 
             val start = Offset(
-                x = leftPadding +
-                        (((points[i].x - minX) / rangeX) * chartWidth).toFloat(),
-
-                y = topPadding +
-                        chartHeight -
-                        (((points[i].y - minValue) / range) * chartHeight)
+                x = mapX(points[i].x),
+                y = mapY(points[i].y.toDouble())
             )
+
             val end = Offset(
-                x = leftPadding +
-                        (((points[i + 1].x - minX) / rangeX) * chartWidth).toFloat(),
-
-                y = topPadding +
-                        chartHeight -
-                        (((points[i + 1].y - minValue) / range) * chartHeight)
+                x = mapX(points[i + 1].x),
+                y = mapY(points[i + 1].y.toDouble())
             )
-            repeat(yTicks + 1) { i ->
-
-                val y = topPadding + (chartHeight / yTicks) * i
-
-                drawLine(
-                    color = AxisColor.copy(alpha = 0.15f),
-                    start = Offset(leftPadding, y),
-                    end = Offset(leftPadding + chartWidth, y),
-                    strokeWidth = 1f
-                )
-            }
 
             drawLine(
                 color = Color(0xFF1976D2),
@@ -200,18 +187,14 @@ fun LineChart(
             )
         }
 
-        points.forEachIndexed { _, point ->
+        points.forEach { point ->
 
             drawCircle(
                 color = Color(0xFF1976D2),
                 radius = 6f,
                 center = Offset(
-                    x = leftPadding +
-                            (((point.x - minX) / rangeX) * chartWidth).toFloat(),
-
-                    y = topPadding +
-                            chartHeight -
-                            (((point.y - minValue) / range) * chartHeight)
+                    x = mapX(point.x),
+                    y = mapY(point.y.toDouble())
                 )
             )
         }
