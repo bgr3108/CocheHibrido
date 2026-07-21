@@ -37,6 +37,9 @@ import com.example.cochehibrido.domain.calculateMostExpensiveCharge
 import com.example.cochehibrido.domain.calculateMostExpensiveRefuel
 import com.example.cochehibrido.domain.calculateTotalElectricCost
 import com.example.cochehibrido.domain.calculateTotalFuelCost
+import com.example.cochehibrido.domain.calculateFuelSegments
+import com.example.cochehibrido.domain.calculateElectricSegments
+import com.example.cochehibrido.domain.ChartPoint
 
 class HomeViewModel(
     private val fuelRepository: FuelRepository,
@@ -134,6 +137,35 @@ class HomeViewModel(
             0
         )
 
+    val historialConsumoGasolina = entries
+        .map {
+            calculateFuelSegments(it).map { segment ->
+                ChartPoint(
+                    x = segment.endKm,
+                    y = segment.consumption.toFloat()
+                )
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val historialConsumoElectrico = entries
+        .map {
+            calculateElectricSegments(it).map { segment ->
+                ChartPoint(
+                    x = segment.endKm,
+                    y = segment.consumption.toFloat()
+                )
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
     // ============================================================
     // Costes
     // ============================================================

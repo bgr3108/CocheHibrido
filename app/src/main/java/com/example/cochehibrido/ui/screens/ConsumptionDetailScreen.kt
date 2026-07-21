@@ -36,6 +36,7 @@ import com.example.cochehibrido.ui.theme.CardBlueLight
 import com.example.cochehibrido.util.toSpanishDecimal
 import com.example.cochehibrido.viewmodel.HomeViewModel
 import com.example.cochehibrido.ui.components.charts.LineChart
+import com.example.cochehibrido.domain.ChartPoint
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,6 +77,14 @@ fun ConsumptionDetailScreen(
         .numeroTramosElectricos
         .collectAsStateWithLifecycle()
 
+    val historialConsumoGasolina by viewModel
+        .historialConsumoGasolina
+        .collectAsStateWithLifecycle()
+
+    val historialConsumoElectrico by viewModel
+        .historialConsumoElectrico
+        .collectAsStateWithLifecycle()
+
     Scaffold(
 
         topBar = {
@@ -106,7 +115,6 @@ fun ConsumptionDetailScreen(
     ) { innerPadding ->
 
         ConsumptionContent(
-
             innerPadding = innerPadding,
 
             consumoGasolina = consumoGasolina,
@@ -117,8 +125,10 @@ fun ConsumptionDetailScreen(
             consumoElectrico = consumoElectrico,
             mejorConsumoElectrico = mejorConsumoElectrico,
             peorConsumoElectrico = peorConsumoElectrico,
-            numeroTramosElectricos = numeroTramosElectricos
+            numeroTramosElectricos = numeroTramosElectricos,
 
+            historialConsumoGasolina = historialConsumoGasolina,
+            historialConsumoElectrico = historialConsumoElectrico
         )
 
     }
@@ -137,9 +147,12 @@ private fun ConsumptionContent(
     consumoElectrico: Double,
     mejorConsumoElectrico: Double,
     peorConsumoElectrico: Double,
-    numeroTramosElectricos: Int
+    numeroTramosElectricos: Int,
 
-) {
+    historialConsumoGasolina: List<ChartPoint>,
+    historialConsumoElectrico: List<ChartPoint>
+
+){
 
     LazyColumn(
 
@@ -230,15 +243,7 @@ private fun ConsumptionContent(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     LineChart(
-                        values = listOf(
-                            6.4f,
-                            5.8f,
-                            6.1f,
-                            5.5f,
-                            5.9f,
-                            5.3f,
-                            5.6f
-                        )
+                        points = historialConsumoGasolina
                     )
                 }
             }
@@ -314,8 +319,8 @@ private fun ConsumptionContent(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    Spacer(
-                        modifier = Modifier.height(220.dp)
+                    LineChart(
+                        points = historialConsumoElectrico
                     )
                 }
             }
