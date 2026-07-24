@@ -6,31 +6,58 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
-import com.example.cochehibrido.domain.ChartPoint
-import androidx.compose.ui.graphics.nativeCanvas
 import java.util.Locale
 import androidx.compose.ui.graphics.toArgb
 import android.graphics.Paint
 import java.text.NumberFormat
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.drawscope.Stroke
 
 private val ChartLeftPadding = 40.dp
 private val ChartRightPadding = 20.dp
 private val ChartTopPadding = 12.dp
 private val ChartBottomPadding = 20.dp
-private val AxisColor = Color(0xFF505866)
 
 
 
 @Composable
 fun LineChart(
     points: List<ChartPoint>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    style: ChartStyle = ChartStyle(),
+    xLabelFormatter: (Double) -> String = {
+        NumberFormat.getIntegerInstance().format(it.toInt())
+    },
+    yLabelFormatter: (Double) -> String = {
+        String.format(Locale.getDefault(), "%.1f", it)
+    }
 ) {
 
     if (points.size < 2) return
+
+    val animationProgress = remember {
+        Animatable(0f)
+    }
+
+    LaunchedEffect(points) {
+
+        animationProgress.snapTo(0f)
+
+        animationProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(
+                durationMillis = 1200,
+                easing = FastOutSlowInEasing
+            )
+        )
+    }
 
     Canvas(
         modifier = modifier
@@ -38,13 +65,14 @@ fun LineChart(
             .height(250.dp)
     ) {
         val textPaint = Paint().apply {
-            color = AxisColor.toArgb()
+            color = style.textColor.toArgb()
             textSize = 12.dp.toPx()
             textAlign = Paint.Align.RIGHT
             isAntiAlias = true
         }
+
         val xTextPaint = Paint().apply {
-            color = AxisColor.toArgb()
+            color = style.textColor.toArgb()
             textSize = 12.dp.toPx()
             textAlign = Paint.Align.CENTER
             isAntiAlias = true
@@ -64,7 +92,10 @@ fun LineChart(
             if (rawMax == rawMin) {
                 1f
             } else {
-                maxOf((rawMax - rawMin) * 0.15f, 0.5f)
+                maxOf(
+                    (rawMax - rawMin) * ChartDefaults.PaddingPercentage,
+                    ChartDefaults.MinPadding
+                )
             }
 
         val maxValue = rawMax + padding
@@ -72,13 +103,18 @@ fun LineChart(
 
         val yAxis = buildAxis(
             min = minValue.toDouble(),
-            max = maxValue.toDouble()
+            max = maxValue.toDouble(),
+            targetTicks = ChartDefaults.TargetTicks
         )
 
         val rawMinX = points.minOf { it.x }
         val rawMaxX = points.maxOf { it.x }
 
-        val xAxis = buildAxis(rawMinX, rawMaxX)
+        val xAxis = buildAxis(
+            rawMinX,
+            rawMaxX,
+            targetTicks = ChartDefaults.TargetTicks
+        )
 
         val xRange = xAxis.max - xAxis.min
 
@@ -93,105 +129,84 @@ fun LineChart(
                     chartHeight -
                     (((value - yAxis.min) / yRange) * chartHeight).toFloat()
 
-        drawLine(
-            color = AxisColor,
-            start = Offset(leftPadding, topPadding),
-            end = Offset(leftPadding, topPadding + chartHeight),
-            strokeWidth = 2f
+        drawGrid(
+            style = style,
+            yAxis = yAxis,
+            leftPadding = leftPadding,
+            chartWidth = chartWidth,
+            mapY = ::mapY
         )
 
-        yAxis.ticks.forEach { tick ->
-
-            val y = mapY(tick)
-
-            drawLine(
-                color = AxisColor,
-                start = Offset(leftPadding - 5.dp.toPx(), y),
-                end = Offset(leftPadding, y),
-                strokeWidth = 2f
-            )
-        }
-        yAxis.ticks.forEach { tick ->
-
-            val y = mapY(tick)
-
-            drawContext.canvas.nativeCanvas.drawText(
-                String.format(Locale.getDefault(), "%.1f", tick),
-                leftPadding - 14.dp.toPx(),
-                y + 4.dp.toPx(),
-                textPaint
-            )
-        }
-
-        drawLine(
-            color = AxisColor,
-            start = Offset(leftPadding, topPadding + chartHeight),
-            end = Offset(leftPadding + chartWidth, topPadding + chartHeight),
-            strokeWidth = 2f
+        drawAxes(
+            style = style,
+            xAxis = xAxis,
+            yAxis = yAxis,
+            leftPadding = leftPadding,
+            topPadding = topPadding,
+            chartWidth = chartWidth,
+            chartHeight = chartHeight,
+            mapX = ::mapX,
+            mapY = ::mapY
         )
 
-        xAxis.ticks.forEach { tick ->
+        drawAxisLabels(
+            xAxis = xAxis,
+            yAxis = yAxis,
+            leftPadding = leftPadding,
+            topPadding = topPadding,
+            chartHeight = chartHeight,
+            mapX = ::mapX,
+            mapY = ::mapY,
+            textPaint = textPaint,
+            xTextPaint = xTextPaint,
+            xLabelFormatter = xLabelFormatter,
+            yLabelFormatter = yLabelFormatter
+        )
 
-            val x = mapX(tick)
+        val paths = buildChartPaths(
+            points = points,
+            progress = animationProgress.value,
+            mapX = ::mapX,
+            mapY = ::mapY,
+            style = style,
+            chartBottom = topPadding + chartHeight
+        )
 
-            drawLine(
-                color = AxisColor,
-                start = Offset(x, topPadding + chartHeight),
-                end = Offset(x, topPadding + chartHeight + 5.dp.toPx()),
-                strokeWidth = 2f
+        paths.area?.let {
+            drawPath(
+                path = it,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        style.lineColor.copy(alpha = style.gradientAlpha),
+                        style.lineColor.copy(alpha = 0f)
+                    ),
+                    startY = topPadding,
+                    endY = topPadding + chartHeight
+                )
             )
         }
 
-        xAxis.ticks.forEach { tick ->
-
-            val x = mapX(tick)
-
-            drawContext.canvas.nativeCanvas.drawText(
-                NumberFormat.getIntegerInstance().format(tick.toInt()),
-                x,
-                topPadding + chartHeight + 18.dp.toPx(),
-                xTextPaint
-            )
-        }
-
-        yAxis.ticks.forEach { tick ->
-
-            val y = mapY(tick)
-
-            drawLine(
-                color = AxisColor.copy(alpha = 0.20f),
-                start = Offset(leftPadding, y),
-                end = Offset(leftPadding + chartWidth, y),
-                strokeWidth = 1f
-            )
-        }
-
-        for (i in 0 until points.lastIndex) {
-
-            val start = Offset(
-                x = mapX(points[i].x),
-                y = mapY(points[i].y.toDouble())
-            )
-
-            val end = Offset(
-                x = mapX(points[i + 1].x),
-                y = mapY(points[i + 1].y.toDouble())
-            )
-
-            drawLine(
-                color = Color(0xFF1976D2),
-                start = start,
-                end = end,
-                strokeWidth = 4f,
+        drawPath(
+            path = paths.line,
+            color = style.lineColor,
+            style = Stroke(
+                width = style.lineWidth,
                 cap = StrokeCap.Round
             )
-        }
+        )
 
-        points.forEach { point ->
+        val totalSegments = points.lastIndex
+        val progress = animationProgress.value * totalSegments
+
+        points.forEachIndexed { index, point ->
+
+            val pointProgress =
+                (progress - (index - 1))
+                    .coerceIn(0f, 1f)
 
             drawCircle(
-                color = Color(0xFF1976D2),
-                radius = 6f,
+                color = style.pointColor,
+                radius = style.pointRadius * pointProgress,
                 center = Offset(
                     x = mapX(point.x),
                     y = mapY(point.y.toDouble())

@@ -36,7 +36,7 @@ import com.example.cochehibrido.ui.theme.CardBlueLight
 import com.example.cochehibrido.util.toSpanishDecimal
 import com.example.cochehibrido.viewmodel.HomeViewModel
 import com.example.cochehibrido.ui.components.charts.LineChart
-import com.example.cochehibrido.domain.ChartPoint
+import com.example.cochehibrido.ui.components.charts.ChartPoint
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

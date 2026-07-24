@@ -39,7 +39,7 @@ import com.example.cochehibrido.domain.calculateTotalElectricCost
 import com.example.cochehibrido.domain.calculateTotalFuelCost
 import com.example.cochehibrido.domain.calculateFuelSegments
 import com.example.cochehibrido.domain.calculateElectricSegments
-import com.example.cochehibrido.domain.ChartPoint
+import com.example.cochehibrido.ui.components.charts.ChartPoint
 
 class HomeViewModel(
     private val fuelRepository: FuelRepository,

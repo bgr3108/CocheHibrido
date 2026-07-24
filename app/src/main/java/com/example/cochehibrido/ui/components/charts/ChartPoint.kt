@@ -1,4 +1,4 @@
-package com.example.cochehibrido.domain
+package com.example.cochehibrido.ui.components.charts
 
 data class ChartPoint(
     val x: Double,
