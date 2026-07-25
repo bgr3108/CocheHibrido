@@ -31,13 +31,28 @@ internal fun buildChartPaths(
 
     for (i in 0 until completedSegments.coerceAtMost(totalSegments)) {
 
-        val point = points[i + 1]
+        val p0 = points.getOrElse(i - 1) { points[i] }
+        val p1 = points[i]
+        val p2 = points[i + 1]
+        val p3 = points.getOrElse(i + 2) { points[i + 1] }
 
-        val x = mapX(point.x)
-        val y = mapY(point.y.toDouble())
+        linePath.catmullRomTo(
+            p0,
+            p1,
+            p2,
+            p3,
+            mapX,
+            mapY
+        )
 
-        linePath.lineTo(x, y)
-        areaPath?.lineTo(x, y)
+        areaPath?.catmullRomTo(
+            p0,
+            p1,
+            p2,
+            p3,
+            mapX,
+            mapY
+        )
     }
 
     val currentX =
@@ -86,5 +101,35 @@ internal fun buildChartPaths(
     return ChartPaths(
         line = linePath,
         area = areaPath
+    )
+}
+private fun Path.catmullRomTo(
+    p0: ChartPoint,
+    p1: ChartPoint,
+    p2: ChartPoint,
+    p3: ChartPoint,
+    mapX: (Double) -> Float,
+    mapY: (Double) -> Float
+) {
+
+    val x1 = mapX(p1.x)
+    val y1 = mapY(p1.y.toDouble())
+
+    val x2 = mapX(p2.x)
+    val y2 = mapY(p2.y.toDouble())
+
+    val c1x = x1 + (mapX(p2.x) - mapX(p0.x)) / 6f
+    val c1y = y1 + (mapY(p2.y.toDouble()) - mapY(p0.y.toDouble())) / 6f
+
+    val c2x = x2 - (mapX(p3.x) - mapX(p1.x)) / 6f
+    val c2y = y2 - (mapY(p3.y.toDouble()) - mapY(p1.y.toDouble())) / 6f
+
+    cubicTo(
+        c1x,
+        c1y,
+        c2x,
+        c2y,
+        x2,
+        y2
     )
 }

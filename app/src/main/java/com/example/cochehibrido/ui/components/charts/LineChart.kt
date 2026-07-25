@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import java.util.Locale
@@ -19,13 +18,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.drawscope.Stroke
-
-private val ChartLeftPadding = 40.dp
-private val ChartRightPadding = 20.dp
-private val ChartTopPadding = 12.dp
-private val ChartBottomPadding = 20.dp
-
-
 
 @Composable
 fun LineChart(
@@ -82,81 +74,43 @@ fun LineChart(
         val topPadding = ChartTopPadding.toPx()
         val bottomPadding = ChartBottomPadding.toPx()
 
-        val chartWidth = size.width - leftPadding - rightPadding
-        val chartHeight = size.height - topPadding - bottomPadding
-
-        val rawMax = points.maxOf { it.y }
-        val rawMin = points.minOf { it.y }
-
-        val padding =
-            if (rawMax == rawMin) {
-                1f
-            } else {
-                maxOf(
-                    (rawMax - rawMin) * ChartDefaults.PaddingPercentage,
-                    ChartDefaults.MinPadding
-                )
-            }
-
-        val maxValue = rawMax + padding
-        val minValue = rawMin - padding
-
-        val yAxis = buildAxis(
-            min = minValue.toDouble(),
-            max = maxValue.toDouble(),
-            targetTicks = ChartDefaults.TargetTicks
+        val layout = buildChartLayout(
+            size = size,
+            points = points,
+            leftPadding = leftPadding,
+            rightPadding = rightPadding,
+            topPadding = topPadding,
+            bottomPadding = bottomPadding
         )
-
-        val rawMinX = points.minOf { it.x }
-        val rawMaxX = points.maxOf { it.x }
-
-        val xAxis = buildAxis(
-            rawMinX,
-            rawMaxX,
-            targetTicks = ChartDefaults.TargetTicks
-        )
-
-        val xRange = xAxis.max - xAxis.min
-
-        fun mapX(value: Double): Float =
-            leftPadding +
-                    (((value - xAxis.min) / xRange) * chartWidth).toFloat()
-
-        val yRange = yAxis.max - yAxis.min
-
-        fun mapY(value: Double): Float =
-            topPadding +
-                    chartHeight -
-                    (((value - yAxis.min) / yRange) * chartHeight).toFloat()
 
         drawGrid(
             style = style,
-            yAxis = yAxis,
-            leftPadding = leftPadding,
-            chartWidth = chartWidth,
-            mapY = ::mapY
+            yAxis = layout.yAxis,
+            leftPadding = layout.leftPadding,
+            chartWidth = layout.chartWidth,
+            mapY = layout::mapY
         )
 
         drawAxes(
             style = style,
-            xAxis = xAxis,
-            yAxis = yAxis,
-            leftPadding = leftPadding,
-            topPadding = topPadding,
-            chartWidth = chartWidth,
-            chartHeight = chartHeight,
-            mapX = ::mapX,
-            mapY = ::mapY
+            xAxis = layout.xAxis,
+            yAxis = layout.yAxis,
+            leftPadding = layout.leftPadding,
+            topPadding = layout.topPadding,
+            chartWidth = layout.chartWidth,
+            chartHeight = layout.chartHeight,
+            mapX = layout::mapX,
+            mapY = layout::mapY
         )
 
         drawAxisLabels(
-            xAxis = xAxis,
-            yAxis = yAxis,
-            leftPadding = leftPadding,
-            topPadding = topPadding,
-            chartHeight = chartHeight,
-            mapX = ::mapX,
-            mapY = ::mapY,
+            xAxis = layout.xAxis,
+            yAxis = layout.yAxis,
+            leftPadding = layout.leftPadding,
+            topPadding = layout.topPadding,
+            chartHeight = layout.chartHeight,
+            mapX = layout::mapX,
+            mapY = layout::mapY,
             textPaint = textPaint,
             xTextPaint = xTextPaint,
             xLabelFormatter = xLabelFormatter,
@@ -166,10 +120,10 @@ fun LineChart(
         val paths = buildChartPaths(
             points = points,
             progress = animationProgress.value,
-            mapX = ::mapX,
-            mapY = ::mapY,
+            mapX = layout::mapX,
+            mapY = layout::mapY,
             style = style,
-            chartBottom = topPadding + chartHeight
+            chartBottom = layout.topPadding + layout.chartHeight
         )
 
         paths.area?.let {
@@ -180,8 +134,8 @@ fun LineChart(
                         style.lineColor.copy(alpha = style.gradientAlpha),
                         style.lineColor.copy(alpha = 0f)
                     ),
-                    startY = topPadding,
-                    endY = topPadding + chartHeight
+                    startY = layout.topPadding,
+                    endY = layout.topPadding + layout.chartHeight
                 )
             )
         }
@@ -194,24 +148,12 @@ fun LineChart(
                 cap = StrokeCap.Round
             )
         )
-
-        val totalSegments = points.lastIndex
-        val progress = animationProgress.value * totalSegments
-
-        points.forEachIndexed { index, point ->
-
-            val pointProgress =
-                (progress - (index - 1))
-                    .coerceIn(0f, 1f)
-
-            drawCircle(
-                color = style.pointColor,
-                radius = style.pointRadius * pointProgress,
-                center = Offset(
-                    x = mapX(point.x),
-                    y = mapY(point.y.toDouble())
-                )
-            )
-        }
+        drawPoints(
+            points = points,
+            animationProgress = animationProgress.value,
+            style = style,
+            mapX = layout::mapX,
+            mapY = layout::mapY
+        )
     }
 }
