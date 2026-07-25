@@ -18,18 +18,25 @@ internal fun buildChartPaths(
     val totalSegments = points.lastIndex
 
     val animation = progress * totalSegments
-    val completedSegments = animation.toInt()
-    val segmentProgress = animation - completedSegments
+
+    val completedSegments =
+        animation.toInt()
+            .coerceAtMost(totalSegments)
+
+    val segmentProgress =
+        animation - completedSegments
 
     val first = points.first()
 
     val firstX = mapX(first.x)
     val firstY = mapY(first.y.toDouble())
 
+    var currentX = firstX
+
     linePath.moveTo(firstX, firstY)
     areaPath?.moveTo(firstX, firstY)
 
-    for (i in 0 until completedSegments.coerceAtMost(totalSegments)) {
+    for (i in 0 until completedSegments) {
 
         val p0 = points.getOrElse(i - 1) { points[i] }
         val p1 = points[i]
@@ -54,34 +61,45 @@ internal fun buildChartPaths(
             mapY
         )
     }
+    if (
+        completedSegments < totalSegments
+    ) {
 
-    val currentX =
-        if (completedSegments < totalSegments) {
+        val start =
+            points[completedSegments]
 
-            val start = points[completedSegments]
-            val end = points[completedSegments + 1]
+        val end =
+            points[completedSegments + 1]
 
-            val startX = mapX(start.x)
-            val startY = mapY(start.y.toDouble())
+        val startX = mapX(start.x)
+        val startY = mapY(start.y.toDouble())
 
-            val endX = mapX(end.x)
-            val endY = mapY(end.y.toDouble())
+        val endX = mapX(end.x)
+        val endY = mapY(end.y.toDouble())
 
-            val partialX =
-                startX + (endX - startX) * segmentProgress
+        val partialX =
+            startX + (endX - startX) * segmentProgress
 
-            val partialY =
-                startY + (endY - startY) * segmentProgress
+        val partialY =
+            startY + (endY - startY) * segmentProgress
 
-            linePath.lineTo(partialX, partialY)
-            areaPath?.lineTo(partialX, partialY)
+        currentX = partialX
 
-            partialX
+        linePath.lineTo(
+            partialX,
+            partialY
+        )
 
-        } else {
+        areaPath?.lineTo(
+            partialX,
+            partialY
+        )
 
-            mapX(points.last().x)
-        }
+    }
+
+    if (completedSegments == totalSegments) {
+        currentX = mapX(points.last().x)
+    }
 
     areaPath?.apply {
 
