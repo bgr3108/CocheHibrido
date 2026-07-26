@@ -37,11 +37,17 @@ internal fun buildChartLayout(
     leftPadding: Float,
     rightPadding: Float,
     topPadding: Float,
-    bottomPadding: Float
+    bottomPadding: Float,
+    xTicks: List<Double>? = null
 ): ChartLayout {
 
-    val chartWidth = size.width - leftPadding - rightPadding
-    val chartHeight = size.height - topPadding - bottomPadding
+    val chartWidth =
+        (size.width - leftPadding - rightPadding)
+            .coerceAtLeast(0f)
+
+    val chartHeight =
+        (size.height - topPadding - bottomPadding)
+            .coerceAtLeast(0f)
 
     val rawMinX = points.minOf { it.x }
     val rawMaxX = points.maxOf { it.x }
@@ -64,11 +70,23 @@ internal fun buildChartLayout(
         max = (rawMaxY + padding).toDouble(),
         targetTicks = ChartDefaults.TargetTicks
     )
-    val xAxis = buildAxis(
-        min = rawMinX,
-        max = rawMaxX,
-        targetTicks = ChartDefaults.TargetTicks
-    )
+    val xAxis = xTicks
+        ?.distinct()
+        ?.sorted()
+        ?.takeIf { it.size >= 2 }
+        ?.let { ticks ->
+            Axis(
+                min = ticks.first(),
+                max = ticks.last(),
+                step = (ticks.last() - ticks.first()) / (ticks.size - 1),
+                ticks = ticks
+            )
+        }
+        ?: buildAxis(
+            min = rawMinX,
+            max = rawMaxX,
+            targetTicks = ChartDefaults.TargetTicks
+        )
 
     return ChartLayout(
         leftPadding = leftPadding,

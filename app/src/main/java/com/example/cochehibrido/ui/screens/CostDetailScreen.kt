@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bolt
@@ -34,6 +36,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.cochehibrido.ui.theme.CardBlueDark
 import com.example.cochehibrido.ui.theme.CardBlueLight
+import com.example.cochehibrido.data.MonthlyCost
+import com.example.cochehibrido.ui.components.charts.ChartPoint
+import com.example.cochehibrido.ui.components.charts.LineChart
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,6 +83,22 @@ fun CostDetailScreen(
         .numeroCargas
         .collectAsStateWithLifecycle()
 
+    val historialCostesGasolina by viewModel
+        .historialCostesGasolina
+        .collectAsStateWithLifecycle()
+
+    val historialCostesElectricos by viewModel
+        .historialCostesElectricos
+        .collectAsStateWithLifecycle()
+
+    val costesMensualesGasolina by viewModel
+        .monthlyGasolineCosts
+        .collectAsStateWithLifecycle()
+
+    val costesMensualesElectricos by viewModel
+        .monthlyElectricCosts
+        .collectAsStateWithLifecycle()
+
     Scaffold(
 
         topBar = {
@@ -120,7 +141,12 @@ fun CostDetailScreen(
             cargaMasCara = cargaMasCara,
             cargaMasBarataDePago = cargaMasBarataDePago,
             numeroCargas = numeroCargas,
-            cargasGratuitas = cargasGratuitas
+            cargasGratuitas = cargasGratuitas,
+
+            historialCostesGasolina = historialCostesGasolina,
+            historialCostesElectricos = historialCostesElectricos,
+            costesMensualesGasolina = costesMensualesGasolina,
+            costesMensualesElectricos = costesMensualesElectricos
 
         )
 
@@ -141,7 +167,12 @@ private fun CostContent(
     cargaMasCara: Double,
     cargaMasBarataDePago: Double?,
     numeroCargas: Int,
-    cargasGratuitas: Int
+    cargasGratuitas: Int,
+
+    historialCostesGasolina: List<ChartPoint>,
+    historialCostesElectricos: List<ChartPoint>,
+    costesMensualesGasolina: List<MonthlyCost>,
+    costesMensualesElectricos: List<MonthlyCost>
 
 ) {
 
@@ -149,6 +180,7 @@ private fun CostContent(
 
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(innerPadding)
             .padding(16.dp),
 
@@ -233,14 +265,27 @@ private fun CostContent(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                Text(
-
-                    text = "Gráfico próximamente",
-
-                    color =
-                        MaterialTheme.colorScheme.primary
-
-                )
+                if (historialCostesGasolina.size < 2) {
+                    Text(
+                        text = "Añade registros en al menos dos meses para ver la evolución",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                } else {
+                    LineChart(
+                        points = historialCostesGasolina,
+                        xLabelFormatter = { value ->
+                            costesMensualesGasolina
+                                .getOrNull(value.toInt())
+                                ?.month
+                                .orEmpty()
+                        },
+                        yLabelFormatter = { value ->
+                            "${value.toSpanishDecimal()} €"
+                        },
+                        xTicks = costesMensualesGasolina.indices.map(Int::toDouble)
+                    )
+                }
             }
         }
 
@@ -328,14 +373,27 @@ private fun CostContent(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                Text(
-
-                    text = "Gráfico próximamente",
-
-                    color =
-                        MaterialTheme.colorScheme.primary
-
-                )
+                if (historialCostesElectricos.size < 2) {
+                    Text(
+                        text = "Añade registros en al menos dos meses para ver la evolución",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                } else {
+                    LineChart(
+                        points = historialCostesElectricos,
+                        xLabelFormatter = { value ->
+                            costesMensualesElectricos
+                                .getOrNull(value.toInt())
+                                ?.month
+                                .orEmpty()
+                        },
+                        yLabelFormatter = { value ->
+                            "${value.toSpanishDecimal()} €"
+                        },
+                        xTicks = costesMensualesElectricos.indices.map(Int::toDouble)
+                    )
+                }
             }
         }
     }

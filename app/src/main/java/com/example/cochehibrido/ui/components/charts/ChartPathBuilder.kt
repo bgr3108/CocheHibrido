@@ -1,5 +1,6 @@
 package com.example.cochehibrido.ui.components.charts
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 
 internal fun buildChartPaths(
@@ -65,34 +66,33 @@ internal fun buildChartPaths(
         completedSegments < totalSegments
     ) {
 
-        val start =
+        val p0 = points.getOrElse(completedSegments - 1) {
             points[completedSegments]
-
-        val end =
+        }
+        val p1 = points[completedSegments]
+        val p2 = points[completedSegments + 1]
+        val p3 = points.getOrElse(completedSegments + 2) {
             points[completedSegments + 1]
+        }
 
-        val startX = mapX(start.x)
-        val startY = mapY(start.y.toDouble())
+        currentX = linePath.catmullRomPartialTo(
+            p0,
+            p1,
+            p2,
+            p3,
+            segmentProgress,
+            mapX,
+            mapY
+        ).x
 
-        val endX = mapX(end.x)
-        val endY = mapY(end.y.toDouble())
-
-        val partialX =
-            startX + (endX - startX) * segmentProgress
-
-        val partialY =
-            startY + (endY - startY) * segmentProgress
-
-        currentX = partialX
-
-        linePath.lineTo(
-            partialX,
-            partialY
-        )
-
-        areaPath?.lineTo(
-            partialX,
-            partialY
+        areaPath?.catmullRomPartialTo(
+            p0,
+            p1,
+            p2,
+            p3,
+            segmentProgress,
+            mapX,
+            mapY
         )
 
     }
@@ -151,3 +151,58 @@ private fun Path.catmullRomTo(
         y2
     )
 }
+
+private fun Path.catmullRomPartialTo(
+    p0: ChartPoint,
+    p1: ChartPoint,
+    p2: ChartPoint,
+    p3: ChartPoint,
+    progress: Float,
+    mapX: (Double) -> Float,
+    mapY: (Double) -> Float
+): Offset {
+
+    val start = Offset(
+        x = mapX(p1.x),
+        y = mapY(p1.y.toDouble())
+    )
+    val end = Offset(
+        x = mapX(p2.x),
+        y = mapY(p2.y.toDouble())
+    )
+
+    val control1 = Offset(
+        x = start.x + (mapX(p2.x) - mapX(p0.x)) / 6f,
+        y = start.y + (mapY(p2.y.toDouble()) - mapY(p0.y.toDouble())) / 6f
+    )
+    val control2 = Offset(
+        x = end.x - (mapX(p3.x) - mapX(p1.x)) / 6f,
+        y = end.y - (mapY(p3.y.toDouble()) - mapY(p1.y.toDouble())) / 6f
+    )
+
+    val firstLevel1 = start.lerpTo(control1, progress)
+    val firstLevel2 = control1.lerpTo(control2, progress)
+    val firstLevel3 = control2.lerpTo(end, progress)
+    val secondLevel1 = firstLevel1.lerpTo(firstLevel2, progress)
+    val secondLevel2 = firstLevel2.lerpTo(firstLevel3, progress)
+    val partialEnd = secondLevel1.lerpTo(secondLevel2, progress)
+
+    cubicTo(
+        firstLevel1.x,
+        firstLevel1.y,
+        secondLevel1.x,
+        secondLevel1.y,
+        partialEnd.x,
+        partialEnd.y
+    )
+
+    return partialEnd
+}
+
+private fun Offset.lerpTo(
+    other: Offset,
+    progress: Float
+): Offset = Offset(
+    x = x + (other.x - x) * progress,
+    y = y + (other.y - y) * progress
+)

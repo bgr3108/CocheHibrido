@@ -71,7 +71,8 @@ internal fun DrawScope.drawAxisLabels(
     textPaint: Paint,
     xTextPaint: Paint,
     xLabelFormatter: (Double) -> String,
-    yLabelFormatter: (Double) -> String
+    yLabelFormatter: (Double) -> String,
+    yLabelGap: Float
 ) {
 
     drawIntoCanvas { canvas ->
@@ -82,7 +83,7 @@ internal fun DrawScope.drawAxisLabels(
 
             canvas.nativeCanvas.drawText(
                 yLabelFormatter(tick),
-                leftPadding - 14.dp.toPx(),
+                leftPadding - yLabelGap,
                 y + 4.dp.toPx(),
                 textPaint
             )

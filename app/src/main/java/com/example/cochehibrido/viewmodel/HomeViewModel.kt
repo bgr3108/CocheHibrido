@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.cochehibrido.data.FuelEntry
 import com.example.cochehibrido.data.FuelRepository
 import com.example.cochehibrido.data.FuelType
+import com.example.cochehibrido.data.MonthlyCost
 import com.example.cochehibrido.data.MonthlyPrice
 import com.example.cochehibrido.data.VehicleRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -348,6 +349,60 @@ class HomeViewModel(
             StateFlow<List<MonthlyPrice>> =
         _monthlyElectricPrices
 
+    private val _monthlyGasolineCosts =
+        MutableStateFlow<List<MonthlyCost>>(emptyList())
+
+    val monthlyGasolineCosts:
+            StateFlow<List<MonthlyCost>> =
+        _monthlyGasolineCosts
+
+    private val _monthlyElectricCosts =
+        MutableStateFlow<List<MonthlyCost>>(emptyList())
+
+    val monthlyElectricCosts:
+            StateFlow<List<MonthlyCost>> =
+        _monthlyElectricCosts
+
+    val historialPreciosGasolina = monthlyGasolinePrices
+        .map { prices ->
+            createChartPoints(prices.map { it.averagePrice })
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            emptyList()
+        )
+
+    val historialPreciosElectricos = monthlyElectricPrices
+        .map { prices ->
+            createChartPoints(prices.map { it.averagePrice })
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            emptyList()
+        )
+
+    val historialCostesGasolina = monthlyGasolineCosts
+        .map { costs ->
+            createChartPoints(costs.map { it.totalCost })
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            emptyList()
+        )
+
+    val historialCostesElectricos = monthlyElectricCosts
+        .map { costs ->
+            createChartPoints(costs.map { it.totalCost })
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            emptyList()
+        )
+
     init {
         observarDatos()
     }
@@ -416,16 +471,8 @@ class HomeViewModel(
         entries: List<FuelEntry>
     ): List<MonthlyPrice> {
 
-        return entries
-            .groupBy {
-
-                java.text.SimpleDateFormat(
-                    "MM/yyyy",
-                    java.util.Locale.getDefault()
-                ).format(java.util.Date(it.fecha))
-
-            }
-            .map { (mes, entriesMes) ->
+        return groupEntriesByMonth(entries)
+            .map { (month, entriesMes) ->
 
                 val cantidad =
                     entriesMes.sumOf { it.cantidad }
@@ -434,7 +481,7 @@ class HomeViewModel(
                     entriesMes.sumOf { it.precio }
 
                 MonthlyPrice(
-                    month = mes,
+                    month = month,
                     averagePrice =
                         if (cantidad > 0)
                             precio / cantidad
@@ -443,8 +490,53 @@ class HomeViewModel(
                 )
 
             }
-            .sortedBy { it.month }
     }
+
+    private fun calculateMonthlyCosts(
+        entries: List<FuelEntry>
+    ): List<MonthlyCost> {
+
+        return groupEntriesByMonth(entries)
+            .map { (month, entriesMes) ->
+                MonthlyCost(
+                    month = month,
+                    totalCost = entriesMes.sumOf { it.precio }
+                )
+            }
+    }
+
+    private fun groupEntriesByMonth(
+        entries: List<FuelEntry>
+    ): List<Pair<String, List<FuelEntry>>> {
+
+        val monthFormatter = java.text.SimpleDateFormat(
+            "MM/yyyy",
+            java.util.Locale.getDefault()
+        )
+
+        return entries
+            .groupBy {
+                monthFormatter.format(java.util.Date(it.fecha))
+            }
+            .entries
+            .sortedBy { (_, entriesMes) ->
+                entriesMes.minOf { it.fecha }
+            }
+            .map { it.key to it.value }
+    }
+
+    private fun createChartPoints(
+        values: List<Double>
+    ): List<ChartPoint> {
+
+        return values.mapIndexed { index, value ->
+            ChartPoint(
+                x = index.toDouble(),
+                y = value.toFloat()
+            )
+        }
+    }
+
     private fun observarDatos() {
 
         viewModelScope.launch {
@@ -462,6 +554,12 @@ class HomeViewModel(
                             emptyList()
 
                         _monthlyElectricPrices.value =
+                            emptyList()
+
+                        _monthlyGasolineCosts.value =
+                            emptyList()
+
+                        _monthlyElectricCosts.value =
                             emptyList()
 
                         return@collect
@@ -492,6 +590,16 @@ class HomeViewModel(
 
                     _monthlyElectricPrices.value =
                         calculateMonthlyPrices(
+                            electricEntries
+                        )
+
+                    _monthlyGasolineCosts.value =
+                        calculateMonthlyCosts(
+                            gasolinaEntries
+                        )
+
+                    _monthlyElectricCosts.value =
+                        calculateMonthlyCosts(
                             electricEntries
                         )
                 }

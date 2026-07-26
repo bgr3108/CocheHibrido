@@ -29,7 +29,8 @@ fun LineChart(
     },
     yLabelFormatter: (Double) -> String = {
         String.format(Locale.getDefault(), "%.1f", it)
-    }
+    },
+    xTicks: List<Double>? = null
 ) {
 
     if (points.size < 2) return
@@ -69,10 +70,31 @@ fun LineChart(
             textAlign = Paint.Align.CENTER
             isAntiAlias = true
         }
-        val leftPadding = ChartLeftPadding.toPx()
         val rightPadding = ChartRightPadding.toPx()
         val topPadding = ChartTopPadding.toPx()
         val bottomPadding = ChartBottomPadding.toPx()
+
+        val initialLayout = buildChartLayout(
+            size = size,
+            points = points,
+            leftPadding = ChartMinimumLeftPadding.toPx(),
+            rightPadding = rightPadding,
+            topPadding = topPadding,
+            bottomPadding = bottomPadding,
+            xTicks = xTicks
+        )
+
+        val longestYLabelWidth = initialLayout.yAxis.ticks
+            .maxOf { tick ->
+                textPaint.measureText(yLabelFormatter(tick))
+            }
+
+        val leftPadding = maxOf(
+            ChartMinimumLeftPadding.toPx(),
+            longestYLabelWidth +
+                    ChartYAxisLabelGap.toPx() +
+                    ChartYAxisLabelStartInset.toPx()
+        )
 
         val layout = buildChartLayout(
             size = size,
@@ -80,7 +102,8 @@ fun LineChart(
             leftPadding = leftPadding,
             rightPadding = rightPadding,
             topPadding = topPadding,
-            bottomPadding = bottomPadding
+            bottomPadding = bottomPadding,
+            xTicks = xTicks
         )
 
         drawGrid(
@@ -114,7 +137,8 @@ fun LineChart(
             textPaint = textPaint,
             xTextPaint = xTextPaint,
             xLabelFormatter = xLabelFormatter,
-            yLabelFormatter = yLabelFormatter
+            yLabelFormatter = yLabelFormatter,
+            yLabelGap = ChartYAxisLabelGap.toPx()
         )
 
         val paths = buildChartPaths(
