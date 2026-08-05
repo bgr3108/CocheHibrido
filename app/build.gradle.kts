@@ -50,10 +50,10 @@ dependencies {
     // ✅ Compose extra
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.material:material:1.6.0")
-    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation(libs.androidx.appcompat)
     implementation ("androidx.compose.material:material-icons-extended")
 
     // ROOM
@@ -62,7 +62,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     // DATASTORE
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation(libs.androidx.datastore.preferences)
 
     testImplementation("junit:junit:4.13.2")
 
