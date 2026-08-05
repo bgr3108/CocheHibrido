@@ -31,7 +31,7 @@ abstract class HybridCarDatabase : RoomDatabase() {
                     HybridCarDatabase::class.java,
                     "hybrid_car_database"
                 )
-                    .fallbackToDestructiveMigration() // 🔥 AQUÍ VA
+                    .fallbackToDestructiveMigration(dropAllTables = false) // 🔥 AQUÍ VA
                     .build()
                     .also { Instance = it }
             }

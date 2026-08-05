@@ -29,7 +29,7 @@ fun calculateAverageFuelConsumption(entries: List<FuelEntry>): Double {
 
             if (entry.fullTank) {
 
-                kmRecorridos += entry.km - ultimoLleno!!.km
+                kmRecorridos += entry.km - ultimoLleno.km
                 litrosConsumidos += litrosAcumulados
 
                 ultimoLleno = entry
@@ -95,13 +95,13 @@ fun calculateFuelSegments(
             if (entry.fullTank) {
 
                 val distancia =
-                    entry.km - ultimoLleno!!.km
+                    entry.km - ultimoLleno.km
 
                 if (distancia > 0) {
 
                     result += FuelConsumptionSegment(
 
-                        startKm = ultimoLleno!!.km,
+                        startKm = ultimoLleno.km,
 
                         endKm = entry.km,
 
