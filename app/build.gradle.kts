@@ -51,10 +51,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.compose.material:material:1.6.0")
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.appcompat)
-    implementation ("androidx.compose.material:material-icons-extended")
 
     // ROOM
     implementation(libs.androidx.room.runtime)
