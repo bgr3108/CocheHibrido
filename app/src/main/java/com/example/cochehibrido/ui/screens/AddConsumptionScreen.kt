@@ -119,8 +119,8 @@ fun AddConsumptionScreen(
         mutableStateOf(entry?.tipo ?: FuelType.GASOLINA)
     }
 
-    var fullTank by remember {
-        mutableStateOf(true)
+    var fullTank by remember(entry?.id) {
+        mutableStateOf(entry?.fullTank ?: true)
     }
 
     var errorCapacidad by remember {
