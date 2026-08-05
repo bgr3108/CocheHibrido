@@ -122,7 +122,7 @@ fun CostDetailScreen(
                     }
                 },
 
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
+                colors = TopAppBarDefaults.topAppBarColors()
             )
         }
 

@@ -107,7 +107,7 @@ fun TotalDetailScreen(
                 },
 
                 colors =
-                    TopAppBarDefaults.centerAlignedTopAppBarColors()
+                    TopAppBarDefaults.topAppBarColors()
 
             )
 

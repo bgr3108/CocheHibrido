@@ -3,8 +3,12 @@ package com.example.cochehibrido.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.LocalGasStation
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -86,13 +90,25 @@ fun ConsumptionListScreen(
 
                             Spacer(modifier = Modifier.height(6.dp))
 
-                        // ⛽/🔋 Tipo + cantidad
-                        Text(
-                            text = if (entry.tipo == FuelType.GASOLINA)
-                                "⛽ Gasolina • ${entry.cantidad.toSpanishDecimal()} L"
-                            else
-                                "🔋 Eléctrico • ${entry.cantidad.toSpanishDecimal()} kWh"
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (entry.tipo == FuelType.GASOLINA) {
+                                    Icons.Outlined.LocalGasStation
+                                } else {
+                                    Icons.Outlined.Bolt
+                                },
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (entry.tipo == FuelType.GASOLINA)
+                                    "Gasolina • ${entry.cantidad.toSpanishDecimal()} L"
+                                else
+                                    "Eléctrico • ${entry.cantidad.toSpanishDecimal()} kWh"
+                            )
+                        }
 
 
                         Spacer(modifier = Modifier.height(6.dp))

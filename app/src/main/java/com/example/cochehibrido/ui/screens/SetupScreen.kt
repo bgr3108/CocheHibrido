@@ -103,7 +103,10 @@ fun SetupScreen(
                         Text("Marca")
                     },
                     modifier = Modifier
-                        .menuAnchor()
+                        .menuAnchor(
+                            type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                            enabled = true
+                        )
                         .fillMaxWidth()
                 )
 
@@ -148,7 +151,10 @@ fun SetupScreen(
                         Text("Modelo")
                     },
                     modifier = Modifier
-                        .menuAnchor()
+                        .menuAnchor(
+                            type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                            enabled = true
+                        )
                         .fillMaxWidth()
                 )
 
@@ -194,7 +200,10 @@ fun SetupScreen(
                             Text("Año")
                         },
                         modifier = Modifier
-                            .menuAnchor()
+                            .menuAnchor(
+                                type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                                enabled = true
+                            )
                             .fillMaxWidth()
                     )
 

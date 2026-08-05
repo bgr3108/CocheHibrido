@@ -108,7 +108,7 @@ fun ConsumptionDetailScreen(
                     }
                 },
 
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
+                colors = TopAppBarDefaults.topAppBarColors()
             )
         }
 

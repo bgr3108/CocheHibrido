@@ -118,7 +118,7 @@ fun PriceDetailScreen(
                     }
                 },
 
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
+                colors = TopAppBarDefaults.topAppBarColors()
             )
         }
 
