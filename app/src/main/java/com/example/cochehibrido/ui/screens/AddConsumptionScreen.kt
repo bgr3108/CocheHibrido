@@ -6,12 +6,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 
 import com.example.cochehibrido.data.FuelEntry
 import com.example.cochehibrido.data.FuelType
 import com.example.cochehibrido.viewmodel.FuelEntryViewModel
 import java.util.Calendar
-import com.example.cochehibrido.util.toDoubleSafe
+import com.example.cochehibrido.util.toFiniteDoubleOrNull
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
@@ -20,7 +21,6 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.Alignment
 import android.app.TimePickerDialog
-import java.util.Locale
 import com.example.cochehibrido.viewmodel.HomeViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
@@ -34,6 +34,7 @@ fun AddConsumptionScreen(
     onClose: () -> Unit
 ){
     val context = LocalContext.current
+    val currentLocale = LocalConfiguration.current.locales[0]
     val calendar = Calendar.getInstance()
     val focusManager = LocalFocusManager.current
 
@@ -150,12 +151,12 @@ fun AddConsumptionScreen(
 
             Text(
                 String.format(
-                    Locale.getDefault(),
+                    currentLocale,
                     "%s %02d:%02d",
 
                     java.text.SimpleDateFormat(
                         "dd/MM/yyyy",
-                        Locale.getDefault()
+                        currentLocale
                     ).format(fechaMillis),
 
                     hour,
@@ -193,27 +194,26 @@ fun AddConsumptionScreen(
                     porcentajeFin.isNotBlank()
                 ) {
 
-                    val inicio =
-                        porcentajeInicio.toDoubleOrNull() ?: 0.0
+                    val inicio = porcentajeInicio.toFiniteDoubleOrNull()
+                    val fin = porcentajeFin.toFiniteDoubleOrNull()
 
-                    val fin =
-                        porcentajeFin.toDoubleOrNull() ?: 0.0
+                    if (inicio != null && fin != null) {
+                        val porcentajeCargado = fin - inicio
 
-                    val porcentajeCargado = fin - inicio
+                        val kwhEstimados =
+                            (currentVehicle.batteryCapacity * porcentajeCargado) / 100.0
 
-                    val kwhEstimados =
-                        (currentVehicle.batteryCapacity * porcentajeCargado) / 100.0
-
-                    Text(
-                        text = "≈ ${
-                            String.format(
-                                Locale.getDefault(),
-                                "%.1f",
-                                kwhEstimados
-                            )
-                        } kWh estimados",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                        Text(
+                            text = "≈ ${
+                                String.format(
+                                    currentLocale,
+                                    "%.1f",
+                                    kwhEstimados
+                                )
+                            } kWh estimados",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
 
                 OutlinedTextField(
@@ -410,58 +410,76 @@ fun AddConsumptionScreen(
                     set(Calendar.MINUTE, minute)
                 }
 
+                errorCapacidad = null
                 errorPorcentaje = null
                 errorKm = null
 
-                if (tipoSeleccionado == FuelType.ELECTRICO) {
+                val precioFinal = precio.toFiniteDoubleOrNull()
 
-                    val inicio = porcentajeInicio.toDoubleOrNull()
-                    val fin = porcentajeFin.toDoubleOrNull()
+                if (precioFinal == null || precioFinal < 0.0) {
+                    errorCapacidad = "El importe debe ser un número válido igual o mayor que cero"
+                    return@Button
+                }
 
-                    if (
-                        inicio != null &&
-                        fin != null
-                    ) {
+                val kmNuevo = km.toLongOrNull()?.toDouble()
 
-                        if (inicio < 0 || inicio > 100) {
-                            errorPorcentaje = "El % inicial debe estar entre 0 y 100"
-                            return@Button
-                        }
+                if (kmNuevo == null || kmNuevo < 0.0) {
+                    errorKm = "Los kilómetros deben ser un número entero válido igual o mayor que cero"
+                    return@Button
+                }
 
-                        if (fin < 0 || fin > 100) {
-                            errorPorcentaje = "El % final debe estar entre 0 y 100"
-                            return@Button
-                        }
+                val usarPorcentajes =
+                    tipoSeleccionado == FuelType.ELECTRICO &&
+                            (
+                                cantidad.isBlank() ||
+                                        porcentajeInicio.isNotBlank() ||
+                                        porcentajeFin.isNotBlank()
+                                )
 
-                        if (fin < inicio) {
-                            errorPorcentaje = "El % final no puede ser menor que el inicial"
-                            return@Button
-                        }
+                val cantidadCalculada = if (usarPorcentajes) {
+                    val inicio = porcentajeInicio.toFiniteDoubleOrNull()
+                    val fin = porcentajeFin.toFiniteDoubleOrNull()
+
+                    if (inicio == null || fin == null) {
+                        errorPorcentaje = "Los porcentajes deben ser números válidos"
+                        return@Button
                     }
-                }
 
-                val cantidadFinal = if (
+                    if (inicio !in 0.0..100.0) {
+                        errorPorcentaje = "El % inicial debe estar entre 0 y 100"
+                        return@Button
+                    }
 
-                    cantidad.isNotBlank()
+                    if (fin !in 0.0..100.0) {
+                        errorPorcentaje = "El % final debe estar entre 0 y 100"
+                        return@Button
+                    }
 
-                ) {
+                    if (fin < inicio) {
+                        errorPorcentaje = "El % final no puede ser menor que el inicial"
+                        return@Button
+                    }
 
-                    cantidad.toDoubleSafe()
-
+                    (currentVehicle.batteryCapacity * (fin - inicio)) / 100.0
                 } else {
-
-                    val inicio =
-                        porcentajeInicio.toDoubleOrNull() ?: 0.0
-
-                    val fin =
-                        porcentajeFin.toDoubleOrNull() ?: 0.0
-
-                    val porcentajeCargado = fin - inicio
-
-                    (currentVehicle.batteryCapacity * porcentajeCargado) / 100.0
+                    null
                 }
 
-                errorCapacidad = null
+                val cantidadFinal =
+                    if (cantidad.isNotBlank()) {
+                        cantidad.toFiniteDoubleOrNull()
+                    } else {
+                        cantidadCalculada
+                    }
+
+                if (
+                    cantidadFinal == null ||
+                    !cantidadFinal.isFinite() ||
+                    cantidadFinal <= 0.0
+                ) {
+                    errorCapacidad = "La cantidad debe ser un número válido mayor que cero"
+                    return@Button
+                }
 
                 if (
                     tipoSeleccionado == FuelType.GASOLINA &&
@@ -482,8 +500,6 @@ fun AddConsumptionScreen(
                         "La cantidad supera la capacidad de la batería (${currentVehicle.batteryCapacity} kWh)"
                     return@Button
                 }
-
-                val kmNuevo = km.toDoubleSafe()
 
                 val fechaNueva = finalCalendar.timeInMillis
 
@@ -537,9 +553,9 @@ fun AddConsumptionScreen(
                     id = entry?.id ?: 0,
                     fecha = finalCalendar.timeInMillis,
                     cantidad = cantidadFinal,
-                    precio = precio.toDoubleSafe(),
+                    precio = precioFinal,
                     tipo = tipoSeleccionado,
-                    km = km.toDoubleSafe(),
+                    km = kmNuevo,
                     fullTank = fullTank
                 )
 

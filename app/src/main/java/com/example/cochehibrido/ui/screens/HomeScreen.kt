@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.cochehibrido.data.VehicleType
 import com.example.cochehibrido.ui.components.HomeInfoCard
+import com.example.cochehibrido.domain.calculateUnitPrice
 import com.example.cochehibrido.util.toDateTimeString
 import com.example.cochehibrido.util.toSpanishDecimal
 import com.example.cochehibrido.viewmodel.HomeViewModel
@@ -183,10 +184,9 @@ fun HomeScreen(
 
                         Text("${entry.precio.toSpanishDecimal()} €")
 
-                        if (entry.cantidad > 0) {
-
+                        calculateUnitPrice(entry)?.let { precioUnitario ->
                             Text(
-                                "${(entry.precio / entry.cantidad).toSpanishDecimal()} €/kWh"
+                                "${precioUnitario.toSpanishDecimal()} €/kWh"
                             )
                         }
 
@@ -212,10 +212,9 @@ fun HomeScreen(
 
                         Text("${entry.precio.toSpanishDecimal()} €")
 
-                        if (entry.cantidad > 0) {
-
+                        calculateUnitPrice(entry)?.let { precioUnitario ->
                             Text(
-                                "${(entry.precio / entry.cantidad).toSpanishDecimal()} €/L"
+                                "${precioUnitario.toSpanishDecimal()} €/L"
                             )
                         }
 
@@ -244,10 +243,9 @@ fun HomeScreen(
 
                     Text("${entry.precio.toSpanishDecimal()} €")
 
-                    if (entry.cantidad > 0) {
-
+                    calculateUnitPrice(entry)?.let { precioUnitario ->
                         Text(
-                            "${(entry.precio / entry.cantidad).toSpanishDecimal()} €/L"
+                            "${precioUnitario.toSpanishDecimal()} €/L"
                         )
                     }
 
@@ -275,10 +273,9 @@ fun HomeScreen(
 
                     Text("${entry.precio.toSpanishDecimal()} €")
 
-                    if (entry.cantidad > 0) {
-
+                    calculateUnitPrice(entry)?.let { precioUnitario ->
                         Text(
-                            "${(entry.precio / entry.cantidad).toSpanishDecimal()} €/kWh"
+                            "${precioUnitario.toSpanishDecimal()} €/kWh"
                         )
                     }
 

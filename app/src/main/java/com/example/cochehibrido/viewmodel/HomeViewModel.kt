@@ -25,6 +25,7 @@ import com.example.cochehibrido.domain.calculateWorstElectricConsumption
 import com.example.cochehibrido.domain.calculateWorstFuelConsumption
 import com.example.cochehibrido.domain.calculateAverageElectricPrice
 import com.example.cochehibrido.domain.calculateAverageFuelPrice
+import com.example.cochehibrido.domain.calculateUnitPrice
 import com.example.cochehibrido.domain.calculateElectricCharges
 import com.example.cochehibrido.domain.calculateFuelRefuels
 import com.example.cochehibrido.domain.calculateMaxElectricPrice
@@ -471,24 +472,17 @@ class HomeViewModel(
         entries: List<FuelEntry>
     ): List<MonthlyPrice> {
 
-        return groupEntriesByMonth(entries)
+        return groupEntriesByMonth(
+            entries.filter { calculateUnitPrice(it) != null }
+        )
             .map { (month, entriesMes) ->
-
-                val cantidad =
-                    entriesMes.sumOf { it.cantidad }
-
-                val precio =
-                    entriesMes.sumOf { it.precio }
-
                 MonthlyPrice(
                     month = month,
-                    averagePrice =
-                        if (cantidad > 0)
-                            precio / cantidad
-                        else
-                            0.0
+                    averagePrice = when (entriesMes.first().tipo) {
+                        FuelType.GASOLINA -> calculateAverageFuelPrice(entriesMes)
+                        FuelType.ELECTRICO -> calculateAverageElectricPrice(entriesMes)
+                    }
                 )
-
             }
     }
 
@@ -565,13 +559,17 @@ class HomeViewModel(
                         return@collect
                     }
 
+                    val validEntries = lista.filter {
+                        calculateUnitPrice(it) != null
+                    }
+
                     val gasolinaEntries =
-                        lista.filter {
+                        validEntries.filter {
                             it.tipo == FuelType.GASOLINA
                         }
 
                     val electricEntries =
-                        lista.filter {
+                        validEntries.filter {
                             it.tipo == FuelType.ELECTRICO
                         }
 

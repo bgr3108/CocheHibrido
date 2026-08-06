@@ -19,6 +19,7 @@ import com.example.cochehibrido.ui.theme.CardBlueDark
 
 import com.example.cochehibrido.data.FuelEntry
 import com.example.cochehibrido.data.FuelType
+import com.example.cochehibrido.domain.calculateUnitPrice
 import com.example.cochehibrido.viewmodel.FuelEntryViewModel
 import com.example.cochehibrido.util.toSpanishDecimal
 import com.example.cochehibrido.util.toDateTimeString
@@ -114,8 +115,7 @@ fun ConsumptionListScreen(
                         Spacer(modifier = Modifier.height(6.dp))
 
                         // 💰 Precio unitario
-                        val precioUnitario =
-                            if (entry.cantidad > 0) entry.precio / entry.cantidad else 0.0
+                        val precioUnitario = calculateUnitPrice(entry) ?: 0.0
 
                         val unidad = if (entry.tipo == FuelType.GASOLINA) "€/L" else "€/kWh"
 
