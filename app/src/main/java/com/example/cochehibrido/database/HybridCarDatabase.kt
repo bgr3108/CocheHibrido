@@ -12,7 +12,7 @@ import com.example.cochehibrido.data.FuelEntry
 @Database(
     entities = [Car::class, FuelEntry::class],
     version = 9, // 🔥 IMPORTANTE (sube versión)
-    exportSchema = false
+    exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class HybridCarDatabase : RoomDatabase() {
@@ -31,7 +31,10 @@ abstract class HybridCarDatabase : RoomDatabase() {
                     HybridCarDatabase::class.java,
                     "hybrid_car_database"
                 )
-                    .fallbackToDestructiveMigration(dropAllTables = false) // 🔥 AQUÍ VA
+                    .fallbackToDestructiveMigrationFrom(
+                        dropAllTables = false,
+                        1, 2, 3, 4, 5, 6, 7, 8
+                    )
                     .build()
                     .also { Instance = it }
             }
