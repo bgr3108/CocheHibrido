@@ -5,43 +5,27 @@ import com.example.cochehibrido.data.FuelType
 
 fun calculateAverageFuelConsumption(entries: List<FuelEntry>): Double {
 
-    val fuelEntries = entries
-        .filter { it.tipo == FuelType.GASOLINA }
-        .sortedBy { it.km }
+    val segments = calculateFuelSegments(entries)
 
-    var litrosConsumidos = 0.0
-    var kmRecorridos = 0.0
+    var totalFuel = 0.0
+    var totalDistance = 0.0
 
-    var ultimoLleno: FuelEntry? = null
-    var litrosAcumulados = 0.0
+    segments.forEach { segment ->
+        val nextFuel = totalFuel + segment.fuelUsed
+        val nextDistance = totalDistance + segment.distance
 
-    fuelEntries.forEach { entry ->
-
-        if (ultimoLleno == null) {
-
-            if (entry.fullTank) {
-                ultimoLleno = entry
-            }
-
-        } else {
-
-            litrosAcumulados += entry.cantidad
-
-            if (entry.fullTank) {
-
-                kmRecorridos += entry.km - ultimoLleno.km
-                litrosConsumidos += litrosAcumulados
-
-                ultimoLleno = entry
-                litrosAcumulados = 0.0
-            }
+        if (nextFuel.isFinite() && nextDistance.isFinite()) {
+            totalFuel = nextFuel
+            totalDistance = nextDistance
         }
     }
 
-    return if (kmRecorridos > 0)
-        litrosConsumidos / kmRecorridos * 100
-    else
+    return if (totalDistance > 0.0) {
+        ((totalFuel / totalDistance) * 100.0)
+            .takeIf { it.isFinite() } ?: 0.0
+    } else {
         0.0
+    }
 }
 
 fun calculateAverageElectricConsumption(
@@ -75,8 +59,18 @@ fun calculateFuelSegments(
 ): List<FuelConsumptionSegment> {
 
     val fuelEntries = entries
-        .filter { it.tipo == FuelType.GASOLINA }
-        .sortedBy { it.km }
+        .filter {
+            it.tipo == FuelType.GASOLINA &&
+                    it.km.isFinite() &&
+                    it.km >= 0.0 &&
+                    it.cantidad.isFinite() &&
+                    it.cantidad > 0.0
+        }
+        .sortedWith(
+            compareBy<FuelEntry> { it.km }
+                .thenBy { it.fecha }
+                .thenBy { it.id }
+        )
 
     val result = mutableListOf<FuelConsumptionSegment>()
 
@@ -93,14 +87,32 @@ fun calculateFuelSegments(
 
         } else {
 
-            litrosAcumulados += entry.cantidad
+            val nextLitrosAcumulados = litrosAcumulados + entry.cantidad
+            litrosAcumulados =
+                if (nextLitrosAcumulados.isFinite()) {
+                    nextLitrosAcumulados
+                } else {
+                    Double.NaN
+                }
 
             if (entry.fullTank) {
 
                 val distancia =
                     entry.km - ultimoLleno.km
 
-                if (distancia > 0) {
+                val consumo =
+                    if (
+                        distancia.isFinite() &&
+                        distancia > 0.0 &&
+                        litrosAcumulados.isFinite() &&
+                        litrosAcumulados > 0.0
+                    ) {
+                        (litrosAcumulados / distancia) * 100.0
+                    } else {
+                        Double.NaN
+                    }
+
+                if (consumo.isFinite()) {
 
                     result += FuelConsumptionSegment(
 
@@ -112,14 +124,14 @@ fun calculateFuelSegments(
 
                         fuelUsed = litrosAcumulados,
 
-                        consumption =
-                            litrosAcumulados /
-                                    distancia *
-                                    100
+                        consumption = consumo
 
                     )
                 }
 
+                // Un lleno a igual kilometraje no tiene distancia calculable. Aun así,
+                // se convierte en la nueva referencia y descarta ese cierre para que sus
+                // litros no se arrastren al siguiente tramo con distancia positiva.
                 ultimoLleno = entry
                 litrosAcumulados = 0.0
             }
