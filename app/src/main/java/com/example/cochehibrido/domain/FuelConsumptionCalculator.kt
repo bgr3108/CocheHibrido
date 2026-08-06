@@ -48,24 +48,27 @@ fun calculateAverageElectricConsumption(
     entries: List<FuelEntry>
 ): Double {
 
-    val electricEntries = entries
-        .filter { it.tipo == FuelType.ELECTRICO }
-        .sortedBy { it.km }
+    val segments = calculateElectricSegments(entries)
 
-    if (electricEntries.size < 2)
-        return 0.0
+    var totalEnergy = 0.0
+    var totalDistance = 0.0
 
-    val kmRecorridos =
-        electricEntries.last().km -
-                electricEntries.first().km
+    segments.forEach { segment ->
+        val nextEnergy = totalEnergy + segment.energyUsed
+        val nextDistance = totalDistance + segment.distance
 
-    val kwhConsumidos =
-        electricEntries.sumOf { it.cantidad }
+        if (nextEnergy.isFinite() && nextDistance.isFinite()) {
+            totalEnergy = nextEnergy
+            totalDistance = nextDistance
+        }
+    }
 
-    return if (kmRecorridos > 0)
-        kwhConsumidos / kmRecorridos * 100
-    else
+    return if (totalDistance > 0.0) {
+        ((totalEnergy / totalDistance) * 100.0)
+            .takeIf { it.isFinite() } ?: 0.0
+    } else {
         0.0
+    }
 }
 fun calculateFuelSegments(
     entries: List<FuelEntry>
@@ -165,8 +168,18 @@ fun calculateElectricSegments(
 ): List<ElectricConsumptionSegment> {
 
     val electricEntries = entries
-        .filter { it.tipo == FuelType.ELECTRICO }
-        .sortedBy { it.km }
+        .filter {
+            it.tipo == FuelType.ELECTRICO &&
+                    it.km.isFinite() &&
+                    it.km >= 0.0 &&
+                    it.cantidad.isFinite() &&
+                    it.cantidad > 0.0
+        }
+        .sortedWith(
+            compareBy<FuelEntry> { it.km }
+                .thenBy { it.fecha }
+                .thenBy { it.id }
+        )
 
     if (electricEntries.size < 2) {
         return emptyList()
@@ -181,7 +194,13 @@ fun calculateElectricSegments(
 
         val distance = current.km - previous.km
 
-        if (distance > 0) {
+        if (distance <= 0.0 || !distance.isFinite()) {
+            continue
+        }
+
+        val consumption = (current.cantidad / distance) * 100.0
+
+        if (consumption.isFinite()) {
 
             result += ElectricConsumptionSegment(
 
@@ -193,7 +212,7 @@ fun calculateElectricSegments(
 
                 energyUsed = current.cantidad,
 
-                consumption = current.cantidad / distance * 100
+                consumption = consumption
 
             )
         }
