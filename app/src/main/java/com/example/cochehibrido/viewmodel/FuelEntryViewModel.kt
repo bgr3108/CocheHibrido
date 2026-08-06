@@ -5,8 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.cochehibrido.data.FuelEntry
 import com.example.cochehibrido.data.FuelRepository
 import com.example.cochehibrido.data.CarRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -22,6 +25,30 @@ class FuelEntryViewModel(
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = emptyList()
             )
+
+    private val _filterState = MutableStateFlow(ConsumptionFilterState())
+    val filterState: StateFlow<ConsumptionFilterState> = _filterState.asStateFlow()
+
+    val filteredEntries: StateFlow<List<FuelEntry>> =
+        combine(entries, filterState) { entries, filters ->
+            filterConsumptionEntries(entries, filters)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
+
+    fun setEnergyFilter(filter: EnergyFilter) {
+        _filterState.value = _filterState.value.copy(energyFilter = filter)
+    }
+
+    fun setDateFilter(filter: DateFilter) {
+        _filterState.value = _filterState.value.copy(dateFilter = filter)
+    }
+
+    fun clearFilters() {
+        _filterState.value = ConsumptionFilterState()
+    }
 
     // 🔥 GUARDAR (CORREGIDO)
     fun saveEntry(entry: FuelEntry, onSaved: () -> Unit) {

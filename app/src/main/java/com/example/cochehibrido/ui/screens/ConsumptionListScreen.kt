@@ -1,6 +1,7 @@
 package com.example.cochehibrido.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -10,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -20,7 +22,10 @@ import com.example.cochehibrido.ui.theme.CardBlueDark
 import com.example.cochehibrido.data.FuelEntry
 import com.example.cochehibrido.data.FuelType
 import com.example.cochehibrido.domain.calculateUnitPrice
+import com.example.cochehibrido.viewmodel.DateFilter
+import com.example.cochehibrido.viewmodel.EnergyFilter
 import com.example.cochehibrido.viewmodel.FuelEntryViewModel
+import com.example.cochehibrido.viewmodel.supportedDateFilters
 import com.example.cochehibrido.util.toSpanishDecimal
 import com.example.cochehibrido.util.toDateTimeString
 
@@ -32,9 +37,46 @@ fun ConsumptionListScreen(
     onAddClick: () -> Unit
 ) {
     val entries by viewModel.entries.collectAsStateWithLifecycle()
-    val sortedEntries = entries.sortedByDescending { it.fecha }
+    val filteredEntries by viewModel.filteredEntries.collectAsStateWithLifecycle()
+    val filterState by viewModel.filterState.collectAsStateWithLifecycle()
     val isDark = isSystemInDarkTheme()
     var entryToDelete by remember { mutableStateOf<FuelEntry?>(null) }
+    var isDateMenuExpanded by remember { mutableStateOf(false) }
+    val isDateFilterActive = filterState.dateFilter != DateFilter.ALL
+    val filterChipColors = FilterChipDefaults.filterChipColors(
+        containerColor = Color.Transparent,
+        labelColor = MaterialTheme.colorScheme.onSurface,
+        iconColor = MaterialTheme.colorScheme.onSurface,
+        selectedContainerColor = MaterialTheme.colorScheme.primary,
+        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+        selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary,
+        selectedTrailingIconColor = MaterialTheme.colorScheme.onPrimary
+    )
+    val dateFilterColors = ButtonDefaults.outlinedButtonColors(
+        containerColor = if (isDateFilterActive) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            Color.Transparent
+        },
+        contentColor = if (isDateFilterActive) {
+            MaterialTheme.colorScheme.onPrimary
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        }
+    )
+    val dateFilterBorder = BorderStroke(
+        width = 1.dp,
+        color = if (isDateFilterActive) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.outline
+        }
+    )
+    val dateMenuItemColors = MenuDefaults.itemColors(
+        textColor = MaterialTheme.colorScheme.onSurface,
+        leadingIconColor = MaterialTheme.colorScheme.onSurface,
+        trailingIconColor = MaterialTheme.colorScheme.onSurface
+    )
 
     Column(
         modifier = Modifier
@@ -56,13 +98,98 @@ fun ConsumptionListScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        if (entries.isEmpty()) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            FilterChip(
+                selected = filterState.energyFilter == EnergyFilter.ALL,
+                onClick = { viewModel.setEnergyFilter(EnergyFilter.ALL) },
+                label = { Text("Todos") },
+                colors = filterChipColors,
+                border = FilterChipDefaults.filterChipBorder(
+                    enabled = true,
+                    selected = filterState.energyFilter == EnergyFilter.ALL,
+                    borderColor = MaterialTheme.colorScheme.outline,
+                    selectedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
+            FilterChip(
+                selected = filterState.energyFilter == EnergyFilter.GASOLINE,
+                onClick = { viewModel.setEnergyFilter(EnergyFilter.GASOLINE) },
+                label = { Text("Gasolina") },
+                colors = filterChipColors,
+                border = FilterChipDefaults.filterChipBorder(
+                    enabled = true,
+                    selected = filterState.energyFilter == EnergyFilter.GASOLINE,
+                    borderColor = MaterialTheme.colorScheme.outline,
+                    selectedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
+            FilterChip(
+                selected = filterState.energyFilter == EnergyFilter.ELECTRIC,
+                onClick = { viewModel.setEnergyFilter(EnergyFilter.ELECTRIC) },
+                label = { Text("Electricidad") },
+                colors = filterChipColors,
+                border = FilterChipDefaults.filterChipBorder(
+                    enabled = true,
+                    selected = filterState.energyFilter == EnergyFilter.ELECTRIC,
+                    borderColor = MaterialTheme.colorScheme.outline,
+                    selectedBorderColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Box {
+                OutlinedButton(
+                    onClick = { isDateMenuExpanded = true },
+                    colors = dateFilterColors,
+                    border = dateFilterBorder
+                ) {
+                    Text("${filterState.dateFilter.label()} ▼")
+                }
+                DropdownMenu(
+                    expanded = isDateMenuExpanded,
+                    onDismissRequest = { isDateMenuExpanded = false },
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ) {
+                    supportedDateFilters.forEach { filter ->
+                        DropdownMenuItem(
+                            text = { Text(filter.label()) },
+                            colors = dateMenuItemColors,
+                            onClick = {
+                                viewModel.setDateFilter(filter)
+                                isDateMenuExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            if (filterState.hasActiveFilters) {
+                TextButton(onClick = viewModel::clearFilters) {
+                    Text("Limpiar filtros")
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        if (entries.isEmpty() && !filterState.hasActiveFilters) {
             Text("No hay repostajes")
+        } else if (filteredEntries.isEmpty()) {
+            Text("No hay consumos para los filtros seleccionados.")
         } else {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(sortedEntries, key = { it.id }) { entry ->
+                items(filteredEntries, key = { it.id }) { entry ->
 
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -184,4 +311,11 @@ fun ConsumptionListScreen(
         )
     }
     }
+}
+
+private fun DateFilter.label(): String = when (this) {
+    DateFilter.ALL -> "Todo"
+    DateFilter.THIS_MONTH -> "Este mes"
+    DateFilter.LAST_MONTH -> "Mes anterior"
+    DateFilter.THIS_YEAR -> "Este año"
 }
