@@ -26,6 +26,7 @@ import com.example.cochehibrido.domain.calculateWorstFuelConsumption
 import com.example.cochehibrido.domain.calculateAverageElectricPrice
 import com.example.cochehibrido.domain.calculateAverageFuelPrice
 import com.example.cochehibrido.domain.calculateUnitPrice
+import com.example.cochehibrido.domain.calculateTravelledKilometers
 import com.example.cochehibrido.domain.calculateElectricCharges
 import com.example.cochehibrido.domain.calculateFuelRefuels
 import com.example.cochehibrido.domain.calculateMaxElectricPrice
@@ -215,10 +216,12 @@ class HomeViewModel(
 
     )
 
-    val totalKm = entries
-        .map { list ->
-            list.maxByOrNull { it.km }?.km ?: 0.0
-        }
+    val totalKm = combine(entries, vehicle) { list, currentVehicle ->
+        calculateTravelledKilometers(
+            entries = list,
+            initialKilometers = currentVehicle.currentKm
+        )
+    }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
