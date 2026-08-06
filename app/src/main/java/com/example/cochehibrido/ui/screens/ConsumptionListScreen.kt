@@ -5,13 +5,16 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.FilterAltOff
 import androidx.compose.material.icons.outlined.LocalGasStation
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -43,6 +46,11 @@ fun ConsumptionListScreen(
     var entryToDelete by remember { mutableStateOf<FuelEntry?>(null) }
     var isDateMenuExpanded by remember { mutableStateOf(false) }
     val isDateFilterActive = filterState.dateFilter != DateFilter.ALL
+    val entryCountText = if (filterState.hasActiveFilters) {
+        "${filteredEntries.size} de ${entries.size}"
+    } else {
+        "${entries.size} registros"
+    }
     val filterChipColors = FilterChipDefaults.filterChipColors(
         containerColor = Color.Transparent,
         labelColor = MaterialTheme.colorScheme.onSurface,
@@ -78,23 +86,19 @@ fun ConsumptionListScreen(
         trailingIconColor = MaterialTheme.colorScheme.onSurface
     )
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
-            .padding(16.dp)
     ) {
 
-        Text("Repostajes", style = MaterialTheme.typography.headlineSmall)
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Button(
-            onClick = onAddClick,
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
         ) {
-            Text("Añadir repostaje")
-        }
+
+        Text("Repostajes", style = MaterialTheme.typography.headlineSmall)
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -143,8 +147,7 @@ fun ConsumptionListScreen(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box {
                 OutlinedButton(
@@ -172,9 +175,31 @@ fun ConsumptionListScreen(
                 }
             }
 
-            if (filterState.hasActiveFilters) {
-                TextButton(onClick = viewModel::clearFilters) {
-                    Text("Limpiar filtros")
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Text(
+                text = entryCountText,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                maxLines = 1
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Box(
+                modifier = Modifier.width(72.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                if (filterState.hasActiveFilters) {
+                    IconButton(onClick = viewModel::clearFilters) {
+                        Icon(
+                            imageVector = Icons.Outlined.FilterAltOff,
+                            contentDescription = "Restablecer filtros",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }
@@ -187,6 +212,8 @@ fun ConsumptionListScreen(
             Text("No hay consumos para los filtros seleccionados.")
         } else {
             LazyColumn(
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(bottom = 88.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(filteredEntries, key = { it.id }) { entry ->
@@ -287,6 +314,22 @@ fun ConsumptionListScreen(
                 }
             }
         }
+        }
+    }
+
+        FloatingActionButton(
+            onClick = onAddClick,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Añadir consumo"
+            )
+        }
     }
 
     // 🔥 CONFIRMACIÓN BORRAR
@@ -311,7 +354,6 @@ fun ConsumptionListScreen(
         )
     }
     }
-}
 
 private fun DateFilter.label(): String = when (this) {
     DateFilter.ALL -> "Todo"
