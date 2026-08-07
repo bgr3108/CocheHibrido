@@ -12,9 +12,15 @@ private val Context.dataStore by preferencesDataStore(
     name = "vehicle_preferences"
 )
 
+interface VehiclePreferencesStore {
+    suspend fun saveVehicle(vehicle: Vehicle)
+    suspend fun loadVehicle(): Vehicle
+    suspend fun clearVehicle()
+}
+
 class VehiclePreferences(
     private val context: Context
-) {
+) : VehiclePreferencesStore {
 
     private object Keys {
 
@@ -40,7 +46,7 @@ class VehiclePreferences(
             doublePreferencesKey("current_km")
     }
 
-    suspend fun saveVehicle(
+    override suspend fun saveVehicle(
         vehicle: Vehicle
     ) {
 
@@ -64,7 +70,7 @@ class VehiclePreferences(
         }
     }
 
-    suspend fun loadVehicle(): Vehicle {
+    override suspend fun loadVehicle(): Vehicle {
 
         val prefs =
             context.dataStore.data.first()
@@ -80,12 +86,7 @@ class VehiclePreferences(
             year =
                 prefs[Keys.YEAR],
 
-            type =
-                prefs[Keys.TYPE]
-                    ?.takeIf { it.isNotBlank() }
-                    ?.let {
-                        VehicleType.valueOf(it)
-                    },
+            type = vehicleTypeOrNull(prefs[Keys.TYPE]),
 
             batteryCapacity =
                 prefs[Keys.BATTERY] ?: 0.0,
@@ -97,7 +98,7 @@ class VehiclePreferences(
                 prefs[Keys.CURRENT_KM] ?: 0.0
         )
     }
-    suspend fun clearVehicle() {
+    override suspend fun clearVehicle() {
 
         context.dataStore.edit {
 
@@ -105,3 +106,10 @@ class VehiclePreferences(
         }
     }
 }
+
+internal fun vehicleTypeOrNull(value: String?): VehicleType? =
+    value
+        ?.takeIf { it.isNotBlank() }
+        ?.let { storedType ->
+            VehicleType.entries.firstOrNull { it.name == storedType }
+        }

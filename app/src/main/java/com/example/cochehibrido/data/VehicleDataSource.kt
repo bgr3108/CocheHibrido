@@ -3,11 +3,15 @@ package com.example.cochehibrido.data
 import android.content.Context
 import org.json.JSONArray
 
+interface VehicleCatalog {
+    fun loadVehicles(): List<VehicleInfo>
+}
+
 class VehicleDataSource(
     private val context: Context
-) {
+) : VehicleCatalog {
 
-    fun loadVehicles(): List<VehicleInfo> {
+    override fun loadVehicles(): List<VehicleInfo> {
 
         val jsonString = context.assets
             .open("vehicles.json")

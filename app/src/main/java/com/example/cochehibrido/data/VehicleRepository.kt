@@ -8,26 +8,31 @@ import kotlinx.coroutines.launch
 
 class VehicleRepository(
 
-    val vehicleDataSource: VehicleDataSource,
-    private val vehiclePreferences: VehiclePreferences
+    val vehicleDataSource: VehicleCatalog,
+    private val vehiclePreferences: VehiclePreferencesStore
 
 ) {
 
     private val _vehicle = MutableStateFlow(Vehicle())
     private val _isLoading = MutableStateFlow(true)
+    private val _loadError = MutableStateFlow<Throwable?>(null)
 
     val isLoading: StateFlow<Boolean> = _isLoading
+    val loadError: StateFlow<Throwable?> = _loadError
 
     val vehicle: StateFlow<Vehicle> = _vehicle
 
     init {
 
         CoroutineScope(Dispatchers.IO).launch {
-
-            _vehicle.value =
-                vehiclePreferences.loadVehicle()
-
-            _isLoading.value = false
+            try {
+                _vehicle.value = vehiclePreferences.loadVehicle()
+            } catch (error: Throwable) {
+                _vehicle.value = Vehicle()
+                _loadError.value = error
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
