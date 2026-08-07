@@ -5,6 +5,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
@@ -38,7 +39,6 @@ fun AddConsumptionScreen(
 ){
     val context = LocalContext.current
     val currentLocale = LocalConfiguration.current.locales[0]
-    val calendar = Calendar.getInstance()
     val focusManager = LocalFocusManager.current
 
     val currentVehicle by homeViewModel
@@ -48,26 +48,25 @@ fun AddConsumptionScreen(
     val entries by viewModel.entries.collectAsState()
     val isSaving by viewModel.isSaving.collectAsState()
 
-    entry?.let {
-        calendar.timeInMillis = it.fecha
+    val initialDateMillis = entry?.fecha ?: System.currentTimeMillis()
+    val initialCalendar = Calendar.getInstance().apply {
+        timeInMillis = initialDateMillis
     }
 
-    var fechaMillis by remember {
-        mutableLongStateOf(
-            entry?.fecha ?: System.currentTimeMillis()
-        )
+    var fechaMillis by rememberSaveable(entry?.id) {
+        mutableStateOf(initialDateMillis)
     }
 
-    var hour by remember {
-        mutableIntStateOf(
-            calendar.get(Calendar.HOUR_OF_DAY)
-        )
+    var hour by rememberSaveable(entry?.id) {
+        mutableStateOf(initialCalendar.get(Calendar.HOUR_OF_DAY))
     }
 
-    var minute by remember {
-        mutableIntStateOf(
-            calendar.get(Calendar.MINUTE)
-        )
+    var minute by rememberSaveable(entry?.id) {
+        mutableStateOf(initialCalendar.get(Calendar.MINUTE))
+    }
+
+    val selectedDateCalendar = Calendar.getInstance().apply {
+        timeInMillis = fechaMillis
     }
 
     val datePickerDialog = android.app.DatePickerDialog(
@@ -96,35 +95,39 @@ fun AddConsumptionScreen(
                 true
             ).show()
         },
-        calendar.get(Calendar.YEAR),
-        calendar.get(Calendar.MONTH),
-        calendar.get(Calendar.DAY_OF_MONTH)
+        selectedDateCalendar.get(Calendar.YEAR),
+        selectedDateCalendar.get(Calendar.MONTH),
+        selectedDateCalendar.get(Calendar.DAY_OF_MONTH)
     )
 
-    var cantidad by remember {
+    var cantidad by rememberSaveable(entry?.id) {
         mutableStateOf(entry?.cantidad?.toString()?.replace(".", ",") ?: "")
     }
-    var porcentajeInicio by remember {
+    var porcentajeInicio by rememberSaveable(entry?.id) {
         mutableStateOf("")
     }
 
-    var porcentajeFin by remember {
+    var porcentajeFin by rememberSaveable(entry?.id) {
         mutableStateOf("")
     }
 
-    var precio by remember {
+    var precio by rememberSaveable(entry?.id) {
         mutableStateOf(entry?.precio?.toString()?.replace(".", ",") ?: "")
     }
 
-    var km by remember {
+    var km by rememberSaveable(entry?.id) {
         mutableStateOf(entry?.km?.toString()?.replace(".", ",") ?: "")
     }
 
-    var tipoSeleccionado by remember {
-        mutableStateOf(entry?.tipo ?: FuelType.GASOLINA)
+    var tipoSeleccionadoName by rememberSaveable(entry?.id) {
+        mutableStateOf((entry?.tipo ?: FuelType.GASOLINA).name)
     }
 
-    var fullTank by remember(entry?.id) {
+    val tipoSeleccionado = FuelType.entries
+        .firstOrNull { it.name == tipoSeleccionadoName }
+        ?: FuelType.GASOLINA
+
+    var fullTank by rememberSaveable(entry?.id) {
         mutableStateOf(entry?.fullTank ?: true)
     }
 
@@ -330,7 +333,7 @@ fun AddConsumptionScreen(
 
                 Button(
                     onClick = {
-                        tipoSeleccionado = FuelType.GASOLINA
+                        tipoSeleccionadoName = FuelType.GASOLINA.name
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor =
@@ -358,7 +361,7 @@ fun AddConsumptionScreen(
 
                 Button(
                     onClick = {
-                        tipoSeleccionado = FuelType.ELECTRICO
+                        tipoSeleccionadoName = FuelType.ELECTRICO.name
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor =
