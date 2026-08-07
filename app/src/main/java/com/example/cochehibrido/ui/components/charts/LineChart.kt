@@ -18,10 +18,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 
 @Composable
 fun LineChart(
     points: List<ChartPoint>,
+    contentDescription: String,
     modifier: Modifier = Modifier,
     style: ChartStyle = ChartStyle(),
     xLabelFormatter: (Double) -> String = {
@@ -56,6 +59,7 @@ fun LineChart(
         modifier = modifier
             .fillMaxWidth()
             .height(250.dp)
+            .semantics { this.contentDescription = contentDescription }
     ) {
         val textPaint = Paint().apply {
             color = style.textColor.toArgb()

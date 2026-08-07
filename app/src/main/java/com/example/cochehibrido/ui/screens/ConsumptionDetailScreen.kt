@@ -242,9 +242,18 @@ private fun ConsumptionContent(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    LineChart(
-                        points = historialConsumoGasolina
-                    )
+                    if (historialConsumoGasolina.size < 2) {
+                        Text(
+                            text = "Aún no hay suficientes datos para mostrar la gráfica.",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    } else {
+                        LineChart(
+                            points = historialConsumoGasolina,
+                            contentDescription = "Gráfico de consumo de gasolina: ${historialConsumoGasolina.size} tramos registrados"
+                        )
+                    }
                 }
             }
         }
@@ -319,9 +328,18 @@ private fun ConsumptionContent(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    LineChart(
-                        points = historialConsumoElectrico
-                    )
+                    if (historialConsumoElectrico.size < 2) {
+                        Text(
+                            text = "Aún no hay suficientes datos para mostrar la gráfica.",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    } else {
+                        LineChart(
+                            points = historialConsumoElectrico,
+                            contentDescription = "Gráfico de consumo eléctrico: ${historialConsumoElectrico.size} tramos registrados"
+                        )
+                    }
                 }
             }
         }

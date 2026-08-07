@@ -274,6 +274,7 @@ private fun CostContent(
                 } else {
                     LineChart(
                         points = historialCostesGasolina,
+                        contentDescription = "Gráfico de costes mensuales de gasolina: ${historialCostesGasolina.size} meses registrados",
                         xLabelFormatter = { value ->
                             costesMensualesGasolina
                                 .getOrNull(value.toInt())
@@ -382,6 +383,7 @@ private fun CostContent(
                 } else {
                     LineChart(
                         points = historialCostesElectricos,
+                        contentDescription = "Gráfico de costes mensuales de electricidad: ${historialCostesElectricos.size} meses registrados",
                         xLabelFormatter = { value ->
                             costesMensualesElectricos
                                 .getOrNull(value.toInt())
