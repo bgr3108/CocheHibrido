@@ -108,6 +108,77 @@ class ConsumptionFilterStateTest {
         )
     }
 
+    @Test
+    fun lastMonthFilter_inJanuaryIncludesDecemberOfThePreviousYear() {
+        val januaryReference = calendarOf(2027, Calendar.JANUARY, 15)
+        val entries = listOf(
+            entry(FuelType.GASOLINA, 2026, Calendar.DECEMBER, 31),
+            entry(FuelType.GASOLINA, 2027, Calendar.JANUARY, 1)
+        )
+
+        assertEquals(
+            1,
+            filterConsumptionEntries(
+                entries,
+                ConsumptionFilterState(dateFilter = DateFilter.LAST_MONTH),
+                januaryReference
+            ).size
+        )
+    }
+
+    @Test
+    fun thisMonthFilter_usesTheNewMonthAfterDecemberToJanuaryTransition() {
+        val entries = listOf(
+            entry(FuelType.GASOLINA, 2026, Calendar.DECEMBER, 31),
+            entry(FuelType.GASOLINA, 2027, Calendar.JANUARY, 1)
+        )
+
+        assertEquals(
+            listOf(listOf(entries[0]), listOf(entries[1])),
+            listOf(
+                filterConsumptionEntries(
+                    entries,
+                    ConsumptionFilterState(dateFilter = DateFilter.THIS_MONTH),
+                    calendarOf(2026, Calendar.DECEMBER, 31)
+                ),
+                filterConsumptionEntries(
+                    entries,
+                    ConsumptionFilterState(dateFilter = DateFilter.THIS_MONTH),
+                    calendarOf(2027, Calendar.JANUARY, 1)
+                )
+            )
+        )
+    }
+
+    @Test
+    fun thisYearFilter_usesTheNewYearAfterDecemberToJanuaryTransition() {
+        val entries = listOf(
+            entry(FuelType.GASOLINA, 2026, Calendar.DECEMBER, 31),
+            entry(FuelType.GASOLINA, 2027, Calendar.JANUARY, 1)
+        )
+
+        assertEquals(
+            listOf(listOf(entries[0]), listOf(entries[1])),
+            listOf(
+                filterConsumptionEntries(
+                    entries,
+                    ConsumptionFilterState(dateFilter = DateFilter.THIS_YEAR),
+                    calendarOf(2026, Calendar.DECEMBER, 31)
+                ),
+                filterConsumptionEntries(
+                    entries,
+                    ConsumptionFilterState(dateFilter = DateFilter.THIS_YEAR),
+                    calendarOf(2027, Calendar.JANUARY, 1)
+                )
+            )
+        )
+    }
+
+    private fun calendarOf(year: Int, month: Int, day: Int) = Calendar.getInstance().apply {
+        clear()
+        set(year, month, day, 12, 0)
+    }
+
     private fun entry(type: FuelType, year: Int, month: Int, day: Int) = FuelEntry(
         fecha = Calendar.getInstance().apply {
             clear()
