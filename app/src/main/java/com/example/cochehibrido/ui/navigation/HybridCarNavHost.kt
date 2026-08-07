@@ -52,6 +52,7 @@ fun HybridCarNavHost(
             AddConsumptionScreen(
                 viewModel = fuelViewModel,
                 homeViewModel = homeViewModel,
+                innerPadding = innerPadding,
                 onClose = {
                     navController.popBackStack()
                 }
@@ -70,6 +71,7 @@ fun HybridCarNavHost(
                 AddConsumptionScreen(
                     viewModel = fuelViewModel,
                     homeViewModel = homeViewModel,
+                    innerPadding = innerPadding,
                     entry = it,
                     onClose = {
                         navController.popBackStack()

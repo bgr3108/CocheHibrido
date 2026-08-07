@@ -1,5 +1,7 @@
 package com.example.cochehibrido.ui.screens
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,6 +32,7 @@ import com.example.cochehibrido.data.VehicleType
 fun AddConsumptionScreen(
     viewModel: FuelEntryViewModel,
     homeViewModel: HomeViewModel,
+    innerPadding: PaddingValues,
     entry: FuelEntry? = null,
     onClose: () -> Unit
 ){
@@ -140,6 +143,9 @@ fun AddConsumptionScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(innerPadding)
+            .imePadding()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
