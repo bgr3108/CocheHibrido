@@ -1,8 +1,20 @@
 package com.example.cochehibrido.ui.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -67,14 +79,27 @@ fun HybridCarNavHost(
                 .value
                 .find { it.id == id }
 
-            entry?.let {
+            if (entry != null) {
                 AddConsumptionScreen(
                     viewModel = fuelViewModel,
                     homeViewModel = homeViewModel,
                     innerPadding = innerPadding,
-                    entry = it,
+                    entry = entry,
                     onClose = {
                         navController.popBackStack()
+                    }
+                )
+            } else {
+                MissingEntryScreen(
+                    innerPadding = innerPadding,
+                    onBack = {
+                        if (!navController.popBackStack()) {
+                            navController.navigate(
+                                navController.graph.findStartDestination().id
+                            ) {
+                                launchSingleTop = true
+                            }
+                        }
                     }
                 )
             }
@@ -128,6 +153,27 @@ fun HybridCarNavHost(
                     navController.popBackStack()
                 }
             )
+        }
+    }
+}
+
+@Composable
+private fun MissingEntryScreen(
+    innerPadding: PaddingValues,
+    onBack: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Registro no encontrado")
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onBack) {
+            Text("Volver")
         }
     }
 }

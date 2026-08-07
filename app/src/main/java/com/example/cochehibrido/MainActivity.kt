@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.cochehibrido.ui.navigation.HybridCarNavHost
@@ -97,6 +98,15 @@ fun AppContent(
             "consumption",
             "stats"
         )
+        val navigateToTopLevel: (String) -> Unit = { route ->
+            navController.navigate(route) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
         Scaffold(
             bottomBar = {
                 if (showBottomBar) {
@@ -112,7 +122,7 @@ fun AppContent(
                                 indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                             ),
                             selected = currentRoute == "home",
-                            onClick = { navController.navigate("home") },
+                            onClick = { navigateToTopLevel("home") },
                             icon = { Icon(Icons.Default.Home, contentDescription = null) },
                             label = { Text("Inicio") }
                         )
@@ -126,7 +136,7 @@ fun AppContent(
                                 indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                             ),
                             selected = currentRoute == "consumption",
-                            onClick = { navController.navigate("consumption") },
+                            onClick = { navigateToTopLevel("consumption") },
                             icon = {
                                 Icon(
                                     Icons.Default.LocalGasStation,
@@ -144,7 +154,7 @@ fun AppContent(
                                 indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                             ),
                             selected = currentRoute == "stats",
-                            onClick = { navController.navigate("stats") },
+                            onClick = { navigateToTopLevel("stats") },
                             icon = { Icon(Icons.Default.BarChart, contentDescription = null) },
                             label = { Text("Estadísticas") }
                         )
