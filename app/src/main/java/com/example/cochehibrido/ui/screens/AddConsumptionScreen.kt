@@ -43,6 +43,7 @@ fun AddConsumptionScreen(
         .collectAsState()
 
     val entries by viewModel.entries.collectAsState()
+    val isSaving by viewModel.isSaving.collectAsState()
 
     entry?.let {
         calendar.timeInMillis = it.fecha
@@ -559,18 +560,32 @@ fun AddConsumptionScreen(
                     fullTank = fullTank
                 )
 
-                viewModel.saveEntry(newEntry) {
-                    onClose()
-                }
+                viewModel.saveEntry(
+                    entry = newEntry,
+                    onSaved = onClose,
+                    onError = {
+                        errorCapacidad = "No se pudo guardar el registro. Inténtalo de nuevo."
+                    }
+                )
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isSaving
         ) {
-            Text("Guardar")
+            if (isSaving) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Guardar")
+            }
         }
 
         OutlinedButton(
             onClick = onClose,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isSaving
         ) {
             Text("Cancelar")
         }

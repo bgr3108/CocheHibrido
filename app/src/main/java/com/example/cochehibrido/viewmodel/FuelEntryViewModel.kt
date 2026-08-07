@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.sync.Mutex
 
 class FuelEntryViewModel(
     private val repository: FuelRepository,
@@ -28,6 +30,10 @@ class FuelEntryViewModel(
 
     private val _filterState = MutableStateFlow(ConsumptionFilterState())
     val filterState: StateFlow<ConsumptionFilterState> = _filterState.asStateFlow()
+
+    private val saveMutex = Mutex()
+    private val _isSaving = MutableStateFlow(false)
+    val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
 
     val filteredEntries: StateFlow<List<FuelEntry>> =
         combine(entries, filterState) { entries, filters ->
@@ -51,10 +57,27 @@ class FuelEntryViewModel(
     }
 
     // 🔥 GUARDAR (CORREGIDO)
-    fun saveEntry(entry: FuelEntry, onSaved: () -> Unit) {
+    fun saveEntry(
+        entry: FuelEntry,
+        onSaved: () -> Unit,
+        onError: () -> Unit
+    ) {
+        if (!saveMutex.tryLock()) return
+
+        _isSaving.value = true
+
         viewModelScope.launch {
-            repository.addEntry(entry)
-            onSaved()
+            try {
+                repository.addEntry(entry)
+                onSaved()
+            } catch (error: Throwable) {
+                if (error is CancellationException) throw error
+
+                onError()
+            } finally {
+                _isSaving.value = false
+                saveMutex.unlock()
+            }
         }
     }
 
