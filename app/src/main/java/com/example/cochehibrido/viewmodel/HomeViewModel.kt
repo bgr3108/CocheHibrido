@@ -25,7 +25,8 @@ import com.example.cochehibrido.domain.calculateWorstElectricConsumption
 import com.example.cochehibrido.domain.calculateWorstFuelConsumption
 import com.example.cochehibrido.domain.calculateAverageElectricPrice
 import com.example.cochehibrido.domain.calculateAverageFuelPrice
-import com.example.cochehibrido.domain.calculateUnitPrice
+import com.example.cochehibrido.domain.calculateCostPerKilometer
+import com.example.cochehibrido.domain.calculateTotalCost
 import com.example.cochehibrido.domain.calculateTravelledKilometers
 import com.example.cochehibrido.domain.calculateElectricCharges
 import com.example.cochehibrido.domain.calculateFuelRefuels
@@ -42,6 +43,8 @@ import com.example.cochehibrido.domain.calculateTotalElectricCost
 import com.example.cochehibrido.domain.calculateTotalFuelCost
 import com.example.cochehibrido.domain.calculateFuelSegments
 import com.example.cochehibrido.domain.calculateElectricSegments
+import com.example.cochehibrido.domain.isValidEconomicEntry
+import com.example.cochehibrido.domain.sumValidEconomicValues
 import com.example.cochehibrido.ui.components.charts.ChartPoint
 
 class HomeViewModel(
@@ -174,39 +177,24 @@ class HomeViewModel(
     // ============================================================
 
     val litrosTotales = entries.map { list ->
-        list
-            .filter { it.tipo == FuelType.GASOLINA }
-            .sumOf { it.cantidad }
+        sumValidEconomicValues(list, FuelType.GASOLINA) { it.cantidad }
     }
 
     val gastoGasolinaTotal = entries.map { list ->
-        list
-            .filter { it.tipo == FuelType.GASOLINA }
-            .sumOf { it.precio }
+        calculateTotalFuelCost(list)
     }
 
     val kwhTotales = entries.map { list ->
-        list
-            .filter { it.tipo == FuelType.ELECTRICO }
-            .sumOf { it.cantidad }
+        sumValidEconomicValues(list, FuelType.ELECTRICO) { it.cantidad }
     }
 
     val gastoElectricoTotal = entries.map { list ->
-        list
-            .filter { it.tipo == FuelType.ELECTRICO }
-            .sumOf { it.precio }
+        calculateTotalElectricCost(list)
     }
-    val gastoTotalVehiculo = combine(
 
-        gastoGasolinaTotal,
-
-        gastoElectricoTotal
-
-    ) { gasolina, electrico ->
-
-        gasolina + electrico
-
-    }.stateIn(
+    val gastoTotalVehiculo = entries
+        .map(::calculateTotalCost)
+        .stateIn(
 
         viewModelScope,
 
@@ -229,9 +217,7 @@ class HomeViewModel(
         )
 
     val totalCost = entries
-        .map { list ->
-            list.sumOf { it.precio }
-        }
+        .map(::calculateTotalCost)
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -239,14 +225,8 @@ class HomeViewModel(
         )
 
     val costPerKm =
-        combine(totalCost, totalKm) { cost, km ->
-
-            if (km > 0)
-                cost / km
-            else
-                0.0
-
-        }.stateIn(
+        combine(totalCost, totalKm, ::calculateCostPerKilometer)
+            .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             0.0
@@ -475,9 +455,7 @@ class HomeViewModel(
         entries: List<FuelEntry>
     ): List<MonthlyPrice> {
 
-        return groupEntriesByMonth(
-            entries.filter { calculateUnitPrice(it) != null }
-        )
+        return groupEntriesByMonth(entries.filter(::isValidEconomicEntry))
             .map { (month, entriesMes) ->
                 MonthlyPrice(
                     month = month,
@@ -493,11 +471,11 @@ class HomeViewModel(
         entries: List<FuelEntry>
     ): List<MonthlyCost> {
 
-        return groupEntriesByMonth(entries)
+        return groupEntriesByMonth(entries.filter(::isValidEconomicEntry))
             .map { (month, entriesMes) ->
                 MonthlyCost(
                     month = month,
-                    totalCost = entriesMes.sumOf { it.precio }
+                    totalCost = calculateTotalCost(entriesMes)
                 )
             }
     }
@@ -562,9 +540,7 @@ class HomeViewModel(
                         return@collect
                     }
 
-                    val validEntries = lista.filter {
-                        calculateUnitPrice(it) != null
-                    }
+                    val validEntries = lista.filter(::isValidEconomicEntry)
 
                     val gasolinaEntries =
                         validEntries.filter {
