@@ -47,7 +47,7 @@ fun ConsumptionListScreen(
     val filteredEntries by viewModel.filteredEntries.collectAsStateWithLifecycle()
     val filterState by viewModel.filterState.collectAsStateWithLifecycle()
     val isDark = isSystemInDarkTheme()
-    var entryToDelete by remember { mutableStateOf<FuelEntry?>(null) }
+    val entryToDelete = remember { mutableStateOf<FuelEntry?>(null) }
     var isDateMenuExpanded by remember { mutableStateOf(false) }
     val isDateFilterActive = filterState.dateFilter != DateFilter.ALL
     val entryCountText = if (filterState.hasActiveFilters) {
@@ -115,7 +115,7 @@ fun ConsumptionListScreen(
                 .padding(16.dp)
         ) {
 
-        Text("Repostajes", style = MaterialTheme.typography.headlineSmall)
+        Text("Consumos", style = MaterialTheme.typography.headlineSmall)
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -224,7 +224,7 @@ fun ConsumptionListScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         if (entries.isEmpty() && !filterState.hasActiveFilters) {
-            Text("No hay repostajes")
+            Text("No hay consumos")
         } else if (filteredEntries.isEmpty()) {
             Text("No hay consumos para los filtros seleccionados.")
         } else {
@@ -321,7 +321,7 @@ fun ConsumptionListScreen(
                             }
 
                             OutlinedButton(
-                                onClick = { entryToDelete = entry },
+                                onClick = { entryToDelete.value = entry },
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Text("Eliminar")
@@ -350,24 +350,24 @@ fun ConsumptionListScreen(
     }
 
     // 🔥 CONFIRMACIÓN BORRAR
-    entryToDelete?.let { entry ->
+    entryToDelete.value?.let { entry ->
         AlertDialog(
-            onDismissRequest = { entryToDelete = null },
+            onDismissRequest = { entryToDelete.value = null },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteEntry(entry)
-                    entryToDelete = null
+                    entryToDelete.value = null
                 }) {
                     Text("Eliminar")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { entryToDelete = null }) {
+                TextButton(onClick = { entryToDelete.value = null }) {
                     Text("Cancelar")
                 }
             },
-            title = { Text("Eliminar repostaje") },
-            text = { Text("¿Seguro que quieres eliminar este registro?") }
+            title = { Text("Eliminar consumo") },
+            text = { Text("¿Seguro que quieres eliminar este consumo?") }
         )
     }
     }

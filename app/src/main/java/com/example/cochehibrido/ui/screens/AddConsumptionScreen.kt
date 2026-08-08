@@ -119,12 +119,12 @@ fun AddConsumptionScreen(
         mutableStateOf(entry?.km?.toString()?.replace(".", ",") ?: "")
     }
 
-    var tipoSeleccionadoName by rememberSaveable(entry?.id) {
+    val tipoSeleccionadoName = rememberSaveable(entry?.id) {
         mutableStateOf((entry?.tipo ?: FuelType.GASOLINA).name)
     }
 
     val tipoSeleccionado = FuelType.entries
-        .firstOrNull { it.name == tipoSeleccionadoName }
+        .firstOrNull { it.name == tipoSeleccionadoName.value }
         ?: FuelType.GASOLINA
 
     var fullTank by rememberSaveable(entry?.id) {
@@ -177,7 +177,10 @@ fun AddConsumptionScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text("Nuevo repostaje", style = MaterialTheme.typography.headlineSmall)
+        Text(
+            text = if (entry == null) "Nuevo consumo" else "Editar consumo",
+            style = MaterialTheme.typography.headlineSmall
+        )
 
         if (tipoSeleccionado == FuelType.ELECTRICO) {
 
@@ -274,7 +277,7 @@ fun AddConsumptionScreen(
         OutlinedTextField(
             value = precio,
             onValueChange = { precio = it },
-            label = { Text("Precio (€)") },
+            label = { Text("Importe total (€)") },
 
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Decimal,
@@ -333,7 +336,7 @@ fun AddConsumptionScreen(
 
                 Button(
                     onClick = {
-                        tipoSeleccionadoName = FuelType.GASOLINA.name
+                        tipoSeleccionadoName.value = FuelType.GASOLINA.name
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor =
@@ -361,7 +364,7 @@ fun AddConsumptionScreen(
 
                 Button(
                     onClick = {
-                        tipoSeleccionadoName = FuelType.ELECTRICO.name
+                        tipoSeleccionadoName.value = FuelType.ELECTRICO.name
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor =
