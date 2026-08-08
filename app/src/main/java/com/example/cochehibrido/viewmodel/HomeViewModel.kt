@@ -50,6 +50,20 @@ import com.example.cochehibrido.domain.isValidEconomicEntry
 import com.example.cochehibrido.domain.sumValidEconomicValues
 import com.example.cochehibrido.ui.components.charts.ChartPoint
 
+enum class ResetState {
+    IDLE,
+    LOADING,
+    ERROR
+}
+
+internal suspend fun resetApplicationData(
+    fuelRepository: FuelRepository,
+    vehicleRepository: VehicleRepository
+) {
+    fuelRepository.deleteAll()
+    vehicleRepository.clearVehicle()
+}
+
 class HomeViewModel(
     private val fuelRepository: FuelRepository,
     private val vehicleRepository: VehicleRepository
@@ -70,6 +84,11 @@ class HomeViewModel(
 
     val isSavingVehicle: StateFlow<Boolean> = _isSavingVehicle
     val vehicleSaveFailed: StateFlow<Boolean> = _vehicleSaveFailed
+
+    private val resetMutex = Mutex()
+    private val _resetState = MutableStateFlow(ResetState.IDLE)
+
+    val resetState: StateFlow<ResetState> = _resetState
 
     val availableVehicles =
         MutableStateFlow(
@@ -618,12 +637,27 @@ class HomeViewModel(
     }
 
     fun resetApplication() {
+        if (!resetMutex.tryLock()) return
+
+        _resetState.value = ResetState.LOADING
 
         viewModelScope.launch {
+            try {
+                resetApplicationData(fuelRepository, vehicleRepository)
+                _resetState.value = ResetState.IDLE
+            } catch (error: Throwable) {
+                if (error is CancellationException) throw error
 
-            fuelRepository.deleteAll()
+                _resetState.value = ResetState.ERROR
+            } finally {
+                resetMutex.unlock()
+            }
+        }
+    }
 
-            vehicleRepository.clearVehicle()
+    fun dismissResetError() {
+        if (_resetState.value == ResetState.ERROR) {
+            _resetState.value = ResetState.IDLE
         }
     }
 }
