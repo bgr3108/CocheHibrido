@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.LocalGasStation
+import androidx.compose.material.icons.filled.TwoWheeler
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.cochehibrido.data.VehicleType
+import com.example.cochehibrido.data.VehicleCategory
 import com.example.cochehibrido.ui.components.HomeInfoCard
 import com.example.cochehibrido.domain.calculateUnitPrice
 import com.example.cochehibrido.util.toDateTimeString
@@ -106,7 +108,11 @@ fun HomeScreen(
                 }
             ) {
                 Icon(
-                    imageVector = Icons.Default.DirectionsCar,
+                    imageVector = if (vehicle.category == VehicleCategory.MOTO) {
+                        Icons.Default.TwoWheeler
+                    } else {
+                        Icons.Default.DirectionsCar
+                    },
                     contentDescription = "Vehículo"
                 )
             }

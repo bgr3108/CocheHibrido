@@ -8,6 +8,8 @@ data class VehicleInfo(
 
     val year: Int,
 
+    val category: VehicleCategory,
+
     val type: VehicleType,
 
     val batteryCapacity: Double,

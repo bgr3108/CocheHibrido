@@ -4,6 +4,7 @@ import com.example.cochehibrido.data.FuelEntry
 import com.example.cochehibrido.data.FuelRepository
 import com.example.cochehibrido.data.FuelType
 import com.example.cochehibrido.data.Vehicle
+import com.example.cochehibrido.data.VehicleCategory
 import com.example.cochehibrido.data.VehicleCatalog
 import com.example.cochehibrido.data.VehicleInfo
 import com.example.cochehibrido.data.VehiclePreferencesStore
@@ -77,7 +78,7 @@ class ResetApplicationDataTest {
     }
 
     private object EmptyVehicleCatalog : VehicleCatalog {
-        override fun loadVehicles(): List<VehicleInfo> = emptyList()
+        override fun loadVehicles(category: VehicleCategory): List<VehicleInfo> = emptyList()
     }
 
     private class FakeVehiclePreferences(

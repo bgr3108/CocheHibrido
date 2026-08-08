@@ -27,6 +27,16 @@ class VehicleRepositoryTest {
     }
 
     @Test
+    fun absentStoredCategory_isTreatedAsCarForExistingInstallations() {
+        assertEquals(VehicleCategory.COCHE, vehicleCategoryOrDefault(null))
+    }
+
+    @Test
+    fun storedMotorcycleCategory_isParsed() {
+        assertEquals(VehicleCategory.MOTO, vehicleCategoryOrDefault("MOTO"))
+    }
+
+    @Test
     fun loadFailure_isExposed() = runBlocking {
         val error = IllegalStateException("DataStore unavailable")
         val repository = VehicleRepository(
@@ -90,6 +100,30 @@ class VehicleRepositoryTest {
     }
 
     @Test
+    fun savingCar_persistsCarCategory() = runBlocking {
+        val preferences = FakeVehiclePreferences()
+        val repository = VehicleRepository(EmptyVehicleCatalog, preferences)
+        val vehicle = Vehicle(category = VehicleCategory.COCHE)
+
+        repository.isLoading.first { !it }
+        repository.saveVehicle(vehicle)
+
+        assertEquals(VehicleCategory.COCHE, preferences.savedVehicle?.category)
+    }
+
+    @Test
+    fun savingMotorcycle_persistsMotorcycleCategory() = runBlocking {
+        val preferences = FakeVehiclePreferences()
+        val repository = VehicleRepository(EmptyVehicleCatalog, preferences)
+        val vehicle = Vehicle(category = VehicleCategory.MOTO)
+
+        repository.isLoading.first { !it }
+        repository.saveVehicle(vehicle)
+
+        assertEquals(VehicleCategory.MOTO, preferences.savedVehicle?.category)
+    }
+
+    @Test
     fun failedSave_keepsThePreviouslyLoadedVehicle() = runBlocking {
         val previousVehicle = Vehicle(type = VehicleType.GASOLINA, currentKm = 10.0)
         val repository = VehicleRepository(
@@ -111,7 +145,7 @@ class VehicleRepositoryTest {
     }
 
     private object EmptyVehicleCatalog : VehicleCatalog {
-        override fun loadVehicles(): List<VehicleInfo> = emptyList()
+        override fun loadVehicles(category: VehicleCategory): List<VehicleInfo> = emptyList()
     }
 
     private class FakeVehiclePreferences(
@@ -120,8 +154,11 @@ class VehicleRepositoryTest {
         private val saveError: Exception? = null
     ) : VehiclePreferencesStore {
 
+        var savedVehicle: Vehicle? = null
+
         override suspend fun saveVehicle(vehicle: Vehicle) {
             saveError?.let { throw it }
+            savedVehicle = vehicle
         }
 
         override suspend fun loadVehicle(): Vehicle {

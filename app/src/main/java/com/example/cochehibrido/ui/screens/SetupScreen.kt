@@ -16,6 +16,8 @@ import com.example.cochehibrido.ui.theme.CardBlueLight
 import com.example.cochehibrido.ui.theme.CardBlueDark
 import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.cochehibrido.data.Vehicle
+import com.example.cochehibrido.data.VehicleCategory
+import com.example.cochehibrido.data.isVehicleSelectionCompatible
 import com.example.cochehibrido.util.toFiniteDoubleOrNull
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,6 +49,7 @@ fun SetupScreen(
         mutableStateOf(false)
     }
     val vehicles by homeViewModel.availableVehicles.collectAsState()
+    val selectedCategory by homeViewModel.setupVehicleCategory.collectAsState()
     val isSaving by homeViewModel.isSavingVehicle.collectAsState()
     val vehicleSaveFailed by homeViewModel.vehicleSaveFailed.collectAsState()
     val isDark = isSystemInDarkTheme()
@@ -82,7 +85,7 @@ fun SetupScreen(
         else -> null
     }
     val isConfigurationValid =
-        selectedVehicle != null &&
+        isVehicleSelectionCompatible(selectedVehicle, selectedCategory) &&
                 initialMileage != null &&
                 initialMileage >= 0.0
 
@@ -102,9 +105,46 @@ fun SetupScreen(
         ) {
 
         Text(
-            text = "Configura tu coche",
+            text = "Configura tu vehículo",
             style = MaterialTheme.typography.headlineSmall
         )
+
+            Text(
+                text = "Tipo de vehículo",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                VehicleCategory.entries.forEach { category ->
+                    FilterChip(
+                        selected = selectedCategory == category,
+                        onClick = {
+                            if (selectedCategory != category) {
+                                homeViewModel.selectSetupVehicleCategory(category)
+                                selectedBrand = ""
+                                selectedModel = ""
+                                selectedYear = ""
+                            }
+                        },
+                        label = {
+                            Text(
+                                if (category == VehicleCategory.COCHE) "Coche" else "Moto"
+                            )
+                        }
+                    )
+                }
+            }
+
+            if (selectedCategory == VehicleCategory.MOTO && vehicles.isEmpty()) {
+                Text(
+                    text = "Aún no hay motos disponibles en el catálogo.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
             ExposedDropdownMenuBox(
                 expanded = expandedBrands,
                 onExpandedChange = {
@@ -332,7 +372,9 @@ fun SetupScreen(
                 containerColor = MaterialTheme.colorScheme.primary
             ),
             onClick = {
-                val vehicle = selectedVehicle ?: return@Button
+                val vehicle = selectedVehicle
+                    ?.takeIf { isVehicleSelectionCompatible(it, selectedCategory) }
+                    ?: return@Button
                 val validMileage = km.toFiniteDoubleOrNull()
                     ?.takeIf { it >= 0.0 }
                     ?: return@Button
@@ -342,6 +384,7 @@ fun SetupScreen(
                         brand = vehicle.brand,
                         model = vehicle.model,
                         year = vehicle.year,
+                        category = selectedCategory,
                         type = vehicle.type,
                         batteryCapacity = vehicle.batteryCapacity,
                         fuelTankCapacity = vehicle.fuelTankCapacity,

@@ -8,6 +8,8 @@ data class Vehicle(
 
     val year: Int? = null,
 
+    val category: VehicleCategory = VehicleCategory.COCHE,
+
     val type: VehicleType? = null,
 
     val batteryCapacity: Double = 0.0,

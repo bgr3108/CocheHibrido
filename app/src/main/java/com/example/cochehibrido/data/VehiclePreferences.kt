@@ -36,6 +36,9 @@ class VehiclePreferences(
         val TYPE =
             stringPreferencesKey("type")
 
+        val CATEGORY =
+            stringPreferencesKey("vehicle_category")
+
         val BATTERY =
             doublePreferencesKey("battery")
 
@@ -58,6 +61,8 @@ class VehiclePreferences(
 
             prefs[Keys.TYPE] =
                 vehicle.type?.name ?: ""
+
+            prefs[Keys.CATEGORY] = vehicle.category.name
 
             prefs[Keys.BATTERY] =
                 vehicle.batteryCapacity
@@ -88,6 +93,8 @@ class VehiclePreferences(
 
             type = vehicleTypeOrNull(prefs[Keys.TYPE]),
 
+            category = vehicleCategoryOrDefault(prefs[Keys.CATEGORY]),
+
             batteryCapacity =
                 prefs[Keys.BATTERY] ?: 0.0,
 
@@ -113,3 +120,11 @@ internal fun vehicleTypeOrNull(value: String?): VehicleType? =
         ?.let { storedType ->
             VehicleType.entries.firstOrNull { it.name == storedType }
         }
+
+internal fun vehicleCategoryOrDefault(value: String?): VehicleCategory =
+    value
+        ?.takeIf { it.isNotBlank() }
+        ?.let { storedCategory ->
+            VehicleCategory.entries.firstOrNull { it.name == storedCategory }
+        }
+        ?: VehicleCategory.COCHE

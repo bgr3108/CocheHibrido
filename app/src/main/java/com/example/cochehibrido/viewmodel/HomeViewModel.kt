@@ -8,6 +8,7 @@ import com.example.cochehibrido.data.FuelType
 import com.example.cochehibrido.data.MonthlyCost
 import com.example.cochehibrido.data.MonthlyPrice
 import com.example.cochehibrido.data.Vehicle
+import com.example.cochehibrido.data.VehicleCategory
 import com.example.cochehibrido.data.VehicleRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -90,12 +91,19 @@ class HomeViewModel(
 
     val resetState: StateFlow<ResetState> = _resetState
 
-    val availableVehicles =
-        MutableStateFlow(
-            vehicleRepository
-                .vehicleDataSource
-                .loadVehicles()
-        )
+    private val _setupVehicleCategory = MutableStateFlow(VehicleCategory.COCHE)
+    val setupVehicleCategory: StateFlow<VehicleCategory> = _setupVehicleCategory
+
+    val availableVehicles = MutableStateFlow(
+        vehicleRepository.vehicleDataSource.loadVehicles(VehicleCategory.COCHE)
+    )
+
+    fun selectSetupVehicleCategory(category: VehicleCategory) {
+        if (_setupVehicleCategory.value == category) return
+
+        _setupVehicleCategory.value = category
+        availableVehicles.value = vehicleRepository.vehicleDataSource.loadVehicles(category)
+    }
 
     fun saveInitialVehicle(
         vehicle: Vehicle,
