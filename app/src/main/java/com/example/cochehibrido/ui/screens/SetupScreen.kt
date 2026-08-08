@@ -17,6 +17,7 @@ import com.example.cochehibrido.ui.theme.CardBlueDark
 import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.cochehibrido.data.VehicleRepository
 import com.example.cochehibrido.data.Vehicle
+import com.example.cochehibrido.util.toFiniteDoubleOrNull
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,6 +74,17 @@ fun SetupScreen(
                 it.model == selectedModel &&
                 it.year.toString() == selectedYear
     }
+    val initialMileage = km.toFiniteDoubleOrNull()
+    val kmErrorMessage = when {
+        km.isBlank() -> null
+        initialMileage == null -> "Introduce un kilometraje válido"
+        initialMileage < 0.0 -> "El kilometraje no puede ser negativo"
+        else -> null
+    }
+    val isConfigurationValid =
+        selectedVehicle != null &&
+                initialMileage != null &&
+                initialMileage >= 0.0
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -241,11 +253,22 @@ fun SetupScreen(
                     km = it.replace("\n", "")
                 },
                 label = { Text("Km actuales") },
+                isError = kmErrorMessage != null,
+                supportingText = kmErrorMessage?.let { message ->
+                    { Text(message) }
+                },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Decimal
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
+            if (km.isNotBlank() && selectedVehicle == null) {
+                Text(
+                    text = "Selecciona un tipo de vehículo",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
             selectedVehicle?.let { vehicle ->
 
                 Card(
@@ -302,25 +325,25 @@ fun SetupScreen(
                 containerColor = MaterialTheme.colorScheme.primary
             ),
             onClick = {
+                val vehicle = selectedVehicle ?: return@Button
+                val validMileage = km.toFiniteDoubleOrNull()
+                    ?.takeIf { it >= 0.0 }
+                    ?: return@Button
 
-                selectedVehicle?.let {
-
-                    vehicleRepository.saveVehicle(
-                        Vehicle(
-                            brand = it.brand,
-                            model = it.model,
-                            year = it.year,
-                            type = it.type,
-                            batteryCapacity = it.batteryCapacity,
-                            fuelTankCapacity = it.fuelTankCapacity,
-                            currentKm = km.toDoubleOrNull() ?: 0.0
-                        )
+                vehicleRepository.saveVehicle(
+                    Vehicle(
+                        brand = vehicle.brand,
+                        model = vehicle.model,
+                        year = vehicle.year,
+                        type = vehicle.type,
+                        batteryCapacity = vehicle.batteryCapacity,
+                        fuelTankCapacity = vehicle.fuelTankCapacity,
+                        currentKm = validMileage
                     )
-                }
-
+                )
                 onDone()
             },
-            enabled = km.isNotBlank(),
+            enabled = isConfigurationValid,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Guardar")
