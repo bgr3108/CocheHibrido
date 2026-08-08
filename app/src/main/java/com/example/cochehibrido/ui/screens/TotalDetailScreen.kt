@@ -1,6 +1,8 @@
 package com.example.cochehibrido.ui.screens
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -29,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.cochehibrido.data.VehicleType
 import com.example.cochehibrido.ui.components.StatisticRow
 import com.example.cochehibrido.ui.theme.CardBlueDark
 import com.example.cochehibrido.ui.theme.CardBlueLight
@@ -72,6 +75,17 @@ fun TotalDetailScreen(
     val costPerKm by viewModel
         .costPerKm
         .collectAsStateWithLifecycle()
+
+    val vehicle by viewModel
+        .vehicle
+        .collectAsStateWithLifecycle()
+
+    val showFuel =
+        vehicle.type != VehicleType.ELECTRICO
+
+    val showElectric =
+        vehicle.type == VehicleType.ELECTRICO ||
+                vehicle.type == VehicleType.HIBRIDO_ENCHUFABLE
 
     Scaffold(
 
@@ -131,7 +145,11 @@ fun TotalDetailScreen(
 
             gastoTotalVehiculo = gastoTotalVehiculo,
 
-            costPerKm = costPerKm
+            costPerKm = costPerKm,
+
+            showFuel = showFuel,
+
+            showElectric = showElectric
 
         )
 
@@ -155,7 +173,11 @@ private fun TotalContent(
 
     gastoTotalVehiculo: Double,
 
-    costPerKm: Double
+    costPerKm: Double,
+
+    showFuel: Boolean,
+
+    showElectric: Boolean
 
 ) {
 
@@ -163,6 +185,7 @@ private fun TotalContent(
 
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(innerPadding)
             .padding(16.dp),
 
@@ -216,53 +239,61 @@ private fun TotalContent(
                     "${totalKm.toSpanishDecimal()} km"
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                if (showFuel || showElectric) {
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                HorizontalDivider()
+                    HorizontalDivider()
 
-                Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
 
-                Text(
-                    "Gasolina",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                if (showFuel) {
+                    Text(
+                        "Gasolina",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                StatisticRow(
-                    "Litros consumidos",
-                    "${litrosTotales.toSpanishDecimal()} L"
-                )
+                    StatisticRow(
+                        "Litros consumidos",
+                        "${litrosTotales.toSpanishDecimal()} L"
+                    )
 
-                StatisticRow(
-                    "Gasto total",
-                    "${gastoGasolinaTotal.toSpanishDecimal()} €"
-                )
+                    StatisticRow(
+                        "Gasto total",
+                        "${gastoGasolinaTotal.toSpanishDecimal()} €"
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                if (showFuel && showElectric) {
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                HorizontalDivider()
+                    HorizontalDivider()
 
-                Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
 
-                Text(
-                    "Electricidad",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                if (showElectric) {
+                    Text(
+                        "Electricidad",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                StatisticRow(
-                    "kWh cargados",
-                    "${kwhTotales.toSpanishDecimal()} kWh"
-                )
+                    StatisticRow(
+                        "kWh cargados",
+                        "${kwhTotales.toSpanishDecimal()} kWh"
+                    )
 
-                StatisticRow(
-                    "Gasto total",
-                    "${gastoElectricoTotal.toSpanishDecimal()} €"
-                )
+                    StatisticRow(
+                        "Gasto total",
+                        "${gastoElectricoTotal.toSpanishDecimal()} €"
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
