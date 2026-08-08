@@ -37,8 +37,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.cochehibrido.ui.theme.CardBlueDark
 import com.example.cochehibrido.ui.theme.CardBlueLight
 import com.example.cochehibrido.data.MonthlyCost
+import com.example.cochehibrido.ui.components.charts.BarChart
 import com.example.cochehibrido.ui.components.charts.ChartPoint
-import com.example.cochehibrido.ui.components.charts.LineChart
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -265,26 +265,32 @@ private fun CostContent(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                if (historialCostesGasolina.size < 2) {
+                Text(
+                    text = "Gasto mensual",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (historialCostesGasolina.isEmpty()) {
                     Text(
                         text = "Añade registros en al menos dos meses para ver la evolución",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall
                     )
                 } else {
-                    LineChart(
+                    BarChart(
                         points = historialCostesGasolina,
-                        contentDescription = "Gráfico de costes mensuales de gasolina: ${historialCostesGasolina.size} meses registrados",
-                        xLabelFormatter = { value ->
+                        contentDescription = "Gráfico de gasto mensual de gasolina: ${historialCostesGasolina.size} meses registrados",
+                        xLabelFormatter = { index ->
                             costesMensualesGasolina
-                                .getOrNull(value.toInt())
+                                .getOrNull(index)
                                 ?.month
                                 .orEmpty()
                         },
                         yLabelFormatter = { value ->
                             "${value.toSpanishDecimal()} €"
-                        },
-                        xTicks = costesMensualesGasolina.indices.map(Int::toDouble)
+                        }
                     )
                 }
             }
@@ -374,26 +380,32 @@ private fun CostContent(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                if (historialCostesElectricos.size < 2) {
+                Text(
+                    text = "Gasto mensual",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (historialCostesElectricos.isEmpty()) {
                     Text(
                         text = "Añade registros en al menos dos meses para ver la evolución",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall
                     )
                 } else {
-                    LineChart(
+                    BarChart(
                         points = historialCostesElectricos,
-                        contentDescription = "Gráfico de costes mensuales de electricidad: ${historialCostesElectricos.size} meses registrados",
-                        xLabelFormatter = { value ->
+                        contentDescription = "Gráfico de gasto mensual de electricidad: ${historialCostesElectricos.size} meses registrados",
+                        xLabelFormatter = { index ->
                             costesMensualesElectricos
-                                .getOrNull(value.toInt())
+                                .getOrNull(index)
                                 ?.month
                                 .orEmpty()
                         },
                         yLabelFormatter = { value ->
                             "${value.toSpanishDecimal()} €"
-                        },
-                        xTicks = costesMensualesElectricos.indices.map(Int::toDouble)
+                        }
                     )
                 }
             }
