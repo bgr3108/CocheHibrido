@@ -36,14 +36,10 @@ class VehicleRepository(
         }
     }
 
-    fun saveVehicle(vehicle: Vehicle) {
+    suspend fun saveVehicle(vehicle: Vehicle) {
 
+        vehiclePreferences.saveVehicle(vehicle)
         _vehicle.value = vehicle
-
-        CoroutineScope(Dispatchers.IO).launch {
-
-            vehiclePreferences.saveVehicle(vehicle)
-        }
     }
     suspend fun clearVehicle() {
 

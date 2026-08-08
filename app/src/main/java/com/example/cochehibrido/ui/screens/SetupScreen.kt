@@ -15,14 +15,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import com.example.cochehibrido.ui.theme.CardBlueLight
 import com.example.cochehibrido.ui.theme.CardBlueDark
 import androidx.compose.foundation.isSystemInDarkTheme
-import com.example.cochehibrido.data.VehicleRepository
 import com.example.cochehibrido.data.Vehicle
 import com.example.cochehibrido.util.toFiniteDoubleOrNull
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetupScreen(
-    vehicleRepository: VehicleRepository,
     homeViewModel: HomeViewModel,
     onDone: () -> Unit
 ){
@@ -49,6 +47,8 @@ fun SetupScreen(
         mutableStateOf(false)
     }
     val vehicles by homeViewModel.availableVehicles.collectAsState()
+    val isSaving by homeViewModel.isSavingVehicle.collectAsState()
+    val vehicleSaveFailed by homeViewModel.vehicleSaveFailed.collectAsState()
     val isDark = isSystemInDarkTheme()
 
     val brands = vehicles
@@ -269,6 +269,13 @@ fun SetupScreen(
                     style = MaterialTheme.typography.bodySmall
                 )
             }
+            if (vehicleSaveFailed) {
+                Text(
+                    text = "No se pudo guardar la configuración. Inténtalo de nuevo.",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
             selectedVehicle?.let { vehicle ->
 
                 Card(
@@ -330,7 +337,7 @@ fun SetupScreen(
                     ?.takeIf { it >= 0.0 }
                     ?: return@Button
 
-                vehicleRepository.saveVehicle(
+                homeViewModel.saveInitialVehicle(
                     Vehicle(
                         brand = vehicle.brand,
                         model = vehicle.model,
@@ -339,14 +346,22 @@ fun SetupScreen(
                         batteryCapacity = vehicle.batteryCapacity,
                         fuelTankCapacity = vehicle.fuelTankCapacity,
                         currentKm = validMileage
-                    )
+                    ),
+                    onSaved = onDone
                 )
-                onDone()
             },
-            enabled = isConfigurationValid,
+            enabled = isConfigurationValid && !isSaving,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Guardar")
+            if (isSaving) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Guardar")
+            }
         }
     }
     }

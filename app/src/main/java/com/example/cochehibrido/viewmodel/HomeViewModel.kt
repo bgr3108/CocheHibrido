@@ -7,6 +7,7 @@ import com.example.cochehibrido.data.FuelRepository
 import com.example.cochehibrido.data.FuelType
 import com.example.cochehibrido.data.MonthlyCost
 import com.example.cochehibrido.data.MonthlyPrice
+import com.example.cochehibrido.data.Vehicle
 import com.example.cochehibrido.data.VehicleRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,6 +16,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.sync.Mutex
 import com.example.cochehibrido.domain.calculateAverageElectricConsumption
 import com.example.cochehibrido.domain.calculateAverageFuelConsumption
 import com.example.cochehibrido.domain.calculateBestElectricConsumption
@@ -61,12 +64,43 @@ class HomeViewModel(
     val isVehicleLoading =
         vehicleRepository.isLoading
 
+    private val vehicleSaveMutex = Mutex()
+    private val _isSavingVehicle = MutableStateFlow(false)
+    private val _vehicleSaveFailed = MutableStateFlow(false)
+
+    val isSavingVehicle: StateFlow<Boolean> = _isSavingVehicle
+    val vehicleSaveFailed: StateFlow<Boolean> = _vehicleSaveFailed
+
     val availableVehicles =
         MutableStateFlow(
             vehicleRepository
                 .vehicleDataSource
                 .loadVehicles()
         )
+
+    fun saveInitialVehicle(
+        vehicle: Vehicle,
+        onSaved: () -> Unit
+    ) {
+        if (!vehicleSaveMutex.tryLock()) return
+
+        _isSavingVehicle.value = true
+        _vehicleSaveFailed.value = false
+
+        viewModelScope.launch {
+            try {
+                vehicleRepository.saveVehicle(vehicle)
+                onSaved()
+            } catch (error: Throwable) {
+                if (error is CancellationException) throw error
+
+                _vehicleSaveFailed.value = true
+            } finally {
+                _isSavingVehicle.value = false
+                vehicleSaveMutex.unlock()
+            }
+        }
+    }
 
     // ============================================================
     // Entradas

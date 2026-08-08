@@ -21,7 +21,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -63,7 +62,6 @@ fun AppContent(
     homeViewModel: HomeViewModel
 ) {
     val navController = rememberNavController()
-    val context = LocalContext.current
     val isVehicleLoading by homeViewModel
         .isVehicleLoading
         .collectAsStateWithLifecycle()
@@ -76,11 +74,6 @@ fun AppContent(
     } else if (vehicle.type == null) {
 
         SetupScreen(
-            vehicleRepository =
-                (context.applicationContext as HybridCarApplication)
-                    .container
-                    .vehicleRepository,
-
             homeViewModel = homeViewModel,
 
             onDone = {

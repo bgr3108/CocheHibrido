@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -18,8 +19,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +41,10 @@ fun StatisticsScreen(
     onOpenCost: () -> Unit,
     onOpenTotal: () -> Unit
 ){
+
+    val entries by viewModel
+        .entries
+        .collectAsState(initial = emptyList())
 
     val consumoGasolina by viewModel
         .consumoGasolina
@@ -89,7 +97,32 @@ fun StatisticsScreen(
         vehicle.type == VehicleType.ELECTRICO ||
                 vehicle.type == VehicleType.HIBRIDO_ENCHUFABLE
 
-    Column(
+    if (entries.isEmpty()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Aún no hay estadísticas",
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Registra tus primeros consumos para empezar a ver estadísticas y costes.",
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
@@ -298,5 +331,6 @@ fun StatisticsScreen(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
+    }
     }
 }
