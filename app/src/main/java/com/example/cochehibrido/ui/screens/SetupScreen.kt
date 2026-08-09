@@ -5,6 +5,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -28,11 +29,11 @@ fun SetupScreen(
     onDone: () -> Unit
 ){
 
-    var km by remember { mutableStateOf("") }
-    var selectedBrand by remember {
+    var km by rememberSaveable { mutableStateOf("") }
+    var selectedBrand by rememberSaveable {
         mutableStateOf("")
     }
-    var selectedModel by remember {
+    var selectedModel by rememberSaveable {
         mutableStateOf("")
     }
 
@@ -42,7 +43,7 @@ fun SetupScreen(
     var expandedBrands by remember {
         mutableStateOf(false)
     }
-    var selectedYear by remember {
+    var selectedYear by rememberSaveable {
         mutableStateOf("")
     }
 
@@ -50,7 +51,12 @@ fun SetupScreen(
         mutableStateOf(false)
     }
     val vehicles by homeViewModel.availableVehicles.collectAsState()
-    val selectedCategory by homeViewModel.setupVehicleCategory.collectAsState()
+    val selectedCategoryName = rememberSaveable {
+        mutableStateOf(homeViewModel.setupVehicleCategory.value.name)
+    }
+    val selectedCategory = VehicleCategory.entries.firstOrNull {
+        it.name == selectedCategoryName.value
+    } ?: VehicleCategory.COCHE
     val isSaving by homeViewModel.isSavingVehicle.collectAsState()
     val vehicleSaveFailed by homeViewModel.vehicleSaveFailed.collectAsState()
     val isDark = isSystemInDarkTheme()
@@ -60,6 +66,10 @@ fun SetupScreen(
         selectedContainerColor = MaterialTheme.colorScheme.primary,
         selectedLabelColor = MaterialTheme.colorScheme.onPrimary
     )
+
+    LaunchedEffect(selectedCategory) {
+        homeViewModel.selectSetupVehicleCategory(selectedCategory)
+    }
 
     val brands = vehicles
         .map { it.brand }
@@ -129,7 +139,7 @@ fun SetupScreen(
                         selected = selectedCategory == category,
                         onClick = {
                             if (selectedCategory != category) {
-                                homeViewModel.selectSetupVehicleCategory(category)
+                                selectedCategoryName.value = category.name
                                 selectedBrand = ""
                                 selectedModel = ""
                                 selectedYear = ""
