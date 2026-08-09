@@ -27,10 +27,12 @@ import com.example.cochehibrido.ui.theme.CardBlueDark
 
 import com.example.cochehibrido.data.FuelEntry
 import com.example.cochehibrido.data.FuelType
+import com.example.cochehibrido.data.VehicleType
 import com.example.cochehibrido.domain.calculateUnitPrice
 import com.example.cochehibrido.viewmodel.DateFilter
 import com.example.cochehibrido.viewmodel.EnergyFilter
 import com.example.cochehibrido.viewmodel.FuelEntryViewModel
+import com.example.cochehibrido.viewmodel.HomeViewModel
 import com.example.cochehibrido.viewmodel.supportedDateFilters
 import com.example.cochehibrido.util.toSpanishDecimal
 import com.example.cochehibrido.util.toDateTimeString
@@ -39,6 +41,7 @@ import com.example.cochehibrido.util.toDateTimeString
 fun ConsumptionListScreen(
     innerPadding: PaddingValues,
     viewModel: FuelEntryViewModel,
+    homeViewModel: HomeViewModel,
     navController: NavController, // 🔥 IMPORTANTE
     onAddClick: () -> Unit
 ) {
@@ -46,10 +49,26 @@ fun ConsumptionListScreen(
     val entries by viewModel.entries.collectAsStateWithLifecycle()
     val filteredEntries by viewModel.filteredEntries.collectAsStateWithLifecycle()
     val filterState by viewModel.filterState.collectAsStateWithLifecycle()
+    val vehicle by homeViewModel.vehicle.collectAsStateWithLifecycle()
     val isDark = isSystemInDarkTheme()
     val entryToDelete = remember { mutableStateOf<FuelEntry?>(null) }
     var isDateMenuExpanded by remember { mutableStateOf(false) }
     val isDateFilterActive = filterState.dateFilter != DateFilter.ALL
+    val showFuel = vehicle.type != VehicleType.ELECTRICO
+    val showElectric =
+        vehicle.type == VehicleType.ELECTRICO ||
+                vehicle.type == VehicleType.HIBRIDO_ENCHUFABLE
+
+    LaunchedEffect(showFuel, showElectric) {
+        val selectedEnergy = filterState.energyFilter
+        val hasInvalidEnergyFilter =
+            (selectedEnergy == EnergyFilter.GASOLINE && !showFuel) ||
+                    (selectedEnergy == EnergyFilter.ELECTRIC && !showElectric)
+
+        if (hasInvalidEnergyFilter) {
+            viewModel.setEnergyFilter(EnergyFilter.ALL)
+        }
+    }
     val entryCountText = if (filterState.hasActiveFilters) {
         "${filteredEntries.size} de ${entries.size}"
     } else {
@@ -134,30 +153,34 @@ fun ConsumptionListScreen(
                     selectedBorderColor = MaterialTheme.colorScheme.primary
                 )
             )
-            FilterChip(
-                selected = filterState.energyFilter == EnergyFilter.GASOLINE,
-                onClick = { viewModel.setEnergyFilter(EnergyFilter.GASOLINE) },
-                label = { Text("Gasolina") },
-                colors = filterChipColors,
-                border = FilterChipDefaults.filterChipBorder(
-                    enabled = true,
+            if (showFuel) {
+                FilterChip(
                     selected = filterState.energyFilter == EnergyFilter.GASOLINE,
-                    borderColor = MaterialTheme.colorScheme.outline,
-                    selectedBorderColor = MaterialTheme.colorScheme.primary
+                    onClick = { viewModel.setEnergyFilter(EnergyFilter.GASOLINE) },
+                    label = { Text("Gasolina") },
+                    colors = filterChipColors,
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = filterState.energyFilter == EnergyFilter.GASOLINE,
+                        borderColor = MaterialTheme.colorScheme.outline,
+                        selectedBorderColor = MaterialTheme.colorScheme.primary
+                    )
                 )
-            )
-            FilterChip(
-                selected = filterState.energyFilter == EnergyFilter.ELECTRIC,
-                onClick = { viewModel.setEnergyFilter(EnergyFilter.ELECTRIC) },
-                label = { Text("Electricidad") },
-                colors = filterChipColors,
-                border = FilterChipDefaults.filterChipBorder(
-                    enabled = true,
+            }
+            if (showElectric) {
+                FilterChip(
                     selected = filterState.energyFilter == EnergyFilter.ELECTRIC,
-                    borderColor = MaterialTheme.colorScheme.outline,
-                    selectedBorderColor = MaterialTheme.colorScheme.primary
+                    onClick = { viewModel.setEnergyFilter(EnergyFilter.ELECTRIC) },
+                    label = { Text("Electricidad") },
+                    colors = filterChipColors,
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = filterState.energyFilter == EnergyFilter.ELECTRIC,
+                        borderColor = MaterialTheme.colorScheme.outline,
+                        selectedBorderColor = MaterialTheme.colorScheme.primary
+                    )
                 )
-            )
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))

@@ -53,6 +53,7 @@ fun HybridCarNavHost(
             ConsumptionListScreen(
                 innerPadding = innerPadding,
                 viewModel = fuelViewModel,
+                homeViewModel = homeViewModel,
                 navController = navController,
                 onAddClick = {
                     navController.navigate("add_refuel")

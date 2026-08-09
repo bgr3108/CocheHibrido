@@ -1,0 +1,3218 @@
+[
+  {
+    "brand": "Honda",
+    "model": "CB500F",
+    "year": 2013,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.7
+  },
+  {
+    "brand": "Honda",
+    "model": "CB500F",
+    "year": 2014,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.7
+  },
+  {
+    "brand": "Honda",
+    "model": "CB500F",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.7
+  },
+  {
+    "brand": "Honda",
+    "model": "CB500F",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.7
+  },
+  {
+    "brand": "Honda",
+    "model": "CB500F",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.7
+  },
+  {
+    "brand": "Honda",
+    "model": "CB500F",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.7
+  },
+  {
+    "brand": "Honda",
+    "model": "CB500F",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.1
+  },
+  {
+    "brand": "Honda",
+    "model": "CB500F",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.1
+  },
+  {
+    "brand": "Honda",
+    "model": "CB500F",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.1
+  },
+  {
+    "brand": "Honda",
+    "model": "CB500F",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.1
+  },
+  {
+    "brand": "Honda",
+    "model": "CB500F",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.1
+  },
+  {
+    "brand": "Honda",
+    "model": "CB500 Hornet",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.1
+  },
+  {
+    "brand": "Honda",
+    "model": "CB500 Hornet",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.1
+  },
+  {
+    "brand": "Honda",
+    "model": "CB650R",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.4
+  },
+  {
+    "brand": "Honda",
+    "model": "CB650R",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.4
+  },
+  {
+    "brand": "Honda",
+    "model": "CB650R",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.4
+  },
+  {
+    "brand": "Honda",
+    "model": "CB650R",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.4
+  },
+  {
+    "brand": "Honda",
+    "model": "CB650R",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.4
+  },
+  {
+    "brand": "Honda",
+    "model": "CB650R",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.4
+  },
+  {
+    "brand": "Honda",
+    "model": "CB650R",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.4
+  },
+  {
+    "brand": "Honda",
+    "model": "CBR650R",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.4
+  },
+  {
+    "brand": "Honda",
+    "model": "CBR650R",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.4
+  },
+  {
+    "brand": "Honda",
+    "model": "CBR650R",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.4
+  },
+  {
+    "brand": "Honda",
+    "model": "CBR650R",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.4
+  },
+  {
+    "brand": "Honda",
+    "model": "CBR650R",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.4
+  },
+  {
+    "brand": "Honda",
+    "model": "CBR650R",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.4
+  },
+  {
+    "brand": "Honda",
+    "model": "CBR650R",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.4
+  },
+  {
+    "brand": "Honda",
+    "model": "CRF1100L Africa Twin",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.8
+  },
+  {
+    "brand": "Honda",
+    "model": "CRF1100L Africa Twin",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.8
+  },
+  {
+    "brand": "Honda",
+    "model": "CRF1100L Africa Twin",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.8
+  },
+  {
+    "brand": "Honda",
+    "model": "CRF1100L Africa Twin",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.8
+  },
+  {
+    "brand": "Honda",
+    "model": "CRF1100L Africa Twin",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.8
+  },
+  {
+    "brand": "Honda",
+    "model": "CRF1100L Africa Twin",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.8
+  },
+  {
+    "brand": "Honda",
+    "model": "CRF1100L Africa Twin Adventure Sports",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 24.8
+  },
+  {
+    "brand": "Honda",
+    "model": "CRF1100L Africa Twin Adventure Sports",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 24.8
+  },
+  {
+    "brand": "Honda",
+    "model": "CRF1100L Africa Twin Adventure Sports",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 24.8
+  },
+  {
+    "brand": "Honda",
+    "model": "CRF1100L Africa Twin Adventure Sports",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 24.8
+  },
+  {
+    "brand": "Honda",
+    "model": "CRF1100L Africa Twin Adventure Sports",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 24.8
+  },
+  {
+    "brand": "Honda",
+    "model": "CRF1100L Africa Twin Adventure Sports",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 24.8
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2010,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 6.2
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2011,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 6.2
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2012,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 6.2
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2013,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 6.2
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2014,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 8.0
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 8.0
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 8.0
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 8.0
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 8.0
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 8.0
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 8.0
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 8.1
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 8.1
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 8.1
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 8.1
+  },
+  {
+    "brand": "Honda",
+    "model": "PCX 125",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 8.1
+  },
+  {
+    "brand": "Honda",
+    "model": "SH125i Scoopy",
+    "year": 2013,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.5
+  },
+  {
+    "brand": "Honda",
+    "model": "SH125i Scoopy",
+    "year": 2014,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.5
+  },
+  {
+    "brand": "Honda",
+    "model": "SH125i Scoopy",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.5
+  },
+  {
+    "brand": "Honda",
+    "model": "SH125i Scoopy",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.5
+  },
+  {
+    "brand": "Honda",
+    "model": "SH125i Scoopy",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.5
+  },
+  {
+    "brand": "Honda",
+    "model": "SH125i Scoopy",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.5
+  },
+  {
+    "brand": "Honda",
+    "model": "SH125i Scoopy",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.5
+  },
+  {
+    "brand": "Honda",
+    "model": "SH125i Scoopy",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.0
+  },
+  {
+    "brand": "Honda",
+    "model": "SH125i Scoopy",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.0
+  },
+  {
+    "brand": "Honda",
+    "model": "SH125i Scoopy",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.0
+  },
+  {
+    "brand": "Honda",
+    "model": "SH125i Scoopy",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.0
+  },
+  {
+    "brand": "Honda",
+    "model": "SH125i Scoopy",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.0
+  },
+  {
+    "brand": "Honda",
+    "model": "SH125i Scoopy",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.0
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 125",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.5
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 125",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.5
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 125",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.5
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 125",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.5
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 125",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.5
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 125",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.5
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 125",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.7
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 125",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.7
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 125",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.7
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 125",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.7
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 125",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.7
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 350",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.7
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 350",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.7
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 350",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.7
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 350",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.7
+  },
+  {
+    "brand": "Honda",
+    "model": "Forza 350",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.7
+  },
+  {
+    "brand": "Honda",
+    "model": "X-ADV 750",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.1
+  },
+  {
+    "brand": "Honda",
+    "model": "X-ADV 750",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.1
+  },
+  {
+    "brand": "Honda",
+    "model": "X-ADV 750",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.1
+  },
+  {
+    "brand": "Honda",
+    "model": "X-ADV 750",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.1
+  },
+  {
+    "brand": "Honda",
+    "model": "X-ADV 750",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.2
+  },
+  {
+    "brand": "Honda",
+    "model": "X-ADV 750",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.2
+  },
+  {
+    "brand": "Honda",
+    "model": "X-ADV 750",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.2
+  },
+  {
+    "brand": "Honda",
+    "model": "X-ADV 750",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.2
+  },
+  {
+    "brand": "Honda",
+    "model": "X-ADV 750",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.2
+  },
+  {
+    "brand": "Honda",
+    "model": "NC750X",
+    "year": 2014,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.1
+  },
+  {
+    "brand": "Honda",
+    "model": "NC750X",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.1
+  },
+  {
+    "brand": "Honda",
+    "model": "NC750X",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.1
+  },
+  {
+    "brand": "Honda",
+    "model": "NC750X",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.1
+  },
+  {
+    "brand": "Honda",
+    "model": "NC750X",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.1
+  },
+  {
+    "brand": "Honda",
+    "model": "NC750X",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.1
+  },
+  {
+    "brand": "Honda",
+    "model": "NC750X",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.1
+  },
+  {
+    "brand": "Honda",
+    "model": "NC750X",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.1
+  },
+  {
+    "brand": "Honda",
+    "model": "NC750X",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.1
+  },
+  {
+    "brand": "Honda",
+    "model": "NC750X",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.1
+  },
+  {
+    "brand": "Honda",
+    "model": "NC750X",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.1
+  },
+  {
+    "brand": "Honda",
+    "model": "NC750X",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.1
+  },
+  {
+    "brand": "Honda",
+    "model": "CMX500 Rebel",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.2
+  },
+  {
+    "brand": "Honda",
+    "model": "CMX500 Rebel",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.2
+  },
+  {
+    "brand": "Honda",
+    "model": "CMX500 Rebel",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.2
+  },
+  {
+    "brand": "Honda",
+    "model": "CMX500 Rebel",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.2
+  },
+  {
+    "brand": "Honda",
+    "model": "CMX500 Rebel",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.2
+  },
+  {
+    "brand": "Honda",
+    "model": "CMX500 Rebel",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.2
+  },
+  {
+    "brand": "Honda",
+    "model": "CMX500 Rebel",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.2
+  },
+  {
+    "brand": "Honda",
+    "model": "CMX500 Rebel",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.2
+  },
+  {
+    "brand": "Honda",
+    "model": "CMX500 Rebel",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.2
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-07",
+    "year": 2014,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-07",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-07",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-07",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-07",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-07",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-07",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-07",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-07",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-07",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-07",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-07",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-09",
+    "year": 2014,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-09",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-09",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-09",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-09",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-09",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-09",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-09",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-09",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-09",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-09",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "MT-09",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "TMAX 530",
+    "year": 2012,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "TMAX 530",
+    "year": 2013,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "TMAX 530",
+    "year": 2014,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "TMAX 530",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "TMAX 530",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "TMAX 530",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "TMAX 530",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "TMAX 530",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "TMAX 560",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "TMAX 560",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "TMAX 560",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "TMAX 560",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "TMAX 560",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "TMAX 560",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "NMAX 125",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 6.6
+  },
+  {
+    "brand": "Yamaha",
+    "model": "NMAX 125",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 6.6
+  },
+  {
+    "brand": "Yamaha",
+    "model": "NMAX 125",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 6.6
+  },
+  {
+    "brand": "Yamaha",
+    "model": "NMAX 125",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 6.6
+  },
+  {
+    "brand": "Yamaha",
+    "model": "NMAX 125",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 6.6
+  },
+  {
+    "brand": "Yamaha",
+    "model": "NMAX 125",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 6.6
+  },
+  {
+    "brand": "Yamaha",
+    "model": "NMAX 125",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.1
+  },
+  {
+    "brand": "Yamaha",
+    "model": "NMAX 125",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.1
+  },
+  {
+    "brand": "Yamaha",
+    "model": "NMAX 125",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.1
+  },
+  {
+    "brand": "Yamaha",
+    "model": "NMAX 125",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.1
+  },
+  {
+    "brand": "Yamaha",
+    "model": "NMAX 125",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 7.1
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2010,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.2
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2011,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.2
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2012,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.2
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2013,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.2
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2014,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.2
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.2
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.2
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.2
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 125",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 300",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 300",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 300",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 300",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 300",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 300",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 300",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 300",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "XMAX 300",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Ténéré 700",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Ténéré 700",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Ténéré 700",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Ténéré 700",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Ténéré 700",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Ténéré 700",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Ténéré 700",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Ténéré 700 World Raid",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 23.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Ténéré 700 World Raid",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 23.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Ténéré 700 World Raid",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 23.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Ténéré 700 World Raid",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 23.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "YZF-R125",
+    "year": 2010,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.8
+  },
+  {
+    "brand": "Yamaha",
+    "model": "YZF-R125",
+    "year": 2011,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.8
+  },
+  {
+    "brand": "Yamaha",
+    "model": "YZF-R125",
+    "year": 2012,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.8
+  },
+  {
+    "brand": "Yamaha",
+    "model": "YZF-R125",
+    "year": 2013,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.8
+  },
+  {
+    "brand": "Yamaha",
+    "model": "YZF-R125",
+    "year": 2014,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.5
+  },
+  {
+    "brand": "Yamaha",
+    "model": "YZF-R125",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.5
+  },
+  {
+    "brand": "Yamaha",
+    "model": "YZF-R125",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.5
+  },
+  {
+    "brand": "Yamaha",
+    "model": "YZF-R125",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.5
+  },
+  {
+    "brand": "Yamaha",
+    "model": "YZF-R125",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.5
+  },
+  {
+    "brand": "Yamaha",
+    "model": "R125",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "R125",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "R125",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "R125",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "R125",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "R125",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "R125",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "YZF-R7",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "YZF-R7",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "YZF-R7",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "YZF-R7",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Tracer 900",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Tracer 900",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Tracer 900",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Tracer 900",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Tracer 900",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Tracer 900",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Tracer 9",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Tracer 9",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Tracer 9",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Tracer 9",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.0
+  },
+  {
+    "brand": "Yamaha",
+    "model": "Tracer 9",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 18.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z900",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z900",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z900",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z900",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z900",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z900",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z900",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z900",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z900",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 17.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z650",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z650",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z650",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z650",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z650",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z650",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z650",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z650",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z650",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z125",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z125",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z125",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z125",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z125",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z125",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Z125",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 11.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 650",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 650",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 650",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 650",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 650",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 650",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 650",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 650",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 650",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 15.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 400",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 400",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 400",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 400",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 400",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 400",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 500",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Ninja 500",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2010,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 19.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2011,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 19.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2012,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 19.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2013,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 19.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2014,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 19.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 650",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 1000",
+    "year": 2012,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 1000",
+    "year": 2013,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 1000",
+    "year": 2014,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 1000",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 1000",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 1000",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 1000",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 1000",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 1000",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 1000",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 1000",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 1000",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 1000",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Versys 1000",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 21.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Vulcan S",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Vulcan S",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Vulcan S",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Vulcan S",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Vulcan S",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Vulcan S",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Vulcan S",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Vulcan S",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Vulcan S",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Vulcan S",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Kawasaki",
+    "model": "Vulcan S",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "SV650",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "SV650",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "SV650",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "SV650",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "SV650",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "SV650",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "SV650",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "SV650",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "SV650",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "SV650",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 650",
+    "year": 2012,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 650",
+    "year": 2013,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 650",
+    "year": 2014,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 650",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 650",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 650",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 650",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 650",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 650",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 650",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 650",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 650",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 650",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 650",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 800DE",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 800DE",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "V-Strom 800DE",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "GSX-S750",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "GSX-S750",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "GSX-S750",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "GSX-S750",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "GSX-S750",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "GSX-S750",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 16.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "GSX-8S",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "GSX-8S",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "GSX-8S",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 14.0
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 125",
+    "year": 2010,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 10.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 125",
+    "year": 2011,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 10.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 125",
+    "year": 2012,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 10.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 125",
+    "year": 2013,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 10.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 125",
+    "year": 2014,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 10.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 125",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 10.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 125",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 10.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 125",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 10.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 125",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 10.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 125",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 10.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 125",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 10.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 400",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 400",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 400",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 400",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 400",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 400",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 400",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 400",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.5
+  },
+  {
+    "brand": "Suzuki",
+    "model": "Burgman 400",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.5
+  },
+  {
+    "brand": "BMW",
+    "model": "F 900 R",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "BMW",
+    "model": "F 900 R",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "BMW",
+    "model": "F 900 R",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "BMW",
+    "model": "F 900 R",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "BMW",
+    "model": "F 900 R",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "BMW",
+    "model": "F 900 R",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 13.0
+  },
+  {
+    "brand": "BMW",
+    "model": "R 1250 GS",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "BMW",
+    "model": "R 1250 GS",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "BMW",
+    "model": "R 1250 GS",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "BMW",
+    "model": "R 1250 GS",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "BMW",
+    "model": "R 1250 GS",
+    "year": 2023,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 20.0
+  },
+  {
+    "brand": "BMW",
+    "model": "R 1300 GS",
+    "year": 2024,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 19.0
+  },
+  {
+    "brand": "BMW",
+    "model": "R 1300 GS",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 19.0
+  },
+  {
+    "brand": "BMW",
+    "model": "CE 04",
+    "year": 2022,
+    "type": "ELECTRICO",
+    "batteryCapacity": 8.9,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "BMW",
+    "model": "CE 04",
+    "year": 2023,
+    "type": "ELECTRICO",
+    "batteryCapacity": 8.9,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "BMW",
+    "model": "CE 04",
+    "year": 2024,
+    "type": "ELECTRICO",
+    "batteryCapacity": 8.9,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "BMW",
+    "model": "CE 04",
+    "year": 2025,
+    "type": "ELECTRICO",
+    "batteryCapacity": 8.9,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "NIU",
+    "model": "NQi GTS",
+    "year": 2020,
+    "type": "ELECTRICO",
+    "batteryCapacity": 4.2,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "NIU",
+    "model": "NQi GTS",
+    "year": 2021,
+    "type": "ELECTRICO",
+    "batteryCapacity": 4.2,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "NIU",
+    "model": "NQi GTS",
+    "year": 2022,
+    "type": "ELECTRICO",
+    "batteryCapacity": 4.2,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "NIU",
+    "model": "NQi GTS",
+    "year": 2023,
+    "type": "ELECTRICO",
+    "batteryCapacity": 4.2,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "NIU",
+    "model": "NQi GTS",
+    "year": 2024,
+    "type": "ELECTRICO",
+    "batteryCapacity": 4.2,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "NIU",
+    "model": "NQi GTS",
+    "year": 2025,
+    "type": "ELECTRICO",
+    "batteryCapacity": 4.2,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "Zero",
+    "model": "SR/F",
+    "year": 2020,
+    "type": "ELECTRICO",
+    "batteryCapacity": 14.4,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "Zero",
+    "model": "SR/F",
+    "year": 2021,
+    "type": "ELECTRICO",
+    "batteryCapacity": 14.4,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "Zero",
+    "model": "SR/F",
+    "year": 2022,
+    "type": "ELECTRICO",
+    "batteryCapacity": 15.6,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "Zero",
+    "model": "SR/F",
+    "year": 2023,
+    "type": "ELECTRICO",
+    "batteryCapacity": 15.6,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "Zero",
+    "model": "SR/F",
+    "year": 2024,
+    "type": "ELECTRICO",
+    "batteryCapacity": 17.3,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "Zero",
+    "model": "SR/F",
+    "year": 2025,
+    "type": "ELECTRICO",
+    "batteryCapacity": 17.3,
+    "fuelTankCapacity": null
+  },
+    {
+      "brand": "BMW",
+      "model": "R 1200 GS",
+      "year": 2005,
+      "type": "GASOLINA",
+      "batteryCapacity": null,
+      "fuelTankCapacity": 20.0
+    },
+    {
+      "brand": "Triumph",
+      "model": "Street Triple 675",
+      "year": 2007,
+      "type": "GASOLINA",
+      "batteryCapacity": null,
+      "fuelTankCapacity": 17.4
+    },
+    {
+      "brand": "Triumph",
+      "model": "Bonneville T100 865",
+      "year": 2007,
+      "type": "GASOLINA",
+      "batteryCapacity": null,
+      "fuelTankCapacity": 16.6
+    },
+    {
+      "brand": "Kawasaki",
+      "model": "Vulcan 500",
+      "year": 1999,
+      "type": "GASOLINA",
+      "batteryCapacity": null,
+      "fuelTankCapacity": 15.0
+    }
+]

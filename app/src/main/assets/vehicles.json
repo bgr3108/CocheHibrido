@@ -454,5 +454,21 @@
     "type": "GASOLINA",
     "batteryCapacity": null,
     "fuelTankCapacity": 40
+  },
+  {
+    "brand": "Toyota",
+    "model": "RAV4 2.2 D-4D",
+    "year": 2007,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Mercedes-Benz",
+    "model": "CLK 200 Kompressor",
+    "year": 2006,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 62
   }
 ]

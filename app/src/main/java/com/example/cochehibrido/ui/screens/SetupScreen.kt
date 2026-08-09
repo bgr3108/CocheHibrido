@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
@@ -53,6 +54,12 @@ fun SetupScreen(
     val isSaving by homeViewModel.isSavingVehicle.collectAsState()
     val vehicleSaveFailed by homeViewModel.vehicleSaveFailed.collectAsState()
     val isDark = isSystemInDarkTheme()
+    val categoryChipColors = FilterChipDefaults.filterChipColors(
+        containerColor = Color.Transparent,
+        labelColor = MaterialTheme.colorScheme.onSurface,
+        selectedContainerColor = MaterialTheme.colorScheme.primary,
+        selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+    )
 
     val brands = vehicles
         .map { it.brand }
@@ -132,7 +139,14 @@ fun SetupScreen(
                             Text(
                                 if (category == VehicleCategory.COCHE) "Coche" else "Moto"
                             )
-                        }
+                        },
+                        colors = categoryChipColors,
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = selectedCategory == category,
+                            borderColor = MaterialTheme.colorScheme.outline,
+                            selectedBorderColor = MaterialTheme.colorScheme.primary
+                        )
                     )
                 }
             }

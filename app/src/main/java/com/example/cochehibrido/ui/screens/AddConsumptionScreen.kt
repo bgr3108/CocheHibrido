@@ -120,7 +120,9 @@ fun AddConsumptionScreen(
     }
 
     val tipoSeleccionadoName = rememberSaveable(entry?.id) {
-        mutableStateOf((entry?.tipo ?: FuelType.GASOLINA).name)
+        mutableStateOf(
+            (entry?.tipo ?: defaultFuelTypeFor(currentVehicle.type)).name
+        )
     }
 
     val tipoSeleccionado = FuelType.entries
@@ -326,12 +328,14 @@ fun AddConsumptionScreen(
             }
         }
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
+        val showFuelOption = currentVehicle.type != VehicleType.ELECTRICO
+        val showElectricOption =
+            currentVehicle.type == VehicleType.ELECTRICO ||
+                    currentVehicle.type == VehicleType.HIBRIDO_ENCHUFABLE
 
-            if (
-                currentVehicle.type != VehicleType.ELECTRICO
+        if (showFuelOption && showElectricOption) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
 
                 Button(
@@ -355,12 +359,6 @@ fun AddConsumptionScreen(
                 ) {
                     Text("Gasolina/Diésel/GLP")
                 }
-            }
-
-            if (
-                currentVehicle.type == VehicleType.ELECTRICO ||
-                currentVehicle.type == VehicleType.HIBRIDO_ENCHUFABLE
-            ){
 
                 Button(
                     onClick = {
@@ -603,3 +601,10 @@ fun AddConsumptionScreen(
         }
     }
 }
+
+private fun defaultFuelTypeFor(vehicleType: VehicleType?): FuelType =
+    if (vehicleType == VehicleType.ELECTRICO) {
+        FuelType.ELECTRICO
+    } else {
+        FuelType.GASOLINA
+    }
