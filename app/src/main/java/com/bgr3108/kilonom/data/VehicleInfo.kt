@@ -1,0 +1,18 @@
+package com.bgr3108.kilonom.data
+
+data class VehicleInfo(
+
+    val brand: String,
+
+    val model: String,
+
+    val year: Int,
+
+    val category: VehicleCategory,
+
+    val type: VehicleType,
+
+    val batteryCapacity: Double,
+
+    val fuelTankCapacity: Double
+)

@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.cochehibrido"
+    namespace = "com.bgr3108.kilonom"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.cochehibrido"
+        applicationId = "com.bgr3108.kilonom"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

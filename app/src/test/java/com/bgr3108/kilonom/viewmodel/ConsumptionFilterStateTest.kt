@@ -1,0 +1,192 @@
+package com.bgr3108.kilonom.viewmodel
+
+import com.bgr3108.kilonom.data.FuelEntry
+import com.bgr3108.kilonom.data.FuelType
+import java.util.Calendar
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertSame
+import org.junit.Test
+
+class ConsumptionFilterStateTest {
+
+    private val referenceCalendar = Calendar.getInstance().apply {
+        clear()
+        set(2026, Calendar.AUGUST, 15, 12, 0)
+    }
+
+    @Test
+    fun allFilters_returnsTheOriginalHistory() {
+        val entries = listOf(entry(FuelType.GASOLINA, 2026, Calendar.AUGUST, 1))
+
+        assertSame(entries, filterConsumptionEntries(entries, ConsumptionFilterState(), referenceCalendar))
+    }
+
+    @Test
+    fun gasolineFilter_returnsOnlyGasolineEntries() {
+        val entries = listOf(
+            entry(FuelType.GASOLINA, 2026, Calendar.AUGUST, 1),
+            entry(FuelType.ELECTRICO, 2026, Calendar.AUGUST, 2)
+        )
+
+        assertEquals(
+            listOf(FuelType.GASOLINA),
+            filterConsumptionEntries(
+                entries,
+                ConsumptionFilterState(energyFilter = EnergyFilter.GASOLINE),
+                referenceCalendar
+            ).map { it.tipo }
+        )
+    }
+
+    @Test
+    fun electricFilter_returnsOnlyElectricEntries() {
+        val entries = listOf(
+            entry(FuelType.GASOLINA, 2026, Calendar.AUGUST, 1),
+            entry(FuelType.ELECTRICO, 2026, Calendar.AUGUST, 2)
+        )
+
+        assertEquals(
+            listOf(FuelType.ELECTRICO),
+            filterConsumptionEntries(
+                entries,
+                ConsumptionFilterState(energyFilter = EnergyFilter.ELECTRIC),
+                referenceCalendar
+            ).map { it.tipo }
+        )
+    }
+
+    @Test
+    fun thisMonthFilter_includesOnlyCurrentMonth() {
+        val entries = listOf(
+            entry(FuelType.GASOLINA, 2026, Calendar.JULY, 31),
+            entry(FuelType.GASOLINA, 2026, Calendar.AUGUST, 1),
+            entry(FuelType.GASOLINA, 2026, Calendar.AUGUST, 31)
+        )
+
+        assertEquals(
+            2,
+            filterConsumptionEntries(
+                entries,
+                ConsumptionFilterState(dateFilter = DateFilter.THIS_MONTH),
+                referenceCalendar
+            ).size
+        )
+    }
+
+    @Test
+    fun lastMonthFilter_includesOnlyPreviousMonth() {
+        val entries = listOf(
+            entry(FuelType.GASOLINA, 2026, Calendar.JUNE, 30),
+            entry(FuelType.GASOLINA, 2026, Calendar.JULY, 1),
+            entry(FuelType.GASOLINA, 2026, Calendar.AUGUST, 1)
+        )
+
+        assertEquals(
+            1,
+            filterConsumptionEntries(
+                entries,
+                ConsumptionFilterState(dateFilter = DateFilter.LAST_MONTH),
+                referenceCalendar
+            ).size
+        )
+    }
+
+    @Test
+    fun thisYearFilter_excludesPreviousYears() {
+        val entries = listOf(
+            entry(FuelType.GASOLINA, 2025, Calendar.DECEMBER, 31),
+            entry(FuelType.GASOLINA, 2026, Calendar.JANUARY, 1)
+        )
+
+        assertEquals(
+            1,
+            filterConsumptionEntries(
+                entries,
+                ConsumptionFilterState(dateFilter = DateFilter.THIS_YEAR),
+                referenceCalendar
+            ).size
+        )
+    }
+
+    @Test
+    fun lastMonthFilter_inJanuaryIncludesDecemberOfThePreviousYear() {
+        val januaryReference = calendarOf(2027, Calendar.JANUARY, 15)
+        val entries = listOf(
+            entry(FuelType.GASOLINA, 2026, Calendar.DECEMBER, 31),
+            entry(FuelType.GASOLINA, 2027, Calendar.JANUARY, 1)
+        )
+
+        assertEquals(
+            1,
+            filterConsumptionEntries(
+                entries,
+                ConsumptionFilterState(dateFilter = DateFilter.LAST_MONTH),
+                januaryReference
+            ).size
+        )
+    }
+
+    @Test
+    fun thisMonthFilter_usesTheNewMonthAfterDecemberToJanuaryTransition() {
+        val entries = listOf(
+            entry(FuelType.GASOLINA, 2026, Calendar.DECEMBER, 31),
+            entry(FuelType.GASOLINA, 2027, Calendar.JANUARY, 1)
+        )
+
+        assertEquals(
+            listOf(listOf(entries[0]), listOf(entries[1])),
+            listOf(
+                filterConsumptionEntries(
+                    entries,
+                    ConsumptionFilterState(dateFilter = DateFilter.THIS_MONTH),
+                    calendarOf(2026, Calendar.DECEMBER, 31)
+                ),
+                filterConsumptionEntries(
+                    entries,
+                    ConsumptionFilterState(dateFilter = DateFilter.THIS_MONTH),
+                    calendarOf(2027, Calendar.JANUARY, 1)
+                )
+            )
+        )
+    }
+
+    @Test
+    fun thisYearFilter_usesTheNewYearAfterDecemberToJanuaryTransition() {
+        val entries = listOf(
+            entry(FuelType.GASOLINA, 2026, Calendar.DECEMBER, 31),
+            entry(FuelType.GASOLINA, 2027, Calendar.JANUARY, 1)
+        )
+
+        assertEquals(
+            listOf(listOf(entries[0]), listOf(entries[1])),
+            listOf(
+                filterConsumptionEntries(
+                    entries,
+                    ConsumptionFilterState(dateFilter = DateFilter.THIS_YEAR),
+                    calendarOf(2026, Calendar.DECEMBER, 31)
+                ),
+                filterConsumptionEntries(
+                    entries,
+                    ConsumptionFilterState(dateFilter = DateFilter.THIS_YEAR),
+                    calendarOf(2027, Calendar.JANUARY, 1)
+                )
+            )
+        )
+    }
+
+    private fun calendarOf(year: Int, month: Int, day: Int) = Calendar.getInstance().apply {
+        clear()
+        set(year, month, day, 12, 0)
+    }
+
+    private fun entry(type: FuelType, year: Int, month: Int, day: Int) = FuelEntry(
+        fecha = Calendar.getInstance().apply {
+            clear()
+            set(year, month, day, 12, 0)
+        }.timeInMillis,
+        cantidad = 1.0,
+        precio = 1.0,
+        tipo = type,
+        km = 0.0
+    )
+}

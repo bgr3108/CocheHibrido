@@ -478,5 +478,29 @@
     "type": "GASOLINA",
     "batteryCapacity": null,
     "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Nissan",
+    "model": "Qashqai dCi",
+    "year": 2018,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Nissan",
+    "model": "Pulsar dCi",
+    "year": 2017,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 46
+  },
+  {
+    "brand": "Mitsubishi",
+    "model": "ASX",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 63
   }
 ]
