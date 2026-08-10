@@ -274,7 +274,7 @@ private fun CostContent(
 
                 if (historialCostesGasolina.isEmpty()) {
                     Text(
-                        text = "Añade registros en al menos dos meses para ver la evolución",
+                        text = "Registra consumos para ver la evolución mensual de tus gastos.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -389,7 +389,7 @@ private fun CostContent(
 
                 if (historialCostesElectricos.isEmpty()) {
                     Text(
-                        text = "Añade registros en al menos dos meses para ver la evolución",
+                        text = "Registra consumos para ver la evolución mensual de tus gastos.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall
                     )
