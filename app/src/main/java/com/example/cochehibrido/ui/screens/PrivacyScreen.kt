@@ -1,5 +1,6 @@
 package com.example.cochehibrido.ui.screens
 
+import android.content.Intent
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -20,18 +22,29 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
 import androidx.compose.ui.unit.dp
 import com.example.cochehibrido.ui.theme.CardBlueDark
 import com.example.cochehibrido.ui.theme.CardBlueLight
+
+private const val PRIVACY_POLICY_URL =
+    "https://bgr3108.github.io/CocheHibrido/privacy/"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrivacyScreen(
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    val policyOpenError = remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -102,12 +115,53 @@ fun PrivacyScreen(
 
                     HorizontalDivider()
 
-                    PrivacySection(
-                        title = "Política de privacidad",
-                        description = "La política de privacidad completa estará disponible antes de la publicación de Kilonom en Google Play."
+                    PrivacyPolicySection(
+                        onOpenPolicy = {
+                            policyOpenError.value = runCatching {
+                                context.startActivity(
+                                    Intent(
+                                        Intent.ACTION_VIEW,
+          PRIVACY_POLICY_URL.toUri()
+                                    )
+                                )
+                            }.isFailure
+                        },
+                        showOpenError = policyOpenError.value
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun PrivacyPolicySection(
+    onOpenPolicy: () -> Unit,
+    showOpenError: Boolean
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Text(
+            text = "Política de privacidad",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        TextButton(
+            onClick = onOpenPolicy,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.textButtonColors(
+                contentColor = MaterialTheme.colorScheme.primary
+            )
+        ) {
+            Text("Ver política de privacidad completa")
+        }
+        if (showOpenError) {
+            Text(
+                text = "No se pudo abrir la política de privacidad. Inténtalo de nuevo cuando tengas un navegador disponible.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
         }
     }
 }
