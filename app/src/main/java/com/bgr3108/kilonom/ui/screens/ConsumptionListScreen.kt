@@ -36,6 +36,7 @@ import com.bgr3108.kilonom.viewmodel.FuelEntryViewModel
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 import com.bgr3108.kilonom.viewmodel.supportedDateFilters
 import com.bgr3108.kilonom.util.toSpanishDecimal
+import com.bgr3108.kilonom.util.toKilometersDisplay
 import com.bgr3108.kilonom.util.toDateTimeString
 
 @Composable
@@ -276,7 +277,7 @@ fun ConsumptionListScreen(
                                 )
 
                                 Text(
-                                    "${entry.km.toSpanishDecimal()} km",
+                                    "${entry.km.toKilometersDisplay()} km",
                                     style = MaterialTheme.typography.labelMedium
                                 )
                             }

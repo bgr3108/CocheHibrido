@@ -41,6 +41,7 @@ import com.bgr3108.kilonom.ui.components.HomeInfoCard
 import com.bgr3108.kilonom.domain.calculateUnitPrice
 import com.bgr3108.kilonom.util.toDateTimeString
 import com.bgr3108.kilonom.util.toSpanishDecimal
+import com.bgr3108.kilonom.util.toKilometersDisplay
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 import com.bgr3108.kilonom.viewmodel.ResetState
 
@@ -414,7 +415,7 @@ fun HomeScreen(
                         )
 
                         Text(
-                            text = vehicle.currentKm.toSpanishDecimal(),
+                            text = vehicle.currentKm.toKilometersDisplay(),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodyMedium
                         )

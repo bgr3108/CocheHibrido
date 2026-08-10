@@ -31,6 +31,7 @@ import com.bgr3108.kilonom.data.supportsElectricEntries
 import com.bgr3108.kilonom.data.supportsFuelEntries
 import com.bgr3108.kilonom.ui.components.DashboardCard
 import com.bgr3108.kilonom.util.toSpanishDecimal
+import com.bgr3108.kilonom.util.toKilometersDisplay
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 
 @Composable
@@ -322,7 +323,7 @@ fun StatisticsScreen(
             )
 
             Text(
-                "${totalKm.toSpanishDecimal()} km",
+                "${totalKm.toKilometersDisplay()} km",
                 style = MaterialTheme.typography.titleLarge
             )
 

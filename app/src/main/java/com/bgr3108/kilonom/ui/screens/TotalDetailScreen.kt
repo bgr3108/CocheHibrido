@@ -37,6 +37,7 @@ import com.bgr3108.kilonom.ui.components.StatisticRow
 import com.bgr3108.kilonom.ui.theme.CardBlueDark
 import com.bgr3108.kilonom.ui.theme.CardBlueLight
 import com.bgr3108.kilonom.util.toSpanishDecimal
+import com.bgr3108.kilonom.util.toKilometersDisplay
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -234,7 +235,7 @@ private fun TotalContent(
 
                 StatisticRow(
                     "Kilómetros recorridos",
-                    "${totalKm.toSpanishDecimal()} km"
+                    "${totalKm.toKilometersDisplay()} km"
                 )
 
                 if (showFuel || showElectric) {

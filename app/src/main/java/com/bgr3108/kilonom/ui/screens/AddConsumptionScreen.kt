@@ -16,6 +16,9 @@ import com.bgr3108.kilonom.data.FuelType
 import com.bgr3108.kilonom.viewmodel.FuelEntryViewModel
 import java.util.Calendar
 import com.bgr3108.kilonom.util.toFiniteDoubleOrNull
+import com.bgr3108.kilonom.util.toKilometersDisplay
+import com.bgr3108.kilonom.util.toKilometersInput
+import com.bgr3108.kilonom.util.toKilometersOrNull
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
@@ -118,7 +121,7 @@ fun AddConsumptionScreen(
     }
 
     var km by rememberSaveable(entry?.id) {
-        mutableStateOf(entry?.km?.toString()?.replace(".", ",") ?: "")
+        mutableStateOf(entry?.km?.toKilometersInput() ?: "")
     }
 
     val tipoSeleccionadoName = rememberSaveable(entry?.id) {
@@ -143,8 +146,14 @@ fun AddConsumptionScreen(
         mutableStateOf<String?>(null)
     }
 
-    var errorKm by remember {
-        mutableStateOf<String?>(null)
+    var errorKm by rememberSaveable(entry?.id) {
+        mutableStateOf(
+            entry
+                ?.takeIf { it.km.toKilometersInput().isEmpty() }
+                ?.let {
+                    "El kilometraje guardado no es válido. Introduce un número entero igual o mayor que cero"
+                }
+        )
     }
 
     Column(
@@ -299,11 +308,16 @@ fun AddConsumptionScreen(
 
         OutlinedTextField(
             value = km,
-            onValueChange = { km = it },
+            onValueChange = { value ->
+                if (value.all(Char::isDigit)) {
+                    km = value
+                    errorKm = null
+                }
+            },
             label = { Text("Kilómetros") },
 
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal,
+                keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Done
             ),
 
@@ -432,7 +446,7 @@ fun AddConsumptionScreen(
                     return@Button
                 }
 
-                val kmNuevo = km.toLongOrNull()?.toDouble()
+                val kmNuevo = km.toKilometersOrNull()
 
                 if (kmNuevo == null || kmNuevo < 0.0) {
                     errorKm = "Los kilómetros deben ser un número entero válido igual o mayor que cero"
@@ -531,7 +545,7 @@ fun AddConsumptionScreen(
                 if (kmNuevo < currentVehicle.currentKm) {
 
                     errorKm =
-                        "Los kilómetros no pueden ser inferiores al kilometraje inicial (${currentVehicle.currentKm} km)"
+                        "Los kilómetros no pueden ser inferiores al kilometraje inicial (${currentVehicle.currentKm.toKilometersDisplay()} km)"
 
                     return@Button
                 }
@@ -543,7 +557,7 @@ fun AddConsumptionScreen(
                 ) {
 
                     errorKm =
-                        "Los kilómetros no pueden ser inferiores al registro anterior (${registroAnterior.km} km)"
+                        "Los kilómetros no pueden ser inferiores al registro anterior (${registroAnterior.km.toKilometersDisplay()} km)"
 
                     return@Button
                 }
@@ -555,7 +569,7 @@ fun AddConsumptionScreen(
                 ) {
 
                     errorKm =
-                        "Los kilómetros no pueden ser superiores al registro posterior (${registroPosterior.km} km)"
+                        "Los kilómetros no pueden ser superiores al registro posterior (${registroPosterior.km.toKilometersDisplay()} km)"
 
                     return@Button
                 }

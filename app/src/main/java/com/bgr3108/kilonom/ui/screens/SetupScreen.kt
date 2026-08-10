@@ -20,7 +20,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import com.bgr3108.kilonom.data.Vehicle
 import com.bgr3108.kilonom.data.VehicleCategory
 import com.bgr3108.kilonom.data.isVehicleSelectionCompatible
-import com.bgr3108.kilonom.util.toFiniteDoubleOrNull
+import com.bgr3108.kilonom.util.toKilometersOrNull
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,11 +94,10 @@ fun SetupScreen(
                 it.model == selectedModel &&
                 it.year.toString() == selectedYear
     }
-    val initialMileage = km.toFiniteDoubleOrNull()
+    val initialMileage = km.toKilometersOrNull()
     val kmErrorMessage = when {
         km.isBlank() -> null
         initialMileage == null -> "Introduce un kilometraje válido"
-        initialMileage < 0.0 -> "El kilometraje no puede ser negativo"
         else -> null
     }
     val isConfigurationValid =
@@ -313,8 +312,10 @@ fun SetupScreen(
             }
             OutlinedTextField(
                 value = km,
-                onValueChange = {
-                    km = it.replace("\n", "")
+                onValueChange = { value ->
+                    if (value.all(Char::isDigit)) {
+                        km = value
+                    }
                 },
                 label = { Text("Km actuales") },
                 isError = kmErrorMessage != null,
@@ -322,7 +323,7 @@ fun SetupScreen(
                     { Text(message) }
                 },
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Decimal
+                    keyboardType = KeyboardType.Number
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -399,8 +400,7 @@ fun SetupScreen(
                 val vehicle = selectedVehicle
                     ?.takeIf { isVehicleSelectionCompatible(it, selectedCategory) }
                     ?: return@Button
-                val validMileage = km.toFiniteDoubleOrNull()
-                    ?.takeIf { it >= 0.0 }
+                val validMileage = km.toKilometersOrNull()
                     ?: return@Button
 
                 homeViewModel.saveInitialVehicle(
