@@ -16,4 +16,7 @@ interface CarDao {
 
     @Upsert
     suspend fun upsertCar(car: Car)
+
+    @Query("DELETE FROM car")
+    suspend fun deleteAll()
 }

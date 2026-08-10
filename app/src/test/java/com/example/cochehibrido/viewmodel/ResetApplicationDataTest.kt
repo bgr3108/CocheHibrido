@@ -3,6 +3,8 @@ package com.example.cochehibrido.viewmodel
 import com.example.cochehibrido.data.FuelEntry
 import com.example.cochehibrido.data.FuelRepository
 import com.example.cochehibrido.data.FuelType
+import com.example.cochehibrido.data.Car
+import com.example.cochehibrido.data.CarRepository
 import com.example.cochehibrido.data.Vehicle
 import com.example.cochehibrido.data.VehicleCategory
 import com.example.cochehibrido.data.VehicleCatalog
@@ -11,6 +13,7 @@ import com.example.cochehibrido.data.VehiclePreferencesStore
 import com.example.cochehibrido.data.VehicleRepository
 import com.example.cochehibrido.data.VehicleType
 import com.example.cochehibrido.database.FuelEntryDao
+import com.example.cochehibrido.database.CarDao
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -22,16 +25,22 @@ import org.junit.Test
 class ResetApplicationDataTest {
 
     @Test
-    fun successfulReset_clearsHistoryAndVehicle() = runBlocking {
+    fun successfulReset_clearsAllRoomDataAndVehicle() = runBlocking {
         val fuelEntryDao = FakeFuelEntryDao()
+        val carDao = FakeCarDao()
         val vehiclePreferences = FakeVehiclePreferences()
         val vehicleRepository = VehicleRepository(EmptyVehicleCatalog, vehiclePreferences)
 
         vehicleRepository.isLoading.first { !it }
 
-        resetApplicationData(FuelRepository(fuelEntryDao), vehicleRepository)
+        resetApplicationData(
+            FuelRepository(fuelEntryDao),
+            CarRepository(carDao),
+            vehicleRepository
+        )
 
         assertTrue(fuelEntryDao.entries.isEmpty())
+        assertTrue(carDao.cars.isEmpty())
         assertEquals(Vehicle(), vehicleRepository.vehicle.value)
     }
 
@@ -39,6 +48,7 @@ class ResetApplicationDataTest {
     fun dataStoreFailure_doesNotReportASuccessfulReset() = runBlocking {
         val originalVehicle = Vehicle(type = VehicleType.GASOLINA)
         val fuelEntryDao = FakeFuelEntryDao()
+        val carDao = FakeCarDao()
         val vehicleRepository = VehicleRepository(
             EmptyVehicleCatalog,
             FakeVehiclePreferences(
@@ -50,7 +60,11 @@ class ResetApplicationDataTest {
         vehicleRepository.isLoading.first { !it }
 
         val result = runCatching {
-            resetApplicationData(FuelRepository(fuelEntryDao), vehicleRepository)
+            resetApplicationData(
+                FuelRepository(fuelEntryDao),
+                CarRepository(carDao),
+                vehicleRepository
+            )
         }
 
         assertTrue(result.isFailure)
@@ -68,6 +82,7 @@ class ResetApplicationDataTest {
         val result = runCatching {
             resetApplicationData(
                 FuelRepository(FakeFuelEntryDao(deleteError = IllegalStateException("Room unavailable"))),
+                CarRepository(FakeCarDao()),
                 vehicleRepository
             )
         }
@@ -75,6 +90,58 @@ class ResetApplicationDataTest {
         assertTrue(result.isFailure)
         assertEquals(0, vehiclePreferences.clearCalls)
         assertEquals(originalVehicle, vehicleRepository.vehicle.value)
+    }
+
+    @Test
+    fun legacyCarRoomFailure_doesNotClearVehiclePreferences() = runBlocking {
+        val originalVehicle = Vehicle(type = VehicleType.GASOLINA)
+        val vehiclePreferences = FakeVehiclePreferences(vehicle = originalVehicle)
+        val vehicleRepository = VehicleRepository(EmptyVehicleCatalog, vehiclePreferences)
+
+        vehicleRepository.isLoading.first { !it }
+
+        val result = runCatching {
+            resetApplicationData(
+                FuelRepository(FakeFuelEntryDao()),
+                CarRepository(FakeCarDao(deleteError = IllegalStateException("Car unavailable"))),
+                vehicleRepository
+            )
+        }
+
+        assertTrue(result.isFailure)
+        assertEquals(0, vehiclePreferences.clearCalls)
+        assertEquals(originalVehicle, vehicleRepository.vehicle.value)
+    }
+
+    @Test
+    fun retryAfterLegacyCarRoomFailure_completesResetSafely() = runBlocking {
+        val fuelEntryDao = FakeFuelEntryDao()
+        val carDao = FakeCarDao(deleteError = IllegalStateException("Car unavailable"))
+        val vehiclePreferences = FakeVehiclePreferences()
+        val vehicleRepository = VehicleRepository(EmptyVehicleCatalog, vehiclePreferences)
+
+        vehicleRepository.isLoading.first { !it }
+
+        val firstAttempt = runCatching {
+            resetApplicationData(
+                FuelRepository(fuelEntryDao),
+                CarRepository(carDao),
+                vehicleRepository
+            )
+        }
+
+        carDao.deleteError = null
+
+        resetApplicationData(
+            FuelRepository(fuelEntryDao),
+            CarRepository(carDao),
+            vehicleRepository
+        )
+
+        assertTrue(firstAttempt.isFailure)
+        assertTrue(fuelEntryDao.entries.isEmpty())
+        assertTrue(carDao.cars.isEmpty())
+        assertEquals(Vehicle(), vehicleRepository.vehicle.value)
     }
 
     private object EmptyVehicleCatalog : VehicleCatalog {
@@ -124,6 +191,33 @@ class ResetApplicationDataTest {
         override suspend fun deleteAll() {
             deleteError?.let { throw it }
             entries.clear()
+        }
+    }
+
+    private class FakeCarDao(
+        var deleteError: Exception? = null
+    ) : CarDao {
+        val cars = mutableListOf(
+            Car(
+                marca = "Marca",
+                modelo = "Modelo",
+                matricula = "1234ABC",
+                kmActuales = 100
+            )
+        )
+
+        override fun getCar(): Flow<Car?> = flowOf(cars.firstOrNull())
+
+        override suspend fun getCarOnce(): Car? = cars.firstOrNull()
+
+        override suspend fun upsertCar(car: Car) {
+            cars.clear()
+            cars += car
+        }
+
+        override suspend fun deleteAll() {
+            deleteError?.let { throw it }
+            cars.clear()
         }
     }
 }

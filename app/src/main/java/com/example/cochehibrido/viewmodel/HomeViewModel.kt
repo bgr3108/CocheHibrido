@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cochehibrido.data.FuelEntry
 import com.example.cochehibrido.data.FuelRepository
+import com.example.cochehibrido.data.CarRepository
 import com.example.cochehibrido.data.FuelType
 import com.example.cochehibrido.data.MonthlyCost
 import com.example.cochehibrido.data.MonthlyPrice
@@ -59,14 +60,17 @@ enum class ResetState {
 
 internal suspend fun resetApplicationData(
     fuelRepository: FuelRepository,
+    carRepository: CarRepository,
     vehicleRepository: VehicleRepository
 ) {
     fuelRepository.deleteAll()
+    carRepository.deleteAll()
     vehicleRepository.clearVehicle()
 }
 
 class HomeViewModel(
     private val fuelRepository: FuelRepository,
+    private val carRepository: CarRepository,
     private val vehicleRepository: VehicleRepository
 ) : ViewModel() {
 
@@ -651,7 +655,7 @@ class HomeViewModel(
 
         viewModelScope.launch {
             try {
-                resetApplicationData(fuelRepository, vehicleRepository)
+                resetApplicationData(fuelRepository, carRepository, vehicleRepository)
                 _resetState.value = ResetState.IDLE
             } catch (error: Throwable) {
                 if (error is CancellationException) throw error

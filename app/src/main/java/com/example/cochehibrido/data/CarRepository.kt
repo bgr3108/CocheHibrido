@@ -12,14 +12,7 @@ class CarRepository(
         carDao.upsertCar(car)
     }
 
-    suspend fun updateCurrentKm(km: Int) {
-        val currentCar = carDao.getCarOnce()
-        val updatedCar = currentCar?.copy(kmActuales = km) ?: Car(
-            marca = "",
-            modelo = "",
-            matricula = "",
-            kmActuales = km
-        )
-        carDao.upsertCar(updatedCar)
+    suspend fun deleteAll() {
+        carDao.deleteAll()
     }
 }
