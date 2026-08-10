@@ -8,8 +8,6 @@ class FuelRepository(
 ) {
     fun getAllEntries(): Flow<List<FuelEntry>> = fuelEntryDao.getAllEntries()
 
-    fun getLatestEntry(): Flow<FuelEntry?> = fuelEntryDao.getLatestEntry()
-
     suspend fun addEntry(entry: FuelEntry) {
         fuelEntryDao.insertEntry(entry)
     }

@@ -54,15 +54,15 @@ fun AddConsumptionScreen(
     }
 
     var fechaMillis by rememberSaveable(entry?.id) {
-        mutableStateOf(initialDateMillis)
+        mutableLongStateOf(initialDateMillis)
     }
 
     var hour by rememberSaveable(entry?.id) {
-        mutableStateOf(initialCalendar.get(Calendar.HOUR_OF_DAY))
+        mutableIntStateOf(initialCalendar.get(Calendar.HOUR_OF_DAY))
     }
 
     var minute by rememberSaveable(entry?.id) {
-        mutableStateOf(initialCalendar.get(Calendar.MINUTE))
+        mutableIntStateOf(initialCalendar.get(Calendar.MINUTE))
     }
 
     val selectedDateCalendar = Calendar.getInstance().apply {
