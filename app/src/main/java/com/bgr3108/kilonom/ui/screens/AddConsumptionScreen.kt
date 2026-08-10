@@ -210,8 +210,15 @@ fun AddConsumptionScreen(
                         Text("% inicio")
                     },
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
                     ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            focusManager.moveFocus(FocusDirection.Next)
+                        }
+                    ),
+                    singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
                 if (
@@ -251,8 +258,15 @@ fun AddConsumptionScreen(
                         Text("% fin")
                     },
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
                     ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            focusManager.moveFocus(FocusDirection.Next)
+                        }
+                    ),
+                    singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -273,8 +287,15 @@ fun AddConsumptionScreen(
             },
 
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal
+                keyboardType = KeyboardType.Decimal,
+                imeAction = ImeAction.Next
             ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Next)
+                }
+            ),
+            singleLine = true,
 
             modifier = Modifier.fillMaxWidth()
         )
