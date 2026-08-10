@@ -47,7 +47,8 @@ import com.example.cochehibrido.viewmodel.ResetState
 @Composable
 fun HomeScreen(
     innerPadding: PaddingValues,
-    viewModel: HomeViewModel
+    viewModel: HomeViewModel,
+    onOpenPrivacy: () -> Unit
 ) {
 
     val precioGasolina by viewModel.precioGasolina.collectAsStateWithLifecycle()
@@ -434,12 +435,25 @@ fun HomeScreen(
             },
 
             dismissButton = {
-                TextButton(
-                    onClick = {
-                        showResetDialog.value = true
-                    }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Restablecer")
+                    TextButton(
+                        onClick = {
+                            showVehicleDialog.value = false
+                            onOpenPrivacy()
+                        }
+                    ) {
+                        Text("Privacidad")
+                    }
+
+                    TextButton(
+                        onClick = {
+                            showResetDialog.value = true
+                        }
+                    ) {
+                        Text("Restablecer")
+                    }
                 }
             }
         )

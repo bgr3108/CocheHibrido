@@ -24,6 +24,7 @@ import com.example.cochehibrido.ui.screens.ConsumptionListScreen
 import com.example.cochehibrido.ui.screens.CostDetailScreen
 import com.example.cochehibrido.ui.screens.HomeScreen
 import com.example.cochehibrido.ui.screens.PriceDetailScreen
+import com.example.cochehibrido.ui.screens.PrivacyScreen
 import com.example.cochehibrido.ui.screens.StatisticsScreen
 import com.example.cochehibrido.ui.screens.TotalDetailScreen
 import com.example.cochehibrido.viewmodel.FuelEntryViewModel
@@ -45,7 +46,10 @@ fun HybridCarNavHost(
         composable("home") {
             HomeScreen(
                 innerPadding = innerPadding,
-                viewModel = homeViewModel
+                viewModel = homeViewModel,
+                onOpenPrivacy = {
+                    navController.navigate("privacy")
+                }
             )
         }
 
@@ -150,6 +154,13 @@ fun HybridCarNavHost(
         composable("total_detail") {
             TotalDetailScreen(
                 viewModel = homeViewModel,
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable("privacy") {
+            PrivacyScreen(
                 onBack = {
                     navController.popBackStack()
                 }
