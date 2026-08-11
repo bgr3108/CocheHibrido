@@ -3222,5 +3222,13 @@
       "type": "GASOLINA",
       "batteryCapacity": null,
       "fuelTankCapacity": 19.0
+    },
+    {
+      "brand": "Suzuki",
+      "model": "GSF 1200N",
+      "year": 2003,
+      "type": "GASOLINA",
+      "batteryCapacity": null,
+      "fuelTankCapacity": 20.0
     }
   ]
