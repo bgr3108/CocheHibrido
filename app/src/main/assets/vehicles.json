@@ -750,5 +750,13 @@
     "type": "HIBRIDO_ENCHUFABLE",
     "batteryCapacity": 14.5,
     "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Nissan",
+    "model": "Juke 1.5 dCi",
+    "year": 2013,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 46
   }
 ]
