@@ -3060,7 +3060,7 @@
     "model": "CE 04",
     "year": 2022,
     "type": "ELECTRICO",
-    "batteryCapacity": 8.9,
+    "batteryCapacity": 8.5,
     "fuelTankCapacity": null
   },
   {
@@ -3068,7 +3068,7 @@
     "model": "CE 04",
     "year": 2023,
     "type": "ELECTRICO",
-    "batteryCapacity": 8.9,
+    "batteryCapacity": 8.5,
     "fuelTankCapacity": null
   },
   {
@@ -3076,7 +3076,7 @@
     "model": "CE 04",
     "year": 2024,
     "type": "ELECTRICO",
-    "batteryCapacity": 8.9,
+    "batteryCapacity": 8.5,
     "fuelTankCapacity": null
   },
   {
@@ -3084,7 +3084,7 @@
     "model": "CE 04",
     "year": 2025,
     "type": "ELECTRICO",
-    "batteryCapacity": 8.9,
+    "batteryCapacity": 8.5,
     "fuelTankCapacity": null
   },
   {
@@ -3140,7 +3140,7 @@
     "model": "SR/F",
     "year": 2020,
     "type": "ELECTRICO",
-    "batteryCapacity": 14.4,
+    "batteryCapacity": 12.6,
     "fuelTankCapacity": null
   },
   {
@@ -3148,7 +3148,7 @@
     "model": "SR/F",
     "year": 2021,
     "type": "ELECTRICO",
-    "batteryCapacity": 14.4,
+    "batteryCapacity": 12.6,
     "fuelTankCapacity": null
   },
   {
@@ -3172,7 +3172,7 @@
     "model": "SR/F",
     "year": 2024,
     "type": "ELECTRICO",
-    "batteryCapacity": 17.3,
+    "batteryCapacity": 15.1,
     "fuelTankCapacity": null
   },
   {
@@ -3180,7 +3180,7 @@
     "model": "SR/F",
     "year": 2025,
     "type": "ELECTRICO",
-    "batteryCapacity": 17.3,
+    "batteryCapacity": 15.1,
     "fuelTankCapacity": null
   },
     {
