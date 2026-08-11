@@ -108,7 +108,7 @@
     "model": "GLC 300 de",
     "year": 2025,
     "type": "HIBRIDO_ENCHUFABLE",
-    "batteryCapacity": 23.4,
+    "batteryCapacity": 25.28,
     "fuelTankCapacity": 62
   },
   {
@@ -149,7 +149,7 @@
     "year": 2024,
     "type": "HIBRIDO_ENCHUFABLE",
     "batteryCapacity": 13.2,
-    "fuelTankCapacity": 43
+    "fuelTankCapacity": 45
   },
   {
     "brand": "Volvo",
@@ -502,5 +502,253 @@
     "type": "GASOLINA",
     "batteryCapacity": null,
     "fuelTankCapacity": 63
+  },
+  {
+    "brand": "Fiat",
+    "model": "500 1.2",
+    "year": 2013,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 35
+  },
+  {
+    "brand": "Volkswagen",
+    "model": "Tiguan TDI",
+    "year": 2019,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 58
+  },
+  {
+    "brand": "Volkswagen",
+    "model": "Tiguan TSI",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 58
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa CDTi",
+    "year": 2016,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa Turbo",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa OPC",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa-e",
+    "year": 2020,
+    "type": "ELECTRICO",
+    "batteryCapacity": 46.3,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.2",
+    "year": 2010,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.4",
+    "year": 2012,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa OPC",
+    "year": 2011,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.0 Turbo",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.2 Turbo",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 44
+  },
+  {
+    "brand": "Toyota",
+    "model": "Yaris 1.0 VVT-i",
+    "year": 2003,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Toyota",
+    "model": "Yaris 1.4 D-4D",
+    "year": 2005,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Toyota",
+    "model": "Yaris 1.3 VVT-i",
+    "year": 2008,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 42
+  },
+  {
+    "brand": "Toyota",
+    "model": "Yaris 1.4 D-4D",
+    "year": 2012,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 42
+  },
+  {
+    "brand": "Toyota",
+    "model": "Yaris 1.33 Dual VVT-i",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 42
+  },
+  {
+    "brand": "Toyota",
+    "model": "Yaris Hybrid",
+    "year": 2017,
+    "type": "HIBRIDO",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 36
+  },
+  {
+    "brand": "Toyota",
+    "model": "GR Yaris",
+    "year": 2021,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Toyota",
+    "model": "Yaris Hybrid 130",
+    "year": 2025,
+    "type": "HIBRIDO",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 36
+  },
+  {
+    "brand": "Toyota",
+    "model": "GR Yaris Auto",
+    "year": 2025,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Toyota",
+    "model": "RAV4 2.0 16V",
+    "year": 2002,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 57
+  },
+  {
+    "brand": "Toyota",
+    "model": "RAV4 2.0 D-4D",
+    "year": 2004,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 57
+  },
+  {
+    "brand": "Toyota",
+    "model": "RAV4 2.0 VVT-i",
+    "year": 2010,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Toyota",
+    "model": "RAV4 2.2 D-CAT",
+    "year": 2011,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Toyota",
+    "model": "RAV4 2.0 D-4D",
+    "year": 2015,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Toyota",
+    "model": "RAV4 2.0 Valvematic",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Toyota",
+    "model": "RAV4 Hybrid",
+    "year": 2018,
+    "type": "HIBRIDO",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 56
+  },
+  {
+    "brand": "Toyota",
+    "model": "RAV4 2.0 Dynamic Force",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Toyota",
+    "model": "RAV4 Plug-in Hybrid",
+    "year": 2022,
+    "type": "HIBRIDO_ENCHUFABLE",
+    "batteryCapacity": 14.5,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Toyota",
+    "model": "RAV4 GR SPORT PHEV",
+    "year": 2025,
+    "type": "HIBRIDO_ENCHUFABLE",
+    "batteryCapacity": 14.5,
+    "fuelTankCapacity": 55
   }
 ]

@@ -3214,5 +3214,13 @@
       "type": "GASOLINA",
       "batteryCapacity": null,
       "fuelTankCapacity": 15.0
+    },
+    {
+      "brand": "Honda",
+      "model": "CB600F Hornet",
+      "year": 2011,
+      "type": "GASOLINA",
+      "batteryCapacity": null,
+      "fuelTankCapacity": 19.0
     }
-]
+  ]
