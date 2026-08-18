@@ -758,5 +758,53 @@
     "type": "DIESEL",
     "batteryCapacity": null,
     "fuelTankCapacity": 46
+  },
+  {
+    "brand": "Mercedes-Benz",
+    "model": "B 180 CDI",
+    "year": 2008,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 54
+  },
+  {
+    "brand": "Mercedes-Benz",
+    "model": "B 180 CDI",
+    "year": 2013,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Mercedes-Benz",
+    "model": "B 200 CDI",
+    "year": 2014,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Mercedes-Benz",
+    "model": "B 180",
+    "year": 2017,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Mercedes-Benz",
+    "model": "B 250 e",
+    "year": 2021,
+    "type": "HIBRIDO_ENCHUFABLE",
+    "batteryCapacity": 10.6,
+    "fuelTankCapacity": 35
+  },
+  {
+    "brand": "Ford",
+    "model": "Focus 1.0 EcoBoost 125CV",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
   }
 ]
