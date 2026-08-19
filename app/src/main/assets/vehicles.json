@@ -136,14 +136,6 @@
     "fuelTankCapacity": 39
   },
   {
-    "brand": "Nissan",
-    "model": "Qashqai e-POWER",
-    "year": 2025,
-    "type": "HIBRIDO",
-    "batteryCapacity": null,
-    "fuelTankCapacity": 55
-  },
-  {
     "brand": "Ford",
     "model": "Kuga PHEV",
     "year": 2024,
@@ -344,14 +336,6 @@
     "fuelTankCapacity": null
   },
   {
-    "brand": "Opel",
-    "model": "Corsa Turbo",
-    "year": 2024,
-    "type": "GASOLINA",
-    "batteryCapacity": null,
-    "fuelTankCapacity": 44
-  },
-  {
     "brand": "BMW",
     "model": "X3 xDrive20d",
     "year": 2024,
@@ -481,14 +465,6 @@
   },
   {
     "brand": "Nissan",
-    "model": "Qashqai dCi",
-    "year": 2018,
-    "type": "DIESEL",
-    "batteryCapacity": null,
-    "fuelTankCapacity": 55
-  },
-  {
-    "brand": "Nissan",
     "model": "Pulsar dCi",
     "year": 2017,
     "type": "DIESEL",
@@ -526,78 +502,6 @@
     "type": "GASOLINA",
     "batteryCapacity": null,
     "fuelTankCapacity": 58
-  },
-  {
-    "brand": "Opel",
-    "model": "Corsa CDTi",
-    "year": 2016,
-    "type": "DIESEL",
-    "batteryCapacity": null,
-    "fuelTankCapacity": 45
-  },
-  {
-    "brand": "Opel",
-    "model": "Corsa Turbo",
-    "year": 2017,
-    "type": "GASOLINA",
-    "batteryCapacity": null,
-    "fuelTankCapacity": 45
-  },
-  {
-    "brand": "Opel",
-    "model": "Corsa OPC",
-    "year": 2015,
-    "type": "GASOLINA",
-    "batteryCapacity": null,
-    "fuelTankCapacity": 45
-  },
-  {
-    "brand": "Opel",
-    "model": "Corsa-e",
-    "year": 2020,
-    "type": "ELECTRICO",
-    "batteryCapacity": 46.3,
-    "fuelTankCapacity": null
-  },
-  {
-    "brand": "Opel",
-    "model": "Corsa 1.2",
-    "year": 2010,
-    "type": "GASOLINA",
-    "batteryCapacity": null,
-    "fuelTankCapacity": 45
-  },
-  {
-    "brand": "Opel",
-    "model": "Corsa 1.4",
-    "year": 2012,
-    "type": "GASOLINA",
-    "batteryCapacity": null,
-    "fuelTankCapacity": 45
-  },
-  {
-    "brand": "Opel",
-    "model": "Corsa OPC",
-    "year": 2011,
-    "type": "GASOLINA",
-    "batteryCapacity": null,
-    "fuelTankCapacity": 45
-  },
-  {
-    "brand": "Opel",
-    "model": "Corsa 1.0 Turbo",
-    "year": 2015,
-    "type": "GASOLINA",
-    "batteryCapacity": null,
-    "fuelTankCapacity": 45
-  },
-  {
-    "brand": "Opel",
-    "model": "Corsa 1.2 Turbo",
-    "year": 2021,
-    "type": "GASOLINA",
-    "batteryCapacity": null,
-    "fuelTankCapacity": 44
   },
   {
     "brand": "Toyota",
@@ -806,5 +710,541 @@
     "type": "GASOLINA",
     "batteryCapacity": null,
     "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Nissan",
+    "model": "Qashqai 1.6",
+    "year": 2007,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 65
+  },
+  {
+    "brand": "Nissan",
+    "model": "Qashqai 2.0",
+    "year": 2008,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 65
+  },
+  {
+    "brand": "Nissan",
+    "model": "Qashqai 1.5 dCi",
+    "year": 2008,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 65
+  },
+  {
+    "brand": "Nissan",
+    "model": "Qashqai 2.0 dCi",
+    "year": 2009,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 65
+  },
+  {
+    "brand": "Nissan",
+    "model": "Qashqai 1.6 dCi",
+    "year": 2011,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 65
+  },
+  {
+    "brand": "Nissan",
+    "model": "Qashqai 1.2 DIG-T",
+    "year": 2014,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Nissan",
+    "model": "Qashqai 1.6 DIG-T",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Nissan",
+    "model": "Qashqai 1.5 dCi",
+    "year": 2015,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Nissan",
+    "model": "Qashqai 1.6 dCi",
+    "year": 2016,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Nissan",
+    "model": "Qashqai 1.3 DIG-T",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Nissan",
+    "model": "Qashqai 1.7 dCi",
+    "year": 2019,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 65
+  },
+  {
+    "brand": "Nissan",
+    "model": "Qashqai 1.3 DIG-T MHEV",
+    "year": 2021,
+    "type": "HIBRIDO",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Nissan",
+    "model": "Qashqai e-POWER",
+    "year": 2022,
+    "type": "HIBRIDO",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.0 12V",
+    "year": 2001,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 44
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.2 16V",
+    "year": 2002,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 44
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.7 DTI",
+    "year": 2002,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 44
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.3 CDTI",
+    "year": 2004,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 44
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.8 GSI",
+    "year": 2003,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 44
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.2 Twinport",
+    "year": 2007,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.4 Twinport",
+    "year": 2008,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.3 CDTI",
+    "year": 2008,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.7 CDTI",
+    "year": 2009,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa OPC 1.6 Turbo",
+    "year": 2008,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.3 CDTI EcoFlex",
+    "year": 2016,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.4 Turbo",
+    "year": 2016,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 45
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.2",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 44
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.2 Turbo",
+    "year": 2020,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 44
+  },
+  {
+    "brand": "Opel",
+    "model": "Corsa 1.5 D",
+    "year": 2020,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 41
+  },
+{
+    "brand": "Opel",
+    "model": "Corsa 1.2 Hybrid",
+    "year": 2024,
+    "type": "HIBRIDO",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 44
+  },
+  {
+    "brand": "Citroën",
+    "model": "C-Elysée VTi 72",
+    "year": 2012,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Citroën",
+    "model": "C-Elysée VTi 115",
+    "year": 2012,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Citroën",
+    "model": "C-Elysée HDi 92",
+    "year": 2012,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Citroën",
+    "model": "C-Elysée PureTech 82",
+    "year": 2015,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Citroën",
+    "model": "C-Elysée BlueHDi 100",
+    "year": 2015,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.1i",
+    "year": 1996,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.4i",
+    "year": 1996,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.8i",
+    "year": 1997,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.8 D",
+    "year": 1996,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.9 D",
+    "year": 1998,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 2.0 HDi",
+    "year": 1999,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.6 16V",
+    "year": 2000,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.6 HDi 75",
+    "year": 2005,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.6 HDi 90",
+    "year": 2005,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.6 HDi 75",
+    "year": 2008,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.6 HDi 90",
+    "year": 2008,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.6 HDi 110",
+    "year": 2008,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.6 VTi 95",
+    "year": 2010,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.6 VTi 120",
+    "year": 2010,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.6 e-HDi 90",
+    "year": 2011,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.6 HDi 115",
+    "year": 2012,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo Electric",
+    "year": 2013,
+    "type": "ELECTRICO",
+    "batteryCapacity": 22.5,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.6 BlueHDi 75",
+    "year": 2015,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.6 BlueHDi 100",
+    "year": 2015,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.6 BlueHDi 120",
+    "year": 2015,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.2 PureTech 110",
+    "year": 2018,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.6 BlueHDi 75",
+    "year": 2018,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.6 BlueHDi 100",
+    "year": 2018,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.5 BlueHDi 75",
+    "year": 2018,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.5 BlueHDi 100",
+    "year": 2018,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.5 BlueHDi 130",
+    "year": 2018,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.2 PureTech 130",
+    "year": 2019,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 60
+  },
+  {
+    "brand": "Citroën",
+    "model": "ë-Berlingo",
+    "year": 2021,
+    "type": "ELECTRICO",
+    "batteryCapacity": 50,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.2 PureTech 110",
+    "year": 2022,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.5 BlueHDi 100",
+    "year": 2022,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.5 BlueHDi 130",
+    "year": 2022,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Citroën",
+    "model": "ë-Berlingo",
+    "year": 2024,
+    "type": "ELECTRICO",
+    "batteryCapacity": 54,
+    "fuelTankCapacity": null
+  },
+  {
+    "brand": "Citroën",
+    "model": "Berlingo 1.5 BlueHDi 100",
+    "year": 2024,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 50
   }
 ]

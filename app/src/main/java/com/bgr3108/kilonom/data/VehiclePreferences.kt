@@ -16,6 +16,8 @@ interface VehiclePreferencesStore {
     suspend fun saveVehicle(vehicle: Vehicle)
     suspend fun loadVehicle(): Vehicle
     suspend fun clearVehicle()
+    suspend fun hasSeenReleaseNotes(versionName: String): Boolean = false
+    suspend fun markReleaseNotesAsSeen(versionName: String) = Unit
 }
 
 class VehiclePreferences(
@@ -47,6 +49,9 @@ class VehiclePreferences(
 
         val CURRENT_KM =
             doublePreferencesKey("current_km")
+
+        val LAST_SEEN_RELEASE_NOTES_VERSION =
+            stringPreferencesKey("last_seen_release_notes_version")
     }
 
     override suspend fun saveVehicle(
@@ -112,13 +117,26 @@ class VehiclePreferences(
             it.clear()
         }
     }
+
+    override suspend fun hasSeenReleaseNotes(versionName: String): Boolean =
+        context.dataStore.data.first()[Keys.LAST_SEEN_RELEASE_NOTES_VERSION] == versionName
+
+    override suspend fun markReleaseNotesAsSeen(versionName: String) {
+        context.dataStore.edit { preferences ->
+            preferences[Keys.LAST_SEEN_RELEASE_NOTES_VERSION] = versionName
+        }
+    }
 }
 
 internal fun vehicleTypeOrNull(value: String?): VehicleType? =
     value
         ?.takeIf { it.isNotBlank() }
         ?.let { storedType ->
-            VehicleType.entries.firstOrNull { it.name == storedType }
+            if (storedType == "HEV") {
+                VehicleType.HIBRIDO
+            } else {
+                VehicleType.entries.firstOrNull { it.name == storedType }
+            }
         }
 
 internal fun vehicleCategoryOrDefault(value: String?): VehicleCategory =

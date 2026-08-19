@@ -2,10 +2,15 @@ package com.bgr3108.kilonom.domain
 
 import com.bgr3108.kilonom.data.FuelEntry
 import com.bgr3108.kilonom.data.FuelType
+import com.bgr3108.kilonom.data.isSupportedFuelLevelAfter
 
 fun calculateAverageFuelConsumption(entries: List<FuelEntry>): Double {
+    return calculateAverageFuelConsumptionFromSegments(calculateFuelSegments(entries))
+}
 
-    val segments = calculateFuelSegments(entries)
+fun calculateAverageFuelConsumptionFromSegments(
+    segments: List<FuelConsumptionSegment>
+): Double {
 
     var totalFuel = 0.0
     var totalDistance = 0.0
@@ -140,6 +145,67 @@ fun calculateFuelSegments(
 
     return result
 }
+
+/**
+ * Estimates consumption accumulated since the latest confirmed full tank. Its selected tank
+ * level is approximate, so this result is intentionally separate from full-to-full history.
+ */
+fun calculateCurrentEstimatedFuelConsumption(
+    entries: List<FuelEntry>,
+    tankCapacity: Double
+): CurrentFuelConsumptionEstimate? {
+    if (!tankCapacity.isFinite() || tankCapacity <= 0.0) return null
+
+    val fuelEntries = entries
+        .filter {
+            it.tipo == FuelType.GASOLINA &&
+                it.km.isFinite() &&
+                it.km >= 0.0 &&
+                it.cantidad.isFinite() &&
+                it.cantidad > 0.0
+        }
+        .sortedWith(compareBy<FuelEntry> { it.km }.thenBy { it.fecha }.thenBy { it.id })
+
+    val lastFullIndex = fuelEntries.indexOfLast { it.fullTank }
+    if (lastFullIndex < 0 || lastFullIndex == fuelEntries.lastIndex) return null
+
+    val lastFull = fuelEntries[lastFullIndex]
+    val partialEntries = fuelEntries.drop(lastFullIndex + 1)
+    val latestPartial = partialEntries.last()
+    val latestLevel = latestPartial.fuelLevelAfter
+
+    if (
+        latestPartial.fullTank ||
+        latestLevel == null ||
+        !latestLevel.isFinite() ||
+        !isSupportedFuelLevelAfter(latestLevel)
+    ) return null
+
+    val distance = latestPartial.km - lastFull.km
+    val addedFuel = partialEntries.sumOf { it.cantidad }
+    val fuelAfterLatestPartial = tankCapacity * latestLevel
+    val fuelBeforeLatestPartial = fuelAfterLatestPartial - latestPartial.cantidad
+    val fuelConsumed = tankCapacity + addedFuel - fuelAfterLatestPartial
+
+    if (
+        !distance.isFinite() || distance <= 0.0 ||
+        !addedFuel.isFinite() || addedFuel <= 0.0 ||
+        !fuelAfterLatestPartial.isFinite() ||
+        !fuelBeforeLatestPartial.isFinite() || fuelBeforeLatestPartial !in 0.0..tankCapacity ||
+        !fuelConsumed.isFinite() || fuelConsumed <= 0.0
+    ) return null
+
+    val consumption = (fuelConsumed / distance) * 100.0
+    if (!consumption.isFinite() || consumption <= 0.0) return null
+
+    return CurrentFuelConsumptionEstimate(
+        startKm = lastFull.km,
+        endKm = latestPartial.km,
+        distance = distance,
+        fuelUsed = fuelConsumed,
+        consumption = consumption
+    )
+}
 fun calculateBestFuelConsumption(
     entries: List<FuelEntry>
 ): Double {
@@ -147,6 +213,10 @@ fun calculateBestFuelConsumption(
     return calculateFuelSegments(entries)
         .minOfOrNull { it.consumption } ?: 0.0
 }
+
+fun calculateBestFuelConsumptionFromSegments(
+    segments: List<FuelConsumptionSegment>
+): Double = segments.minOfOrNull { it.consumption } ?: 0.0
 
 fun calculateWorstFuelConsumption(
     entries: List<FuelEntry>
@@ -156,12 +226,20 @@ fun calculateWorstFuelConsumption(
         .maxOfOrNull { it.consumption } ?: 0.0
 }
 
+fun calculateWorstFuelConsumptionFromSegments(
+    segments: List<FuelConsumptionSegment>
+): Double = segments.maxOfOrNull { it.consumption } ?: 0.0
+
 fun calculateFuelSegmentCount(
     entries: List<FuelEntry>
 ): Int {
 
     return calculateFuelSegments(entries).size
 }
+
+fun calculateFuelSegmentCountFromSegments(
+    segments: List<FuelConsumptionSegment>
+): Int = segments.size
 data class ElectricConsumptionSegment(
 
     val startKm: Double,

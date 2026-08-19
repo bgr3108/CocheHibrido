@@ -265,6 +265,120 @@ class FuelConsumptionCalculatorTest {
         assertEquals(listOf(10.0, 15.0), segments.map { it.consumption })
     }
 
+    @Test
+    fun fullTankThenPartial_createsACurrentEstimatedConsumption() {
+        val estimate = calculateCurrentEstimatedFuelConsumption(
+            entries = listOf(
+                fuelEntry(100.0, 10.0, fuelLevelAfter = 1.0),
+                fuelEntry(200.0, 5.0, fullTank = false, fuelLevelAfter = 0.75)
+            ),
+            tankCapacity = 40.0
+        )
+
+        assertEquals(15.0, requireNotNull(estimate).consumption, 0.0)
+        assertTrue(calculateFuelSegments(listOf(
+            fuelEntry(100.0, 10.0, fuelLevelAfter = 1.0),
+            fuelEntry(200.0, 5.0, fullTank = false, fuelLevelAfter = 0.75)
+        )).isEmpty())
+    }
+
+    @Test
+    fun severalPartials_createOneAccumulatedCurrentEstimate() {
+        val estimate = calculateCurrentEstimatedFuelConsumption(
+            listOf(
+                fuelEntry(100.0, 10.0, fuelLevelAfter = 1.0),
+                fuelEntry(150.0, 5.0, fullTank = false, fuelLevelAfter = 0.875),
+                fuelEntry(200.0, 7.0, fullTank = false, fuelLevelAfter = 0.75)
+            ),
+            40.0
+        )
+
+        assertEquals(22.0, requireNotNull(estimate).consumption, 0.0)
+    }
+
+    @Test
+    fun nextFullTank_closesTheRealSegmentAndRemovesTheCurrentEstimate() {
+        val entries = listOf(
+            fuelEntry(100.0, 10.0, fuelLevelAfter = 1.0),
+            fuelEntry(150.0, 5.0, fullTank = false, fuelLevelAfter = 0.75),
+            fuelEntry(200.0, 10.0, fuelLevelAfter = 1.0)
+        )
+
+        assertEquals(15.0, calculateFuelSegments(entries).single().consumption, 0.0)
+        assertEquals(null, calculateCurrentEstimatedFuelConsumption(entries, 40.0))
+    }
+
+    @Test
+    fun currentEstimate_doesNotChangeHistoricalFuelStatistics() {
+        val entries = listOf(
+            fuelEntry(0.0, 10.0, fuelLevelAfter = 1.0),
+            fuelEntry(100.0, 10.0, fuelLevelAfter = 1.0),
+            fuelEntry(200.0, 5.0, fullTank = false, fuelLevelAfter = 0.5)
+        )
+
+        assertEquals(10.0, calculateAverageFuelConsumption(entries), 0.0)
+        assertEquals(10.0, calculateBestFuelConsumption(entries), 0.0)
+        assertEquals(10.0, calculateWorstFuelConsumption(entries), 0.0)
+        assertEquals(1, calculateFuelSegmentCount(entries))
+        assertEquals(25.0, requireNotNull(calculateCurrentEstimatedFuelConsumption(entries, 40.0)).consumption, 0.0)
+    }
+
+    @Test
+    fun historicalPartialWithoutTankLevel_doesNotCreateCurrentEstimate() {
+        assertEquals(
+            null,
+            calculateCurrentEstimatedFuelConsumption(
+                listOf(
+                    fuelEntry(100.0, 10.0, fuelLevelAfter = 1.0),
+                    fuelEntry(200.0, 5.0, fullTank = false, fuelLevelAfter = null)
+                ),
+                40.0
+            )
+        )
+    }
+
+    @Test
+    fun incoherentTankLevel_doesNotCreateCurrentEstimate() {
+        assertEquals(
+            null,
+            calculateCurrentEstimatedFuelConsumption(
+                listOf(
+                    fuelEntry(100.0, 10.0, fuelLevelAfter = 1.0),
+                    fuelEntry(200.0, 10.0, fullTank = false, fuelLevelAfter = 0.125)
+                ),
+                40.0
+            )
+        )
+    }
+
+    @Test
+    fun unsupportedTankLevel_doesNotCreateCurrentEstimate() {
+        assertEquals(
+            null,
+            calculateCurrentEstimatedFuelConsumption(
+                listOf(
+                    fuelEntry(100.0, 10.0, fuelLevelAfter = 1.0),
+                    fuelEntry(200.0, 10.0, fullTank = false, fuelLevelAfter = 0.6)
+                ),
+                40.0
+            )
+        )
+    }
+
+    @Test
+    fun missingTankCapacity_doesNotCreateCurrentEstimate() {
+        assertEquals(
+            null,
+            calculateCurrentEstimatedFuelConsumption(
+                listOf(
+                    fuelEntry(100.0, 10.0, fuelLevelAfter = 1.0),
+                    fuelEntry(200.0, 5.0, fullTank = false, fuelLevelAfter = 0.75)
+                ),
+                0.0
+            )
+        )
+    }
+
     private fun electricEntry(km: Double, quantity: Double) = FuelEntry(
         fecha = km.toLong(),
         cantidad = quantity,
@@ -277,6 +391,7 @@ class FuelConsumptionCalculatorTest {
         km: Double,
         quantity: Double,
         fullTank: Boolean = true,
+        fuelLevelAfter: Double? = null,
         date: Long = km.toLong(),
         id: Int = 0
     ) = FuelEntry(
@@ -286,6 +401,7 @@ class FuelConsumptionCalculatorTest {
         precio = 0.0,
         tipo = FuelType.GASOLINA,
         km = km,
-        fullTank = fullTank
+        fullTank = fullTank,
+        fuelLevelAfter = fuelLevelAfter
     )
 }

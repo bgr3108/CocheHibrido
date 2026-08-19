@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Kilonom</string>
+    <string name="current_estimated_consumption_note">Estimación basada en el nivel indicado del depósito. El consumo real se calculará al completar un nuevo llenado.</string>
+    <string name="whats_new_title">Novedades en Kilonom</string>
+    <string name="whats_new_message">Ahora Kilonom también puede estimar tu consumo aunque hagas repostajes parciales.\n\nIndica aproximadamente el nivel del depósito después de repostar y Kilonom calculará un consumo estimado hasta que completes un nuevo llenado.\n\nLos consumos estimados se muestran por separado y no modifican tus estadísticas de consumo real.</string>
+    <string name="whats_new_confirm">Entendido</string>
 </resources>

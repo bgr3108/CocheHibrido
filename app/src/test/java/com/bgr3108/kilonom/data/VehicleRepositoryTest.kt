@@ -17,6 +17,11 @@ class VehicleRepositoryTest {
     }
 
     @Test
+    fun legacyHevStoredType_isNormalizedToHybrid() {
+        assertEquals(VehicleType.HIBRIDO, vehicleTypeOrNull("HEV"))
+    }
+
+    @Test
     fun unknownStoredType_isTreatedAsNotConfigured() {
         assertNull(vehicleTypeOrNull("UNKNOWN_TYPE"))
     }
@@ -144,6 +149,31 @@ class VehicleRepositoryTest {
         assertEquals(previousVehicle, repository.vehicle.value)
     }
 
+    @Test
+    fun unseenReleaseNotes_areShownAndPersistedWhenDismissed() = runBlocking {
+        val preferences = FakeVehiclePreferences()
+        val repository = VehicleRepository(EmptyVehicleCatalog, preferences)
+
+        repository.isLoading.first { !it }
+        assertTrue(repository.showReleaseNotes.value)
+        repository.dismissReleaseNotes()
+
+        assertFalse(repository.showReleaseNotes.value)
+        assertEquals(RELEASE_NOTES_VERSION, preferences.releaseNotesVersion)
+    }
+
+    @Test
+    fun acknowledgedReleaseNotes_areNotShownAgainForTheSameVersion() = runBlocking {
+        val repository = VehicleRepository(
+            EmptyVehicleCatalog,
+            FakeVehiclePreferences(releaseNotesVersion = RELEASE_NOTES_VERSION)
+        )
+
+        repository.isLoading.first { !it }
+
+        assertFalse(repository.showReleaseNotes.value)
+    }
+
     private object EmptyVehicleCatalog : VehicleCatalog {
         override fun loadVehicles(category: VehicleCategory): List<VehicleInfo> = emptyList()
     }
@@ -151,7 +181,8 @@ class VehicleRepositoryTest {
     private class FakeVehiclePreferences(
         private val vehicle: Vehicle = Vehicle(),
         private val loadError: Exception? = null,
-        private val saveError: Exception? = null
+        private val saveError: Exception? = null,
+        var releaseNotesVersion: String? = null
     ) : VehiclePreferencesStore {
 
         var savedVehicle: Vehicle? = null
@@ -167,5 +198,12 @@ class VehicleRepositoryTest {
         }
 
         override suspend fun clearVehicle() = Unit
+
+        override suspend fun hasSeenReleaseNotes(versionName: String): Boolean =
+            releaseNotesVersion == versionName
+
+        override suspend fun markReleaseNotesAsSeen(versionName: String) {
+            releaseNotesVersion = versionName
+        }
     }
 }

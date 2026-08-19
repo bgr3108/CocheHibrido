@@ -2,6 +2,8 @@ package com.bgr3108.kilonom.ui.screens
 
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,6 +35,14 @@ import androidx.compose.runtime.collectAsState
 import com.bgr3108.kilonom.data.VehicleType
 import com.bgr3108.kilonom.data.supportsElectricEntries
 import com.bgr3108.kilonom.data.supportsFuelEntries
+import com.bgr3108.kilonom.data.fuelLevelAfterSteps
+import com.bgr3108.kilonom.data.fuelLevelAfterPercentageText
+import com.bgr3108.kilonom.data.initialFuelLevelAfter
+import com.bgr3108.kilonom.data.isFullTankLevel
+import com.bgr3108.kilonom.data.isSupportedFuelLevelAfter
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.foundation.shape.CircleShape
 
 @Composable
 fun AddConsumptionScreen(
@@ -136,6 +146,10 @@ fun AddConsumptionScreen(
 
     var fullTank by rememberSaveable(entry?.id) {
         mutableStateOf(entry?.fullTank ?: true)
+    }
+
+    var fuelLevelAfter by rememberSaveable(entry?.id) {
+        mutableStateOf(initialFuelLevelAfter(entry))
     }
 
     var errorCapacidad by remember {
@@ -345,24 +359,14 @@ fun AddConsumptionScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        if (tipoSeleccionado != FuelType.ELECTRICO) {
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Text(
-                    text = "Depósito lleno",
-                    modifier = Modifier.weight(1f)
-                )
-
-                Checkbox(
-                    checked = fullTank,
-                    onCheckedChange = {
-                        fullTank = it
-                    }
-                )
-            }
+        if (tipoSeleccionado == FuelType.GASOLINA) {
+            FuelLevelAfterSelector(
+                selectedLevel = fuelLevelAfter,
+                onLevelSelected = { level ->
+                    fuelLevelAfter = level
+                    fullTank = isFullTankLevel(level)
+                }
+            )
         }
 
         val showFuelOption = currentVehicle.type.supportsFuelEntries
@@ -537,6 +541,16 @@ fun AddConsumptionScreen(
                     return@Button
                 }
 
+                val selectedFuelLevel = fuelLevelAfter
+                if (
+                    tipoSeleccionado == FuelType.GASOLINA &&
+                    selectedFuelLevel != null &&
+                    !isSupportedFuelLevelAfter(selectedFuelLevel)
+                ) {
+                    errorCapacidad = "Selecciona uno de los niveles disponibles del depósito"
+                    return@Button
+                }
+
                 if (
                     tipoSeleccionado == FuelType.ELECTRICO &&
                     cantidadFinal > currentVehicle.batteryCapacity &&
@@ -602,7 +616,12 @@ fun AddConsumptionScreen(
                     precio = precioFinal,
                     tipo = tipoSeleccionado,
                     km = kmNuevo,
-                    fullTank = fullTank
+                    fullTank = if (tipoSeleccionado == FuelType.GASOLINA && fuelLevelAfter != null) {
+                        isFullTankLevel(fuelLevelAfter)
+                    } else {
+                        fullTank
+                    },
+                    fuelLevelAfter = if (tipoSeleccionado == FuelType.GASOLINA) fuelLevelAfter else null
                 )
 
                 viewModel.saveEntry(
@@ -634,6 +653,72 @@ fun AddConsumptionScreen(
         ) {
             Text("Cancelar")
         }
+    }
+}
+
+@Composable
+private fun FuelLevelAfterSelector(
+    selectedLevel: Double?,
+    onLevelSelected: (Double) -> Unit
+) {
+    Text(
+        text = "Nivel del depósito después de repostar",
+        style = MaterialTheme.typography.bodyLarge
+    )
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        fuelLevelAfterSteps.forEachIndexed { index, level ->
+            val selected = selectedLevel == level
+            val label = when (index) {
+                0 -> "Vacío"
+                2 -> "¼"
+                4 -> "½"
+                6 -> "¾"
+                8 -> "Lleno"
+                else -> null
+            }
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.weight(1f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(if (label == null) 20.dp else 28.dp)
+                        .background(
+                            color = if (selected) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.outline
+                            },
+                            shape = CircleShape
+                        )
+                        .clickable { onLevelSelected(level) }
+                        .semantics {
+                            contentDescription = "Nivel del depósito ${fuelLevelAfterPercentageText(level)}"
+                        }
+                )
+                if (label != null) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1
+                    )
+                }
+            }
+        }
+    }
+
+    selectedLevel?.let { level ->
+        Text(
+            text = "Nivel estimado: ${fuelLevelAfterPercentageText(level)}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

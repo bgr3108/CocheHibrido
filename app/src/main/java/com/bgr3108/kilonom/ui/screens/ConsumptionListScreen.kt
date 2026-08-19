@@ -27,6 +27,8 @@ import com.bgr3108.kilonom.ui.theme.CardBlueDark
 
 import com.bgr3108.kilonom.data.FuelEntry
 import com.bgr3108.kilonom.data.FuelType
+import com.bgr3108.kilonom.data.fuelLevelAfterPercentageText
+import com.bgr3108.kilonom.data.isSupportedFuelLevelAfter
 import com.bgr3108.kilonom.data.supportsElectricEntries
 import com.bgr3108.kilonom.data.supportsFuelEntries
 import com.bgr3108.kilonom.domain.calculateUnitPrice
@@ -323,8 +325,13 @@ fun ConsumptionListScreen(
                                 Text(
                                     if (entry.fullTank)
                                         "☑ Lleno"
-                                    else
-                                        "◻ Parcial"
+                                    else {
+                                        val levelText = entry.fuelLevelAfter
+                                            ?.takeIf(::isSupportedFuelLevelAfter)
+                                            ?.let { " · Nivel ${fuelLevelAfterPercentageText(it)}" }
+                                            .orEmpty()
+                                        "◻ Parcial$levelText"
+                                    }
                                 )
                             }
 

@@ -22,5 +22,8 @@ data class FuelEntry(
 
     val km: Double,
 
-    val fullTank: Boolean = true
+    val fullTank: Boolean = true,
+
+    /** Fraction of the tank estimated after a fuel entry, or null for historical/unknown data. */
+    val fuelLevelAfter: Double? = null
 )

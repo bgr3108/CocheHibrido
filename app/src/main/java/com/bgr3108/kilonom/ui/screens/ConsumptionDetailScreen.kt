@@ -29,14 +29,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.ui.components.StatisticRow
+import com.bgr3108.kilonom.R
 import com.bgr3108.kilonom.ui.theme.CardBlueDark
 import com.bgr3108.kilonom.ui.theme.CardBlueLight
 import com.bgr3108.kilonom.util.toSpanishDecimal
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 import com.bgr3108.kilonom.ui.components.charts.LineChart
 import com.bgr3108.kilonom.ui.components.charts.ChartPoint
+import com.bgr3108.kilonom.domain.CurrentFuelConsumptionEstimate
 import com.bgr3108.kilonom.data.supportsElectricEntries
 import com.bgr3108.kilonom.data.supportsFuelEntries
 
@@ -81,6 +84,10 @@ fun ConsumptionDetailScreen(
 
     val historialConsumoGasolina by viewModel
         .historialConsumoGasolina
+        .collectAsStateWithLifecycle()
+
+    val currentEstimatedFuelConsumption by viewModel
+        .currentEstimatedFuelConsumption
         .collectAsStateWithLifecycle()
 
     val historialConsumoElectrico by viewModel
@@ -138,6 +145,7 @@ fun ConsumptionDetailScreen(
 
             historialConsumoGasolina = historialConsumoGasolina,
             historialConsumoElectrico = historialConsumoElectrico,
+            currentEstimatedFuelConsumption = currentEstimatedFuelConsumption,
             showFuel = showFuel,
             showElectric = showElectric
         )
@@ -162,6 +170,7 @@ private fun ConsumptionContent(
 
     historialConsumoGasolina: List<ChartPoint>,
     historialConsumoElectrico: List<ChartPoint>,
+    currentEstimatedFuelConsumption: CurrentFuelConsumptionEstimate?,
     showFuel: Boolean,
     showElectric: Boolean
 
@@ -249,6 +258,26 @@ private fun ConsumptionContent(
                         "Tramos calculados",
                         numeroTramosGasolina.toString()
                     )
+
+                    currentEstimatedFuelConsumption?.let { estimate ->
+                        Spacer(modifier = Modifier.height(16.dp))
+                        HorizontalDivider()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Consumo estimado actual",
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                        Text(
+                            text = "≈ ${estimate.consumption.toSpanishDecimal()} L/100 km",
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Text(
+                            text = stringResource(R.string.current_estimated_consumption_note),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(20.dp))
 

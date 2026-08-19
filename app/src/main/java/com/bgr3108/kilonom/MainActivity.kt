@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -19,8 +20,10 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -66,6 +69,7 @@ fun AppContent(
         .isVehicleLoading
         .collectAsStateWithLifecycle()
     val vehicle by homeViewModel.vehicle.collectAsStateWithLifecycle()
+    val showReleaseNotes by homeViewModel.showReleaseNotes.collectAsStateWithLifecycle()
 
     if (isVehicleLoading) {
 
@@ -163,5 +167,30 @@ fun AppContent(
                 homeViewModel = homeViewModel
             )
         }
+
+        if (showReleaseNotes) {
+            ReleaseNotesDialog(onDismiss = homeViewModel::dismissReleaseNotes)
+        }
     }
+}
+
+@Composable
+private fun ReleaseNotesDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(stringResource(R.string.whats_new_title))
+        },
+        text = {
+            Text(stringResource(R.string.whats_new_message))
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.whats_new_confirm))
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+    )
 }

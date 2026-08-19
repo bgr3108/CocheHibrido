@@ -21,13 +21,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import com.bgr3108.kilonom.domain.calculateAverageElectricConsumption
-import com.bgr3108.kilonom.domain.calculateAverageFuelConsumption
 import com.bgr3108.kilonom.domain.calculateBestElectricConsumption
-import com.bgr3108.kilonom.domain.calculateBestFuelConsumption
 import com.bgr3108.kilonom.domain.calculateElectricSegmentCount
-import com.bgr3108.kilonom.domain.calculateFuelSegmentCount
 import com.bgr3108.kilonom.domain.calculateWorstElectricConsumption
-import com.bgr3108.kilonom.domain.calculateWorstFuelConsumption
 import com.bgr3108.kilonom.domain.calculateAverageElectricPrice
 import com.bgr3108.kilonom.domain.calculateAverageFuelPrice
 import com.bgr3108.kilonom.domain.calculateCostPerKilometer
@@ -47,6 +43,11 @@ import com.bgr3108.kilonom.domain.calculateMostExpensiveRefuel
 import com.bgr3108.kilonom.domain.calculateTotalElectricCost
 import com.bgr3108.kilonom.domain.calculateTotalFuelCost
 import com.bgr3108.kilonom.domain.calculateFuelSegments
+import com.bgr3108.kilonom.domain.calculateCurrentEstimatedFuelConsumption
+import com.bgr3108.kilonom.domain.calculateAverageFuelConsumptionFromSegments
+import com.bgr3108.kilonom.domain.calculateBestFuelConsumptionFromSegments
+import com.bgr3108.kilonom.domain.calculateWorstFuelConsumptionFromSegments
+import com.bgr3108.kilonom.domain.calculateFuelSegmentCountFromSegments
 import com.bgr3108.kilonom.domain.calculateElectricSegments
 import com.bgr3108.kilonom.domain.isValidEconomicEntry
 import com.bgr3108.kilonom.domain.sumValidEconomicValues
@@ -82,6 +83,8 @@ class HomeViewModel(
 
     val isVehicleLoading =
         vehicleRepository.isLoading
+
+    val showReleaseNotes = vehicleRepository.showReleaseNotes
 
     private val vehicleSaveMutex = Mutex()
     private val _isSavingVehicle = MutableStateFlow(false)
@@ -133,6 +136,12 @@ class HomeViewModel(
         }
     }
 
+    fun dismissReleaseNotes() {
+        viewModelScope.launch {
+            vehicleRepository.dismissReleaseNotes()
+        }
+    }
+
     // ============================================================
     // Entradas
     // ============================================================
@@ -144,13 +153,18 @@ class HomeViewModel(
     // Consumos
     // ============================================================
 
-    val consumoGasolina = entries
-        .map(::calculateAverageFuelConsumption)
+    /** Confirmed full-to-full intervals used by all historical fuel statistics and charts. */
+    val fuelConsumptionSegments = entries
+        .map(::calculateFuelSegments)
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            0.0
+            emptyList()
         )
+
+    val consumoGasolina = fuelConsumptionSegments
+        .map(::calculateAverageFuelConsumptionFromSegments)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
     val consumoElectrico = entries
         .map(::calculateAverageElectricConsumption)
@@ -160,29 +174,26 @@ class HomeViewModel(
             0.0
         )
 
-    val mejorConsumoGasolina = entries
-        .map(::calculateBestFuelConsumption)
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            0.0
-        )
+    val mejorConsumoGasolina = fuelConsumptionSegments
+        .map(::calculateBestFuelConsumptionFromSegments)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
-    val peorConsumoGasolina = entries
-        .map(::calculateWorstFuelConsumption)
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            0.0
-        )
+    val peorConsumoGasolina = fuelConsumptionSegments
+        .map(::calculateWorstFuelConsumptionFromSegments)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
-    val numeroTramosGasolina = entries
-        .map(::calculateFuelSegmentCount)
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            0
-        )
+    val numeroTramosGasolina = fuelConsumptionSegments
+        .map(::calculateFuelSegmentCountFromSegments)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    /**
+     * A provisional value from the most recent confirmed full tank to the latest partial
+     * refuel. It never contributes to the historical statistics above.
+     */
+    val currentEstimatedFuelConsumption = combine(entries, vehicle) { list, currentVehicle ->
+        calculateCurrentEstimatedFuelConsumption(list, currentVehicle.fuelTankCapacity)
+    }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val mejorConsumoElectrico = entries
         .map(::calculateBestElectricConsumption)
@@ -208,9 +219,9 @@ class HomeViewModel(
             0
         )
 
-    val historialConsumoGasolina = entries
-        .map {
-            calculateFuelSegments(it).map { segment ->
+    val historialConsumoGasolina = fuelConsumptionSegments
+        .map { segments ->
+            segments.map { segment ->
                 ChartPoint(
                     x = segment.endKm,
                     y = segment.consumption.toFloat()

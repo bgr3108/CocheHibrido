@@ -25,10 +25,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.data.supportsElectricEntries
 import com.bgr3108.kilonom.data.supportsFuelEntries
+import com.bgr3108.kilonom.R
 import com.bgr3108.kilonom.ui.components.DashboardCard
 import com.bgr3108.kilonom.util.toSpanishDecimal
 import com.bgr3108.kilonom.util.toKilometersDisplay
@@ -50,6 +52,22 @@ fun StatisticsScreen(
 
     val consumoGasolina by viewModel
         .consumoGasolina
+        .collectAsStateWithLifecycle()
+
+    val mejorConsumoGasolina by viewModel
+        .mejorConsumoGasolina
+        .collectAsStateWithLifecycle()
+
+    val peorConsumoGasolina by viewModel
+        .peorConsumoGasolina
+        .collectAsStateWithLifecycle()
+
+    val numeroTramosGasolina by viewModel
+        .numeroTramosGasolina
+        .collectAsStateWithLifecycle()
+
+    val currentEstimatedFuelConsumption by viewModel
+        .currentEstimatedFuelConsumption
         .collectAsStateWithLifecycle()
 
     val consumoElectrico by viewModel
@@ -151,11 +169,67 @@ fun StatisticsScreen(
                     style = MaterialTheme.typography.labelMedium
                 )
 
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    "Consumo medio",
+                    style = MaterialTheme.typography.labelMedium
+                )
+
                 Text(
                     "${consumoGasolina.toSpanishDecimal()} L/100 km",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    "Mejor consumo",
+                    style = MaterialTheme.typography.labelMedium
+                )
+                Text(
+                    "${mejorConsumoGasolina.toSpanishDecimal()} L/100 km",
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                Text(
+                    "Peor consumo",
+                    style = MaterialTheme.typography.labelMedium
+                )
+                Text(
+                    "${peorConsumoGasolina.toSpanishDecimal()} L/100 km",
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                Text(
+                    "Tramos calculados",
+                    style = MaterialTheme.typography.labelMedium
+                )
+                Text(
+                    numeroTramosGasolina.toString(),
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                currentEstimatedFuelConsumption?.let { estimate ->
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "Consumo estimado actual",
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                    Text(
+                        "≈ ${estimate.consumption.toSpanishDecimal()} L/100 km",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        stringResource(R.string.current_estimated_consumption_note),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
 
             if (showFuel && showElectric) {

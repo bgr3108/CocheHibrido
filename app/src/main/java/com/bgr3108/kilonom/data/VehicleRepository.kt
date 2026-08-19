@@ -5,6 +5,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
+internal const val RELEASE_NOTES_VERSION = "1.0.3"
 
 class VehicleRepository(
 
@@ -16,11 +20,14 @@ class VehicleRepository(
     private val _vehicle = MutableStateFlow(Vehicle())
     private val _isLoading = MutableStateFlow(true)
     private val _loadError = MutableStateFlow<Throwable?>(null)
+    private val _showReleaseNotes = MutableStateFlow(false)
+    private val releaseNotesMutex = Mutex()
 
     val isLoading: StateFlow<Boolean> = _isLoading
     val loadError: StateFlow<Throwable?> = _loadError
 
     val vehicle: StateFlow<Vehicle> = _vehicle
+    val showReleaseNotes: StateFlow<Boolean> = _showReleaseNotes
 
     init {
 
@@ -31,6 +38,9 @@ class VehicleRepository(
                 _vehicle.value = Vehicle()
                 _loadError.value = error
             } finally {
+                _showReleaseNotes.value = runCatching {
+                    !vehiclePreferences.hasSeenReleaseNotes(RELEASE_NOTES_VERSION)
+                }.getOrDefault(false)
                 _isLoading.value = false
             }
         }
@@ -45,5 +55,14 @@ class VehicleRepository(
 
         vehiclePreferences.clearVehicle()
         _vehicle.value = Vehicle()
+    }
+
+    suspend fun dismissReleaseNotes() {
+        releaseNotesMutex.withLock {
+            if (!_showReleaseNotes.value) return
+
+            vehiclePreferences.markReleaseNotesAsSeen(RELEASE_NOTES_VERSION)
+            _showReleaseNotes.value = false
+        }
     }
 }
