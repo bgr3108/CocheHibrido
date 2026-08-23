@@ -27,5 +27,12 @@ object AppViewModelProvider {
             )
         }
 
+        initializer {
+            PeriodSummaryViewModel(
+                hybridCarApplication().container.fuelRepository,
+                hybridCarApplication().container.vehicleRepository
+            )
+        }
+
     }
 }

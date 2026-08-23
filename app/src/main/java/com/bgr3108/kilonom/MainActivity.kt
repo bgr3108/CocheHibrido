@@ -34,6 +34,7 @@ import com.bgr3108.kilonom.ui.theme.CocheHibridoTheme
 import com.bgr3108.kilonom.viewmodel.AppViewModelProvider
 import com.bgr3108.kilonom.viewmodel.FuelEntryViewModel
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
+import com.bgr3108.kilonom.viewmodel.PeriodSummaryViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -45,6 +46,10 @@ class MainActivity : ComponentActivity() {
         AppViewModelProvider.Factory
     }
 
+    private val periodSummaryViewModel: PeriodSummaryViewModel by viewModels {
+        AppViewModelProvider.Factory
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -52,7 +57,8 @@ class MainActivity : ComponentActivity() {
             CocheHibridoTheme {
                 AppContent(
                     fuelViewModel = fuelViewModel,
-                    homeViewModel = homeViewModel
+                    homeViewModel = homeViewModel,
+                    periodSummaryViewModel = periodSummaryViewModel
                 )
             }
         }
@@ -62,7 +68,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppContent(
     fuelViewModel: FuelEntryViewModel,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    periodSummaryViewModel: PeriodSummaryViewModel
 ) {
     val navController = rememberNavController()
     val isVehicleLoading by homeViewModel
@@ -164,7 +171,8 @@ fun AppContent(
                 navController = navController,
                 innerPadding = innerPadding,
                 fuelViewModel = fuelViewModel,
-                homeViewModel = homeViewModel
+                homeViewModel = homeViewModel,
+                periodSummaryViewModel = periodSummaryViewModel
             )
         }
 

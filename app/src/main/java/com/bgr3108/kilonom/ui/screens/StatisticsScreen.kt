@@ -15,17 +15,23 @@ import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Route
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.data.supportsElectricEntries
@@ -35,6 +41,7 @@ import com.bgr3108.kilonom.ui.components.DashboardCard
 import com.bgr3108.kilonom.util.toSpanishDecimal
 import com.bgr3108.kilonom.util.toKilometersDisplay
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
+import com.bgr3108.kilonom.viewmodel.PeriodSummaryViewModel
 
 @Composable
 fun StatisticsScreen(
@@ -43,7 +50,8 @@ fun StatisticsScreen(
     onOpenConsumption: () -> Unit,
     onOpenPrice: () -> Unit,
     onOpenCost: () -> Unit,
-    onOpenTotal: () -> Unit
+    onOpenTotal: () -> Unit,
+    periodSummaryViewModel: PeriodSummaryViewModel
 ){
 
     val entries by viewModel
@@ -114,44 +122,78 @@ fun StatisticsScreen(
 
     val showElectric = vehicle.type.supportsElectricEntries
 
-    if (entries.isEmpty()) {
+    var selectedTab by rememberSaveable { mutableStateOf(StatisticsTab.GLOBAL) }
+
+    if (selectedTab == StatisticsTab.PERIODS) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Aún no hay estadísticas",
-                style = MaterialTheme.typography.titleLarge
+            StatisticsHeader(
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it },
+                bottomPadding = 6.dp
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Registra tus primeros consumos para empezar a ver estadísticas y costes.",
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center
+            PeriodSummaryContent(
+                viewModel = periodSummaryViewModel,
+                modifier = Modifier.weight(1f),
+                topPadding = 6.dp
             )
+        }
+    } else if (entries.isEmpty()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            StatisticsHeader(
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it }
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Aún no hay estadísticas",
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Registra tus primeros consumos para empezar a ver estadísticas y costes.",
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     } else {
         Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-
-        Text(
-            text = "Estadísticas",
-            style = MaterialTheme.typography.headlineSmall
+        StatisticsHeader(
+            selectedTab = selectedTab,
+            onTabSelected = { selectedTab = it }
         )
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
 
         DashboardCard(
             title = "Consumos",
@@ -405,5 +447,62 @@ fun StatisticsScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
     }
+    }
+}
+}
+
+private enum class StatisticsTab {
+    GLOBAL,
+    PERIODS
+}
+
+@Composable
+private fun StatisticsHeader(
+    selectedTab: StatisticsTab,
+    onTabSelected: (StatisticsTab) -> Unit,
+    bottomPadding: Dp = 16.dp
+) {
+    val chipColors = FilterChipDefaults.filterChipColors(
+        selectedContainerColor = MaterialTheme.colorScheme.primary,
+        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+        labelColor = MaterialTheme.colorScheme.onSurface
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 16.dp,
+                bottom = bottomPadding
+            )
+    ) {
+        Text(
+            text = "Estadísticas",
+            style = MaterialTheme.typography.headlineSmall
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        androidx.compose.foundation.layout.Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            listOf(
+                StatisticsTab.GLOBAL to "Global",
+                StatisticsTab.PERIODS to "Periodos"
+            ).forEach { (tab, label) ->
+                FilterChip(
+                    selected = selectedTab == tab,
+                    onClick = { onTabSelected(tab) },
+                    label = { Text(label) },
+                    colors = chipColors,
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = selectedTab == tab,
+                        borderColor = MaterialTheme.colorScheme.outline,
+                        selectedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+            }
+        }
     }
 }

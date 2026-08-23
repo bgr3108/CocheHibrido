@@ -29,13 +29,15 @@ import com.bgr3108.kilonom.ui.screens.StatisticsScreen
 import com.bgr3108.kilonom.ui.screens.TotalDetailScreen
 import com.bgr3108.kilonom.viewmodel.FuelEntryViewModel
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
+import com.bgr3108.kilonom.viewmodel.PeriodSummaryViewModel
 
 @Composable
 fun HybridCarNavHost(
     navController: NavHostController,
     innerPadding: PaddingValues,
     fuelViewModel: FuelEntryViewModel,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    periodSummaryViewModel: PeriodSummaryViewModel
 ){
 
     NavHost(
@@ -124,7 +126,8 @@ fun HybridCarNavHost(
                 },
                 onOpenTotal = {
                     navController.navigate("total_detail")
-                }
+                },
+                periodSummaryViewModel = periodSummaryViewModel
             )
         }
         composable("consumption_detail") {
