@@ -577,10 +577,10 @@ fun AddConsumptionScreen(
                         .minByOrNull { it.fecha }
 
 // 🔥 Siempre comprobar km inicial del Setup
-                if (kmNuevo < currentVehicle.currentKm) {
+                if (kmNuevo < currentVehicle.initialKm) {
 
                     errorKm =
-                        "Los kilómetros no pueden ser inferiores al kilometraje inicial (${currentVehicle.currentKm.toKilometersDisplay()} km)"
+                        "Los kilómetros no pueden ser inferiores al kilometraje inicial (${currentVehicle.initialKm.toKilometersDisplay()} km)"
 
                     return@Button
                 }
@@ -621,7 +621,11 @@ fun AddConsumptionScreen(
                     } else {
                         fullTank
                     },
-                    fuelLevelAfter = if (tipoSeleccionado == FuelType.GASOLINA) fuelLevelAfter else null
+                    fuelLevelAfter = if (tipoSeleccionado == FuelType.GASOLINA) fuelLevelAfter else null,
+                    vehicleId = entry?.vehicleId ?: currentVehicle.id ?: run {
+                        errorCapacidad = "No hay un vehículo activo para guardar el consumo"
+                        return@Button
+                    }
                 )
 
                 viewModel.saveEntry(

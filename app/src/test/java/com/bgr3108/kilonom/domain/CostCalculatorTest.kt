@@ -188,6 +188,7 @@ class CostCalculatorTest {
         cantidad = quantity,
         precio = price,
         tipo = type,
-        km = 0.0
+        km = 0.0,
+        vehicleId = 1L
     )
 }

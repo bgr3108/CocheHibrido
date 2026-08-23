@@ -17,6 +17,8 @@ class AppContainer(context: Context) {
 
     val vehicleRepository = VehicleRepository(
         VehicleDataSource(context),
-        VehiclePreferences(context)
+        VehiclePreferences(context),
+        database.vehicleDao(),
+        database.fuelEntryDao()
     )
 }

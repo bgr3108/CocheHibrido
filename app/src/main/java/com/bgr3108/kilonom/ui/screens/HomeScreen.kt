@@ -415,7 +415,7 @@ fun HomeScreen(
                         )
 
                         Text(
-                            text = vehicle.currentKm.toKilometersDisplay(),
+                            text = vehicle.initialKm.toKilometersDisplay(),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodyMedium
                         )

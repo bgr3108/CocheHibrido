@@ -55,6 +55,7 @@ class FuelLevelAfterTest {
         tipo = FuelType.GASOLINA,
         km = 100.0,
         fullTank = fullTank,
-        fuelLevelAfter = null
+        fuelLevelAfter = null,
+        vehicleId = 1L
     )
 }

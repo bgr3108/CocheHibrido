@@ -14,8 +14,14 @@ interface FuelEntryDao {
     @Query("SELECT * FROM fuel_entries ORDER BY fecha DESC")
     fun getAllEntries(): Flow<List<FuelEntry>>
 
+    @Query("SELECT * FROM fuel_entries WHERE vehicleId = :vehicleId ORDER BY fecha DESC")
+    fun getEntriesForVehicle(vehicleId: Long): Flow<List<FuelEntry>>
+
     @Query("SELECT * FROM fuel_entries ORDER BY fecha DESC LIMIT 1")
     fun getLatestEntry(): Flow<FuelEntry?>
+
+    @Query("SELECT km FROM fuel_entries WHERE vehicleId = :vehicleId")
+    suspend fun getKilometersForVehicle(vehicleId: Long): List<Double>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntry(entry: FuelEntry)

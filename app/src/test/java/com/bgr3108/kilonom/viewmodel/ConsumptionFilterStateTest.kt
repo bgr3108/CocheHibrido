@@ -187,6 +187,7 @@ class ConsumptionFilterStateTest {
         cantidad = 1.0,
         precio = 1.0,
         tipo = type,
-        km = 0.0
+        km = 0.0,
+        vehicleId = 1L
     )
 }

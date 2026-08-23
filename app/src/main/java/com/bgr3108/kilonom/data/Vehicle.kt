@@ -2,6 +2,8 @@ package com.bgr3108.kilonom.data
 
 data class Vehicle(
 
+    val id: Long? = null,
+
     val brand: String = "",
 
     val model: String = "",
@@ -16,5 +18,5 @@ data class Vehicle(
 
     val fuelTankCapacity: Double = 0.0,
 
-    val currentKm: Double = 0.0
+    val initialKm: Double = 0.0
 )

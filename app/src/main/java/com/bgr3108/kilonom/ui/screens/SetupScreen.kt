@@ -412,7 +412,7 @@ fun SetupScreen(
                         type = vehicle.type,
                         batteryCapacity = vehicle.batteryCapacity,
                         fuelTankCapacity = vehicle.fuelTankCapacity,
-                        currentKm = validMileage
+                        initialKm = validMileage
                     ),
                     onSaved = onDone
                 )

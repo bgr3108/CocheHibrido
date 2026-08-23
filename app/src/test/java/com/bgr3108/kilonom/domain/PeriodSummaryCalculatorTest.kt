@@ -15,7 +15,7 @@ import java.util.TimeZone
 class PeriodSummaryCalculatorTest {
 
     private val timeZone = TimeZone.getTimeZone("UTC")
-    private val vehicle = Vehicle(type = VehicleType.HIBRIDO_ENCHUFABLE, currentKm = 1_000.0)
+    private val vehicle = Vehicle(type = VehicleType.HIBRIDO_ENCHUFABLE, initialKm = 1_000.0)
 
     @Test
     fun monthWithFuel_calculatesWeightedFuelMetrics() {
@@ -258,6 +258,7 @@ class PeriodSummaryCalculatorTest {
         cantidad = quantity,
         precio = price,
         tipo = type,
-        km = kilometers
+        km = kilometers,
+        vehicleId = 1L
     )
 }

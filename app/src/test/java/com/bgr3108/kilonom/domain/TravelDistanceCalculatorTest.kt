@@ -67,6 +67,7 @@ class TravelDistanceCalculatorTest {
         cantidad = 1.0,
         precio = 1.0,
         tipo = FuelType.GASOLINA,
-        km = km
+        km = km,
+        vehicleId = 1L
     )
 }

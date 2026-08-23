@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
@@ -16,6 +17,8 @@ interface VehiclePreferencesStore {
     suspend fun saveVehicle(vehicle: Vehicle)
     suspend fun loadVehicle(): Vehicle
     suspend fun clearVehicle()
+    suspend fun loadActiveVehicleId(): Long? = null
+    suspend fun saveActiveVehicleId(vehicleId: Long) = Unit
     suspend fun hasSeenReleaseNotes(versionName: String): Boolean = false
     suspend fun markReleaseNotesAsSeen(versionName: String) = Unit
 }
@@ -50,6 +53,9 @@ class VehiclePreferences(
         val CURRENT_KM =
             doublePreferencesKey("current_km")
 
+        val ACTIVE_VEHICLE_ID =
+            longPreferencesKey("active_vehicle_id")
+
         val LAST_SEEN_RELEASE_NOTES_VERSION =
             stringPreferencesKey("last_seen_release_notes_version")
     }
@@ -76,7 +82,7 @@ class VehiclePreferences(
                 vehicle.fuelTankCapacity
 
             prefs[Keys.CURRENT_KM] =
-                vehicle.currentKm
+                vehicle.initialKm
         }
     }
 
@@ -106,9 +112,18 @@ class VehiclePreferences(
             fuelTankCapacity =
                 prefs[Keys.TANK] ?: 0.0,
 
-                currentKm =
+            initialKm =
                 prefs[Keys.CURRENT_KM] ?: 0.0
         )
+    }
+
+    override suspend fun loadActiveVehicleId(): Long? =
+        context.dataStore.data.first()[Keys.ACTIVE_VEHICLE_ID]
+
+    override suspend fun saveActiveVehicleId(vehicleId: Long) {
+        context.dataStore.edit { preferences ->
+            preferences[Keys.ACTIVE_VEHICLE_ID] = vehicleId
+        }
     }
     override suspend fun clearVehicle() {
 

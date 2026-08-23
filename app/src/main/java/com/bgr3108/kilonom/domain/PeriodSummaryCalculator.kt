@@ -26,7 +26,7 @@ fun calculatePeriodSummary(
     val fuelQuantity = validFuelEntries.sumFinite { it.cantidad }
     val electricQuantity = validElectricEntries.sumFinite { it.cantidad }
     val distance = when (period) {
-        StatisticsPeriod.All -> calculateTravelledKilometers(entries, vehicle.currentKm)
+        StatisticsPeriod.All -> calculateTravelledKilometers(entries, vehicle.initialKm)
             .takeIf { it > 0.0 }
         else -> calculateDistanceBetweenRecords(entriesInPeriod)
     }

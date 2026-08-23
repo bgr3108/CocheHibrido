@@ -12,6 +12,8 @@ import com.bgr3108.kilonom.data.VehicleInfo
 import com.bgr3108.kilonom.data.VehiclePreferencesStore
 import com.bgr3108.kilonom.data.VehicleRepository
 import com.bgr3108.kilonom.data.VehicleType
+import com.bgr3108.kilonom.data.InMemoryFuelEntryDao
+import com.bgr3108.kilonom.data.InMemoryVehicleDao
 import com.bgr3108.kilonom.database.FuelEntryDao
 import com.bgr3108.kilonom.database.CarDao
 import kotlinx.coroutines.flow.Flow
@@ -29,7 +31,7 @@ class ResetApplicationDataTest {
         val fuelEntryDao = FakeFuelEntryDao()
         val carDao = FakeCarDao()
         val vehiclePreferences = FakeVehiclePreferences()
-        val vehicleRepository = VehicleRepository(EmptyVehicleCatalog, vehiclePreferences)
+        val vehicleRepository = vehicleRepository(vehiclePreferences)
 
         vehicleRepository.isLoading.first { !it }
 
@@ -46,11 +48,10 @@ class ResetApplicationDataTest {
 
     @Test
     fun dataStoreFailure_doesNotReportASuccessfulReset() = runBlocking {
-        val originalVehicle = Vehicle(type = VehicleType.GASOLINA)
+        val originalVehicle = configuredVehicle(VehicleType.GASOLINA)
         val fuelEntryDao = FakeFuelEntryDao()
         val carDao = FakeCarDao()
-        val vehicleRepository = VehicleRepository(
-            EmptyVehicleCatalog,
+        val vehicleRepository = vehicleRepository(
             FakeVehiclePreferences(
                 vehicle = originalVehicle,
                 clearError = IllegalStateException("DataStore unavailable")
@@ -68,14 +69,15 @@ class ResetApplicationDataTest {
         }
 
         assertTrue(result.isFailure)
-        assertEquals(originalVehicle, vehicleRepository.vehicle.value)
+        assertEquals(originalVehicle.brand, vehicleRepository.vehicle.value.brand)
+        assertEquals(originalVehicle.type, vehicleRepository.vehicle.value.type)
     }
 
     @Test
     fun roomFailure_doesNotClearVehiclePreferences() = runBlocking {
-        val originalVehicle = Vehicle(type = VehicleType.ELECTRICO)
+        val originalVehicle = configuredVehicle(VehicleType.ELECTRICO)
         val vehiclePreferences = FakeVehiclePreferences(vehicle = originalVehicle)
-        val vehicleRepository = VehicleRepository(EmptyVehicleCatalog, vehiclePreferences)
+        val vehicleRepository = vehicleRepository(vehiclePreferences)
 
         vehicleRepository.isLoading.first { !it }
 
@@ -89,14 +91,15 @@ class ResetApplicationDataTest {
 
         assertTrue(result.isFailure)
         assertEquals(0, vehiclePreferences.clearCalls)
-        assertEquals(originalVehicle, vehicleRepository.vehicle.value)
+        assertEquals(originalVehicle.brand, vehicleRepository.vehicle.value.brand)
+        assertEquals(originalVehicle.type, vehicleRepository.vehicle.value.type)
     }
 
     @Test
     fun legacyCarRoomFailure_doesNotClearVehiclePreferences() = runBlocking {
-        val originalVehicle = Vehicle(type = VehicleType.GASOLINA)
+        val originalVehicle = configuredVehicle(VehicleType.GASOLINA)
         val vehiclePreferences = FakeVehiclePreferences(vehicle = originalVehicle)
-        val vehicleRepository = VehicleRepository(EmptyVehicleCatalog, vehiclePreferences)
+        val vehicleRepository = vehicleRepository(vehiclePreferences)
 
         vehicleRepository.isLoading.first { !it }
 
@@ -110,7 +113,8 @@ class ResetApplicationDataTest {
 
         assertTrue(result.isFailure)
         assertEquals(0, vehiclePreferences.clearCalls)
-        assertEquals(originalVehicle, vehicleRepository.vehicle.value)
+        assertEquals(originalVehicle.brand, vehicleRepository.vehicle.value.brand)
+        assertEquals(originalVehicle.type, vehicleRepository.vehicle.value.type)
     }
 
     @Test
@@ -118,7 +122,7 @@ class ResetApplicationDataTest {
         val fuelEntryDao = FakeFuelEntryDao()
         val carDao = FakeCarDao(deleteError = IllegalStateException("Car unavailable"))
         val vehiclePreferences = FakeVehiclePreferences()
-        val vehicleRepository = VehicleRepository(EmptyVehicleCatalog, vehiclePreferences)
+        val vehicleRepository = vehicleRepository(vehiclePreferences)
 
         vehicleRepository.isLoading.first { !it }
 
@@ -148,8 +152,27 @@ class ResetApplicationDataTest {
         override fun loadVehicles(category: VehicleCategory): List<VehicleInfo> = emptyList()
     }
 
+    private fun vehicleRepository(preferences: FakeVehiclePreferences) = VehicleRepository(
+        EmptyVehicleCatalog,
+        preferences,
+        InMemoryVehicleDao(),
+        InMemoryFuelEntryDao()
+    )
+
+    private fun configuredVehicle(type: VehicleType) = Vehicle(
+        brand = "Marca",
+        model = "Modelo",
+        year = 2026,
+        type = type
+    )
+
     private class FakeVehiclePreferences(
-        private var vehicle: Vehicle = Vehicle(type = VehicleType.GASOLINA),
+        private var vehicle: Vehicle = Vehicle(
+            brand = "Marca",
+            model = "Modelo",
+            year = 2026,
+            type = VehicleType.GASOLINA
+        ),
         private val clearError: Exception? = null
     ) : VehiclePreferencesStore {
         var clearCalls = 0
@@ -176,13 +199,20 @@ class ResetApplicationDataTest {
                 cantidad = 1.0,
                 precio = 1.0,
                 tipo = FuelType.GASOLINA,
-                km = 1.0
+                km = 1.0,
+                vehicleId = 1L
             )
         )
 
         override fun getAllEntries(): Flow<List<FuelEntry>> = flowOf(entries)
 
+        override fun getEntriesForVehicle(vehicleId: Long): Flow<List<FuelEntry>> =
+            flowOf(entries.filter { it.vehicleId == vehicleId })
+
         override fun getLatestEntry(): Flow<FuelEntry?> = flowOf(entries.lastOrNull())
+
+        override suspend fun getKilometersForVehicle(vehicleId: Long): List<Double> =
+            entries.filter { it.vehicleId == vehicleId }.map { it.km }
 
         override suspend fun insertEntry(entry: FuelEntry) = Unit
 

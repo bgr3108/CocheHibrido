@@ -283,7 +283,7 @@ class HomeViewModel(
     val totalKm = combine(entries, vehicle) { list, currentVehicle ->
         calculateTravelledKilometers(
             entries = list,
-            initialKilometers = currentVehicle.currentKm
+            initialKilometers = currentVehicle.initialKm
         )
     }
         .stateIn(

@@ -384,7 +384,8 @@ class FuelConsumptionCalculatorTest {
         cantidad = quantity,
         precio = 0.0,
         tipo = FuelType.ELECTRICO,
-        km = km
+        km = km,
+        vehicleId = 1L
     )
 
     private fun fuelEntry(
@@ -402,6 +403,7 @@ class FuelConsumptionCalculatorTest {
         tipo = FuelType.GASOLINA,
         km = km,
         fullTank = fullTank,
-        fuelLevelAfter = fuelLevelAfter
+        fuelLevelAfter = fuelLevelAfter,
+        vehicleId = 1L
     )
 }
