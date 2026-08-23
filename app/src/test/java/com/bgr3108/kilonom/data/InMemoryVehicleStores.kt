@@ -3,18 +3,21 @@ package com.bgr3108.kilonom.data
 import com.bgr3108.kilonom.database.FuelEntryDao
 import com.bgr3108.kilonom.database.VehicleDao
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 
 internal class InMemoryVehicleDao(
     initialVehicles: List<VehicleEntity> = emptyList()
 ) : VehicleDao {
     val vehicles = initialVehicles.toMutableList()
+    private val vehiclesFlow = MutableStateFlow(vehicles.toList())
     private var nextId = (vehicles.maxOfOrNull { it.id } ?: 0L) + 1L
 
     override fun observeAllVehicles(): Flow<List<VehicleEntity>> =
-        flowOf(vehicles.sortedWith(compareBy<VehicleEntity> { it.createdAt }.thenBy { it.id }))
+        vehiclesFlow.map { it.sortedWith(compareBy<VehicleEntity> { vehicle -> vehicle.createdAt }.thenBy { vehicle -> vehicle.id }) }
 
-    override fun observeVehicle(id: Long): Flow<VehicleEntity?> = flowOf(vehicles.find { it.id == id })
+    override fun observeVehicle(id: Long): Flow<VehicleEntity?> =
+        vehiclesFlow.map { vehicles -> vehicles.find { it.id == id } }
 
     override suspend fun getVehicle(id: Long): VehicleEntity? = vehicles.find { it.id == id }
 
@@ -24,6 +27,7 @@ internal class InMemoryVehicleDao(
     override suspend fun insert(vehicle: VehicleEntity): Long {
         val saved = vehicle.copy(id = if (vehicle.id == 0L) nextId++ else vehicle.id)
         vehicles += saved
+        vehiclesFlow.value = vehicles.toList()
         return saved.id
     }
 
@@ -31,26 +35,32 @@ internal class InMemoryVehicleDao(
         val index = vehicles.indexOfFirst { it.id == vehicle.id }
         check(index >= 0)
         vehicles[index] = vehicle
+        vehiclesFlow.value = vehicles.toList()
     }
 
     override suspend fun delete(vehicle: VehicleEntity) {
         vehicles.removeAll { it.id == vehicle.id }
+        vehiclesFlow.value = vehicles.toList()
     }
 
     override suspend fun deleteAll() {
         vehicles.clear()
+        vehiclesFlow.value = emptyList()
     }
 }
 
 internal class InMemoryFuelEntryDao(
     val entries: MutableList<FuelEntry> = mutableListOf()
 ) : FuelEntryDao {
-    override fun getAllEntries(): Flow<List<FuelEntry>> = flowOf(entries.toList())
+    private val entriesFlow = MutableStateFlow(entries.toList())
 
-    override fun getEntriesForVehicle(vehicleId: Long): Flow<List<FuelEntry>> =
-        flowOf(entries.filter { it.vehicleId == vehicleId })
+    override fun observeEntries(vehicleId: Long): Flow<List<FuelEntry>> =
+        entriesFlow.map { entries ->
+            entries.filter { it.vehicleId == vehicleId }.sortedByDescending { it.fecha }
+        }
 
-    override fun getLatestEntry(): Flow<FuelEntry?> = flowOf(entries.maxByOrNull { it.fecha })
+    override suspend fun getEntryForVehicle(entryId: Int, vehicleId: Long): FuelEntry? =
+        entries.find { it.id == entryId && it.vehicleId == vehicleId }
 
     override suspend fun getKilometersForVehicle(vehicleId: Long): List<Double> =
         entries.filter { it.vehicleId == vehicleId }.map { it.km }
@@ -58,13 +68,25 @@ internal class InMemoryFuelEntryDao(
     override suspend fun insertEntry(entry: FuelEntry) {
         entries.removeAll { it.id == entry.id && entry.id != 0 }
         entries += entry
+        entriesFlow.value = entries.toList()
     }
 
-    override suspend fun delete(entry: FuelEntry) {
-        entries.remove(entry)
+    override suspend fun updateEntry(entry: FuelEntry): Int {
+        val index = entries.indexOfFirst { it.id == entry.id && it.vehicleId == entry.vehicleId }
+        if (index < 0) return 0
+        entries[index] = entry
+        entriesFlow.value = entries.toList()
+        return 1
+    }
+
+    override suspend fun deleteEntryForVehicle(entryId: Int, vehicleId: Long): Int {
+        val removed = entries.removeAll { it.id == entryId && it.vehicleId == vehicleId }
+        if (removed) entriesFlow.value = entries.toList()
+        return if (removed) 1 else 0
     }
 
     override suspend fun deleteAll() {
         entries.clear()
+        entriesFlow.value = emptyList()
     }
 }

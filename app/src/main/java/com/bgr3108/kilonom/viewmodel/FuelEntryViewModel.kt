@@ -4,22 +4,51 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bgr3108.kilonom.data.FuelEntry
 import com.bgr3108.kilonom.data.FuelRepository
+import com.bgr3108.kilonom.data.FuelType
+import com.bgr3108.kilonom.data.VehicleRepository
+import com.bgr3108.kilonom.data.observeActiveVehicleEntries
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 
+data class FuelEntryDraft(
+    val id: Int,
+    val fecha: Long,
+    val cantidad: Double,
+    val precio: Double,
+    val tipo: FuelType,
+    val km: Double,
+    val fullTank: Boolean,
+    val fuelLevelAfter: Double?,
+    val originalVehicleId: Long?
+)
+
 class FuelEntryViewModel(
-    private val repository: FuelRepository
+    private val repository: FuelRepository,
+    private val vehicleRepository: VehicleRepository
 ) : ViewModel() {
 
+    private val activeContext = repository
+        .observeActiveVehicleEntries(vehicleRepository.activeVehicle)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = com.bgr3108.kilonom.data.ActiveVehicleEntries(
+                vehicle = com.bgr3108.kilonom.data.Vehicle(),
+                entries = emptyList()
+            )
+        )
+
     val entries: StateFlow<List<FuelEntry>> =
-        repository.getAllEntries()
+        activeContext
+            .map { it.entries }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
@@ -62,7 +91,7 @@ class FuelEntryViewModel(
 
     // 🔥 GUARDAR (CORREGIDO)
     fun saveEntry(
-        entry: FuelEntry,
+        draft: FuelEntryDraft,
         onSaved: () -> Unit,
         onError: () -> Unit
     ) {
@@ -72,7 +101,29 @@ class FuelEntryViewModel(
 
         viewModelScope.launch {
             try {
-                repository.addEntry(entry)
+                val activeVehicleId = vehicleRepository.activeVehicleId.value
+                    ?: error("No hay un vehículo activo")
+                val entry = FuelEntry(
+                    id = draft.id,
+                    fecha = draft.fecha,
+                    cantidad = draft.cantidad,
+                    precio = draft.precio,
+                    tipo = draft.tipo,
+                    km = draft.km,
+                    fullTank = draft.fullTank,
+                    fuelLevelAfter = draft.fuelLevelAfter,
+                    vehicleId = if (draft.id == 0) activeVehicleId else {
+                        require(draft.originalVehicleId == activeVehicleId) {
+                            "La entrada ya no pertenece al vehículo activo"
+                        }
+                        activeVehicleId
+                    }
+                )
+                if (draft.id == 0) {
+                    repository.addEntryForVehicle(entry, activeVehicleId)
+                } else {
+                    repository.updateEntryForVehicle(entry, activeVehicleId)
+                }
                 onSaved()
             } catch (error: Throwable) {
                 if (error is CancellationException) throw error
@@ -88,7 +139,8 @@ class FuelEntryViewModel(
     // 🔥 BORRAR
     fun deleteEntry(entry: FuelEntry) {
         viewModelScope.launch {
-            repository.delete(entry)
+            val activeVehicleId = vehicleRepository.activeVehicleId.value ?: return@launch
+            repository.deleteEntryForVehicle(entry, activeVehicleId)
         }
     }
 }

@@ -6,21 +6,30 @@ import kotlinx.coroutines.flow.Flow
 class FuelRepository(
     private val fuelEntryDao: FuelEntryDao
 ) {
-    /**
-     * Compatibility stream used by the one-vehicle UI during phase 1. Phase 2 must switch its
-     * callers to [getEntriesForVehicle] once vehicle switching is exposed.
-     */
-    fun getAllEntries(): Flow<List<FuelEntry>> = fuelEntryDao.getAllEntries()
+    fun observeEntries(vehicleId: Long): Flow<List<FuelEntry>> =
+        fuelEntryDao.observeEntries(vehicleId)
 
-    fun getEntriesForVehicle(vehicleId: Long): Flow<List<FuelEntry>> =
-        fuelEntryDao.getEntriesForVehicle(vehicleId)
-
-    suspend fun addEntry(entry: FuelEntry) {
-        fuelEntryDao.insertEntry(entry)
+    suspend fun addEntryForVehicle(entry: FuelEntry, vehicleId: Long) {
+        require(vehicleId > 0) { "Se requiere un vehículo activo válido" }
+        require(entry.id == 0) { "Una entrada existente debe actualizarse" }
+        fuelEntryDao.insertEntry(entry.copy(vehicleId = vehicleId))
     }
 
-    suspend fun delete(entry: FuelEntry) {
-        fuelEntryDao.delete(entry)
+    suspend fun updateEntryForVehicle(entry: FuelEntry, vehicleId: Long) {
+        require(vehicleId > 0 && entry.vehicleId == vehicleId) {
+            "La entrada no pertenece al vehículo activo"
+        }
+        require(fuelEntryDao.getEntryForVehicle(entry.id, vehicleId) != null) {
+            "No existe una entrada editable para el vehículo activo"
+        }
+        fuelEntryDao.updateEntry(entry)
+    }
+
+    suspend fun deleteEntryForVehicle(entry: FuelEntry, vehicleId: Long) {
+        require(vehicleId > 0 && entry.vehicleId == vehicleId) {
+            "La entrada no pertenece al vehículo activo"
+        }
+        fuelEntryDao.deleteEntryForVehicle(entry.id, vehicleId)
     }
 
     suspend fun deleteAll() {

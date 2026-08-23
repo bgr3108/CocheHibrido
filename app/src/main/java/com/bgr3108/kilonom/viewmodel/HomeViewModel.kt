@@ -11,6 +11,8 @@ import com.bgr3108.kilonom.data.MonthlyPrice
 import com.bgr3108.kilonom.data.Vehicle
 import com.bgr3108.kilonom.data.VehicleCategory
 import com.bgr3108.kilonom.data.VehicleRepository
+import com.bgr3108.kilonom.data.ActiveVehicleEntries
+import com.bgr3108.kilonom.data.observeActiveVehicleEntries
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -79,7 +81,17 @@ class HomeViewModel(
     // Vehículo
     // ============================================================
 
-    val vehicle = vehicleRepository.vehicle
+    private val activeContext = fuelRepository
+        .observeActiveVehicleEntries(vehicleRepository.activeVehicle)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = ActiveVehicleEntries(Vehicle(), emptyList())
+        )
+
+    val vehicle = activeContext
+        .map { it.vehicle }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Vehicle())
 
     val isVehicleLoading =
         vehicleRepository.isLoading
@@ -146,8 +158,7 @@ class HomeViewModel(
     // Entradas
     // ============================================================
 
-    val entries =
-        fuelRepository.getAllEntries()
+    val entries = activeContext.map { it.entries }
 
     // ============================================================
     // Consumos
@@ -190,9 +201,13 @@ class HomeViewModel(
      * A provisional value from the most recent confirmed full tank to the latest partial
      * refuel. It never contributes to the historical statistics above.
      */
-    val currentEstimatedFuelConsumption = combine(entries, vehicle) { list, currentVehicle ->
-        calculateCurrentEstimatedFuelConsumption(list, currentVehicle.fuelTankCapacity)
-    }
+    val currentEstimatedFuelConsumption = activeContext
+        .map { context ->
+            calculateCurrentEstimatedFuelConsumption(
+                context.entries,
+                context.vehicle.fuelTankCapacity
+            )
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val mejorConsumoElectrico = entries
@@ -280,12 +295,13 @@ class HomeViewModel(
 
     )
 
-    val totalKm = combine(entries, vehicle) { list, currentVehicle ->
-        calculateTravelledKilometers(
-            entries = list,
-            initialKilometers = currentVehicle.initialKm
-        )
-    }
+    val totalKm = activeContext
+        .map { context ->
+            calculateTravelledKilometers(
+                entries = context.entries,
+                initialKilometers = context.vehicle.initialKm
+            )
+        }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -592,8 +608,7 @@ class HomeViewModel(
 
         viewModelScope.launch {
 
-            fuelRepository
-                .getAllEntries()
+            entries
                 .collect { lista ->
 
                     if (lista.isEmpty()) {

@@ -204,19 +204,20 @@ class ResetApplicationDataTest {
             )
         )
 
-        override fun getAllEntries(): Flow<List<FuelEntry>> = flowOf(entries)
-
-        override fun getEntriesForVehicle(vehicleId: Long): Flow<List<FuelEntry>> =
+        override fun observeEntries(vehicleId: Long): Flow<List<FuelEntry>> =
             flowOf(entries.filter { it.vehicleId == vehicleId })
 
-        override fun getLatestEntry(): Flow<FuelEntry?> = flowOf(entries.lastOrNull())
+        override suspend fun getEntryForVehicle(entryId: Int, vehicleId: Long): FuelEntry? =
+            entries.find { it.id == entryId && it.vehicleId == vehicleId }
 
         override suspend fun getKilometersForVehicle(vehicleId: Long): List<Double> =
             entries.filter { it.vehicleId == vehicleId }.map { it.km }
 
         override suspend fun insertEntry(entry: FuelEntry) = Unit
 
-        override suspend fun delete(entry: FuelEntry) = Unit
+        override suspend fun updateEntry(entry: FuelEntry): Int = 1
+
+        override suspend fun deleteEntryForVehicle(entryId: Int, vehicleId: Long): Int = 1
 
         override suspend fun deleteAll() {
             deleteError?.let { throw it }

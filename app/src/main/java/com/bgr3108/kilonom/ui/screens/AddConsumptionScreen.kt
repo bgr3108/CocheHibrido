@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import com.bgr3108.kilonom.data.FuelEntry
 import com.bgr3108.kilonom.data.FuelType
 import com.bgr3108.kilonom.viewmodel.FuelEntryViewModel
+import com.bgr3108.kilonom.viewmodel.FuelEntryDraft
 import java.util.Calendar
 import com.bgr3108.kilonom.util.toFiniteDoubleOrNull
 import com.bgr3108.kilonom.util.toKilometersDisplay
@@ -609,7 +610,7 @@ fun AddConsumptionScreen(
                     return@Button
                 }
 
-                val newEntry = FuelEntry(
+                val draft = FuelEntryDraft(
                     id = entry?.id ?: 0,
                     fecha = finalCalendar.timeInMillis,
                     cantidad = cantidadFinal,
@@ -622,14 +623,11 @@ fun AddConsumptionScreen(
                         fullTank
                     },
                     fuelLevelAfter = if (tipoSeleccionado == FuelType.GASOLINA) fuelLevelAfter else null,
-                    vehicleId = entry?.vehicleId ?: currentVehicle.id ?: run {
-                        errorCapacidad = "No hay un vehículo activo para guardar el consumo"
-                        return@Button
-                    }
+                    originalVehicleId = entry?.vehicleId
                 )
 
                 viewModel.saveEntry(
-                    entry = newEntry,
+                    draft = draft,
                     onSaved = onClose,
                     onError = {
                         errorCapacidad = "No se pudo guardar el registro. Inténtalo de nuevo."

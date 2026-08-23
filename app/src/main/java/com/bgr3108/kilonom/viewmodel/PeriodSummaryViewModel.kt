@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.bgr3108.kilonom.data.FuelRepository
 import com.bgr3108.kilonom.data.VehicleRepository
 import com.bgr3108.kilonom.data.VehicleType
+import com.bgr3108.kilonom.data.ActiveVehicleEntries
+import com.bgr3108.kilonom.data.Vehicle
+import com.bgr3108.kilonom.data.observeActiveVehicleEntries
 import com.bgr3108.kilonom.domain.PeriodComparison
 import com.bgr3108.kilonom.domain.PeriodSummary
 import com.bgr3108.kilonom.domain.StatisticsPeriod
@@ -32,6 +35,14 @@ class PeriodSummaryViewModel(
     vehicleRepository: VehicleRepository
 ) : ViewModel() {
 
+    private val activeContext = fuelRepository
+        .observeActiveVehicleEntries(vehicleRepository.activeVehicle)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = ActiveVehicleEntries(Vehicle(), emptyList())
+        )
+
     private val _period = MutableStateFlow<StatisticsPeriod>(
         currentPeriod(StatisticsPeriodMode.MONTH)
     )
@@ -41,15 +52,14 @@ class PeriodSummaryViewModel(
     val period: StateFlow<StatisticsPeriod> = _period
 
     val uiState: StateFlow<PeriodSummaryUiState> = combine(
-        fuelRepository.getAllEntries(),
-        vehicleRepository.vehicle,
+        activeContext,
         _period,
         timeRefresh
-    ) { entries, vehicle, selectedPeriod, _ ->
+    ) { context, selectedPeriod, _ ->
         PeriodSummaryUiState(
-            summary = calculatePeriodSummary(entries, vehicle, selectedPeriod),
-            comparison = calculatePeriodComparison(entries, vehicle, selectedPeriod),
-            vehicleType = vehicle.type
+            summary = calculatePeriodSummary(context.entries, context.vehicle, selectedPeriod),
+            comparison = calculatePeriodComparison(context.entries, context.vehicle, selectedPeriod),
+            vehicleType = context.vehicle.type
         )
     }.stateIn(
         scope = viewModelScope,
@@ -57,11 +67,11 @@ class PeriodSummaryViewModel(
         initialValue = PeriodSummaryUiState(
             summary = calculatePeriodSummary(
                 entries = emptyList(),
-                vehicle = vehicleRepository.vehicle.value,
+                vehicle = Vehicle(),
                 period = _period.value
             ),
             comparison = null,
-            vehicleType = vehicleRepository.vehicle.value.type
+            vehicleType = null
         )
     )
 
