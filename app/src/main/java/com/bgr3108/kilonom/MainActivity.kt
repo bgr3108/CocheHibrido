@@ -35,6 +35,7 @@ import com.bgr3108.kilonom.viewmodel.AppViewModelProvider
 import com.bgr3108.kilonom.viewmodel.FuelEntryViewModel
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 import com.bgr3108.kilonom.viewmodel.PeriodSummaryViewModel
+import com.bgr3108.kilonom.viewmodel.MyVehiclesViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -50,6 +51,10 @@ class MainActivity : ComponentActivity() {
         AppViewModelProvider.Factory
     }
 
+    private val myVehiclesViewModel: MyVehiclesViewModel by viewModels {
+        AppViewModelProvider.Factory
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -58,7 +63,8 @@ class MainActivity : ComponentActivity() {
                 AppContent(
                     fuelViewModel = fuelViewModel,
                     homeViewModel = homeViewModel,
-                    periodSummaryViewModel = periodSummaryViewModel
+                    periodSummaryViewModel = periodSummaryViewModel,
+                    myVehiclesViewModel = myVehiclesViewModel
                 )
             }
         }
@@ -69,7 +75,8 @@ class MainActivity : ComponentActivity() {
 fun AppContent(
     fuelViewModel: FuelEntryViewModel,
     homeViewModel: HomeViewModel,
-    periodSummaryViewModel: PeriodSummaryViewModel
+    periodSummaryViewModel: PeriodSummaryViewModel,
+    myVehiclesViewModel: MyVehiclesViewModel
 ) {
     val navController = rememberNavController()
     val isVehicleLoading by homeViewModel
@@ -172,7 +179,8 @@ fun AppContent(
                 innerPadding = innerPadding,
                 fuelViewModel = fuelViewModel,
                 homeViewModel = homeViewModel,
-                periodSummaryViewModel = periodSummaryViewModel
+                periodSummaryViewModel = periodSummaryViewModel,
+                myVehiclesViewModel = myVehiclesViewModel
             )
         }
 

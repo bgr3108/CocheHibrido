@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -31,6 +33,13 @@ class VehicleRepository(
     private val fuelEntryDao: FuelEntryDao
 ) {
 
+    data class VehicleSummary(
+        val vehicle: VehicleEntity,
+        val currentKm: Double,
+        val entryCount: Int,
+        val minimumValidEntryKm: Double?
+    )
+
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val _vehicle = MutableStateFlow(Vehicle())
     private val _activeVehicleId = MutableStateFlow<Long?>(null)
@@ -49,6 +58,31 @@ class VehicleRepository(
     /** Compatibility snapshot; active data consumers use [activeVehicle] instead. */
     val vehicle: StateFlow<Vehicle> = _vehicle
     val showReleaseNotes: StateFlow<Boolean> = _showReleaseNotes
+
+    /** All Room snapshots with their own derived kilometre readings and entry counts. */
+    val vehicleSummaries = vehicleDao.observeAllVehicles()
+        .flatMapLatest { vehicles ->
+            if (vehicles.isEmpty()) {
+                flowOf(emptyList())
+            } else {
+                combine(vehicles.map { entity ->
+                    fuelEntryDao.observeEntries(entity.id).map { entries ->
+                        VehicleSummary(
+                            vehicle = entity,
+                            currentKm = calculateVehicleCurrentKm(
+                                initialKm = entity.initialKm,
+                                entryKilometers = entries.map { it.km }
+                            ),
+                            entryCount = entries.size,
+                            minimumValidEntryKm = entries.map { it.km }
+                                .filter { it.isFinite() && it >= 0.0 }
+                                .minOrNull()
+                        )
+                    }
+                }) { summaries -> summaries.toList() }
+            }
+        }
+        .stateIn(repositoryScope, SharingStarted.Eagerly, emptyList())
 
     init {
         repositoryScope.launch {
@@ -149,6 +183,64 @@ class VehicleRepository(
         _vehicle.value = resolved?.toVehicle() ?: Vehicle()
         if (resolved != null) {
             vehiclePreferences.saveActiveVehicleId(resolved.id)
+        } else {
+            vehiclePreferences.clearActiveVehicleId()
+        }
+    }
+
+    /** Creates an independent Room snapshot and makes it the active vehicle. */
+    suspend fun createVehicle(vehicle: Vehicle): VehicleEntity = vehicleMutex.withLock {
+        val id = vehicleDao.insert(vehicle.copy(id = null).toEntity(createdAt = System.currentTimeMillis()))
+        val entity = vehicleDao.getVehicle(id) ?: error("No se pudo recuperar el vehículo creado")
+        vehiclePreferences.saveActiveVehicleId(entity.id)
+        _activeVehicleId.value = entity.id
+        _vehicle.value = entity.toVehicle()
+        entity
+    }
+
+    /**
+     * Updates a snapshot only when its initial mileage remains compatible with its history.
+     * Vehicles with recorded entries keep their propulsion and capacities unchanged.
+     */
+    suspend fun updateVehicle(vehicleId: Long, updatedVehicle: Vehicle): VehicleEntity = vehicleMutex.withLock {
+        val current = vehicleDao.getVehicle(vehicleId) ?: error("Vehículo no encontrado")
+        val entryKilometers = fuelEntryDao.getKilometersForVehicle(vehicleId)
+        val minimumEntryKm = entryKilometers.filter { it.isFinite() && it >= 0.0 }.minOrNull()
+        require(updatedVehicle.initialKm.isFinite() && updatedVehicle.initialKm >= 0.0) {
+            "El kilometraje inicial no es válido"
+        }
+        require(minimumEntryKm == null || updatedVehicle.initialKm <= minimumEntryKm) {
+            "El kilometraje inicial no puede superar el primer consumo registrado"
+        }
+        val hasEntries = fuelEntryDao.countEntries(vehicleId) > 0
+        val entity = if (hasEntries) {
+            require(updatedVehicle.type == current.type) {
+                "No se puede cambiar la propulsión de un vehículo con consumos registrados"
+            }
+            current.copy(initialKm = updatedVehicle.initialKm)
+        } else {
+            updatedVehicle.toEntity(id = current.id, createdAt = current.createdAt)
+        }
+        vehicleDao.update(entity)
+        if (_activeVehicleId.value == vehicleId) _vehicle.value = entity.toVehicle()
+        entity
+    }
+
+    /** Deletes one snapshot; Room cascades its associated fuel entries. */
+    suspend fun deleteVehicle(vehicleId: Long) = vehicleMutex.withLock {
+        val target = vehicleDao.getVehicle(vehicleId) ?: return@withLock
+        val deletingActive = target.id == _activeVehicleId.value
+        vehicleDao.delete(target)
+
+        if (deletingActive) {
+            val replacement = vehicleDao.getFirstVehicle()
+            _activeVehicleId.value = replacement?.id
+            _vehicle.value = replacement?.toVehicle() ?: Vehicle()
+            if (replacement != null) {
+                vehiclePreferences.saveActiveVehicleId(replacement.id)
+            } else {
+                vehiclePreferences.clearVehicle()
+            }
         }
     }
 

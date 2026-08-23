@@ -65,6 +65,9 @@ internal class InMemoryFuelEntryDao(
     override suspend fun getKilometersForVehicle(vehicleId: Long): List<Double> =
         entries.filter { it.vehicleId == vehicleId }.map { it.km }
 
+    override suspend fun countEntries(vehicleId: Long): Int =
+        entries.count { it.vehicleId == vehicleId }
+
     override suspend fun insertEntry(entry: FuelEntry) {
         entries.removeAll { it.id == entry.id && entry.id != 0 }
         entries += entry

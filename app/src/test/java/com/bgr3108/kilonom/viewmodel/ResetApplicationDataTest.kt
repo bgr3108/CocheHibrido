@@ -213,6 +213,9 @@ class ResetApplicationDataTest {
         override suspend fun getKilometersForVehicle(vehicleId: Long): List<Double> =
             entries.filter { it.vehicleId == vehicleId }.map { it.km }
 
+        override suspend fun countEntries(vehicleId: Long): Int =
+            entries.count { it.vehicleId == vehicleId }
+
         override suspend fun insertEntry(entry: FuelEntry) = Unit
 
         override suspend fun updateEntry(entry: FuelEntry): Int = 1

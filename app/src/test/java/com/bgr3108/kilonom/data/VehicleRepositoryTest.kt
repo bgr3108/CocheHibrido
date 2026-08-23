@@ -7,6 +7,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class VehicleRepositoryTest {
@@ -208,13 +209,132 @@ class VehicleRepositoryTest {
         assertEquals(RELEASE_NOTES_VERSION, preferences.releaseNotesVersion)
     }
 
+    @Test
+    fun createVehicle_makesTheNewSnapshotActiveAndKeepsItsInitialKilometers() = runBlocking {
+        val repository = repository(FakeVehiclePreferences())
+        repository.isLoading.first { !it }
+
+        repository.createVehicle(configuredVehicle(initialKm = 12_000.0))
+
+        assertEquals(1L, repository.activeVehicleId.value)
+        assertEquals(
+            12_000.0,
+            repository.vehicleSummaries.first { it.size == 1 }.single().currentKm,
+            0.0
+        )
+    }
+
+    @Test
+    fun updateVehicleWithoutEntries_canReplaceTheCatalogSnapshot() = runBlocking {
+        val stored = entity(id = 1, initialKm = 1_000.0)
+        val repository = repository(
+            preferences = FakeVehiclePreferences(activeVehicleId = 1),
+            vehicleDao = InMemoryVehicleDao(listOf(stored))
+        )
+        repository.isLoading.first { !it }
+
+        repository.updateVehicle(1, configuredVehicle(type = VehicleType.ELECTRICO, initialKm = 2_000.0))
+
+        assertEquals(VehicleType.ELECTRICO, repository.vehicle.value.type)
+    }
+
+    @Test
+    fun updateVehicleWithEntries_rejectsAPropulsionChange() = runBlocking {
+        val stored = entity(id = 1, initialKm = 1_000.0)
+        val repository = repository(
+            preferences = FakeVehiclePreferences(activeVehicleId = 1),
+            vehicleDao = InMemoryVehicleDao(listOf(stored)),
+            fuelEntryDao = InMemoryFuelEntryDao(mutableListOf(entry(km = 1_250.0)))
+        )
+        repository.isLoading.first { !it }
+
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { repository.updateVehicle(1, configuredVehicle(type = VehicleType.ELECTRICO, initialKm = 1_000.0)) }
+        }
+        Unit
+    }
+
+    @Test
+    fun updateVehicle_rejectsInitialKilometersAboveTheFirstValidEntry() = runBlocking {
+        val repository = repository(
+            preferences = FakeVehiclePreferences(activeVehicleId = 1),
+            vehicleDao = InMemoryVehicleDao(listOf(entity(id = 1, initialKm = 1_000.0))),
+            fuelEntryDao = InMemoryFuelEntryDao(mutableListOf(entry(km = 1_250.0)))
+        )
+        repository.isLoading.first { !it }
+
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { repository.updateVehicle(1, configuredVehicle(initialKm = 1_251.0)) }
+        }
+        Unit
+    }
+
+    @Test
+    fun deleteActiveVehicle_selectsTheOldestRemainingVehicle() = runBlocking {
+        val first = entity(id = 1, createdAt = 1)
+        val second = entity(id = 2, createdAt = 2)
+        val repository = repository(
+            preferences = FakeVehiclePreferences(activeVehicleId = 2),
+            vehicleDao = InMemoryVehicleDao(listOf(first, second))
+        )
+        repository.isLoading.first { !it }
+
+        repository.deleteVehicle(2)
+
+        assertEquals(1L, repository.activeVehicleId.value)
+    }
+
+    @Test
+    fun deleteInactiveVehicle_keepsTheCurrentActiveVehicle() = runBlocking {
+        val repository = repository(
+            preferences = FakeVehiclePreferences(activeVehicleId = 1),
+            vehicleDao = InMemoryVehicleDao(listOf(entity(id = 1, createdAt = 1), entity(id = 2, createdAt = 2)))
+        )
+        repository.isLoading.first { !it }
+
+        repository.deleteVehicle(2)
+
+        assertEquals(1L, repository.activeVehicleId.value)
+    }
+
+    @Test
+    fun deleteLastVehicle_clearsTheActiveVehicleId() = runBlocking {
+        val preferences = FakeVehiclePreferences(activeVehicleId = 1)
+        val repository = repository(
+            preferences = preferences,
+            vehicleDao = InMemoryVehicleDao(listOf(entity(id = 1)))
+        )
+        repository.isLoading.first { !it }
+
+        repository.deleteVehicle(1)
+
+        assertNull(repository.activeVehicleId.value)
+    }
+
+    @Test
+    fun selectedVehicle_isRestoredAfterRepositoryRecreation() = runBlocking {
+        val preferences = FakeVehiclePreferences(activeVehicleId = 1)
+        val vehicleDao = InMemoryVehicleDao(listOf(entity(id = 1, createdAt = 1), entity(id = 2, createdAt = 2)))
+        val firstRepository = repository(preferences, vehicleDao)
+        firstRepository.isLoading.first { !it }
+        firstRepository.selectActiveVehicle(2)
+
+        val recreatedRepository = repository(preferences, vehicleDao)
+        recreatedRepository.isLoading.first { !it }
+
+        assertEquals(2L, recreatedRepository.activeVehicleId.value)
+    }
+
     private fun repository(
         preferences: FakeVehiclePreferences,
         vehicleDao: InMemoryVehicleDao = InMemoryVehicleDao(),
         fuelEntryDao: InMemoryFuelEntryDao = InMemoryFuelEntryDao()
     ) = VehicleRepository(EmptyVehicleCatalog, preferences, vehicleDao, fuelEntryDao)
 
-    private fun configuredVehicle(type: VehicleType = VehicleType.HIBRIDO_ENCHUFABLE) = Vehicle(
+    private fun configuredVehicle(
+        type: VehicleType = VehicleType.HIBRIDO_ENCHUFABLE,
+        initialKm: Double = 50_000.0
+    ) = Vehicle(
         brand = "SEAT",
         model = "León e-HYBRID",
         year = 2026,
@@ -222,7 +342,7 @@ class VehicleRepositoryTest {
         type = type,
         fuelTankCapacity = 40.0,
         batteryCapacity = 19.7,
-        initialKm = 50_000.0
+        initialKm = initialKm
     )
 
     private fun entity(
@@ -272,7 +392,9 @@ class VehicleRepositoryTest {
             return vehicle
         }
 
-        override suspend fun clearVehicle() = Unit
+        override suspend fun clearVehicle() {
+            activeVehicleId = null
+        }
 
         override suspend fun loadActiveVehicleId(): Long? = activeVehicleId
 

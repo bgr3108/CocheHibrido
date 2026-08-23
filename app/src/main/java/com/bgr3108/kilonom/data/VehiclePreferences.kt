@@ -19,6 +19,7 @@ interface VehiclePreferencesStore {
     suspend fun clearVehicle()
     suspend fun loadActiveVehicleId(): Long? = null
     suspend fun saveActiveVehicleId(vehicleId: Long) = Unit
+    suspend fun clearActiveVehicleId() = Unit
     suspend fun hasSeenReleaseNotes(versionName: String): Boolean = false
     suspend fun markReleaseNotesAsSeen(versionName: String) = Unit
 }
@@ -123,6 +124,12 @@ class VehiclePreferences(
     override suspend fun saveActiveVehicleId(vehicleId: Long) {
         context.dataStore.edit { preferences ->
             preferences[Keys.ACTIVE_VEHICLE_ID] = vehicleId
+        }
+    }
+
+    override suspend fun clearActiveVehicleId() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(Keys.ACTIVE_VEHICLE_ID)
         }
     }
     override suspend fun clearVehicle() {

@@ -20,6 +20,9 @@ interface FuelEntryDao {
     @Query("SELECT km FROM fuel_entries WHERE vehicleId = :vehicleId")
     suspend fun getKilometersForVehicle(vehicleId: Long): List<Double>
 
+    @Query("SELECT COUNT(*) FROM fuel_entries WHERE vehicleId = :vehicleId")
+    suspend fun countEntries(vehicleId: Long): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntry(entry: FuelEntry)
 

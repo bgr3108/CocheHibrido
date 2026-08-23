@@ -35,5 +35,11 @@ object AppViewModelProvider {
             )
         }
 
+        initializer {
+            MyVehiclesViewModel(
+                hybridCarApplication().container.vehicleRepository
+            )
+        }
+
     }
 }

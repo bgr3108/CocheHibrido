@@ -27,9 +27,13 @@ import com.bgr3108.kilonom.ui.screens.PriceDetailScreen
 import com.bgr3108.kilonom.ui.screens.PrivacyScreen
 import com.bgr3108.kilonom.ui.screens.StatisticsScreen
 import com.bgr3108.kilonom.ui.screens.TotalDetailScreen
+import com.bgr3108.kilonom.ui.screens.MyVehiclesScreen
+import com.bgr3108.kilonom.ui.screens.AddVehicleScreen
+import com.bgr3108.kilonom.ui.screens.VehicleEditorScreen
 import com.bgr3108.kilonom.viewmodel.FuelEntryViewModel
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 import com.bgr3108.kilonom.viewmodel.PeriodSummaryViewModel
+import com.bgr3108.kilonom.viewmodel.MyVehiclesViewModel
 
 @Composable
 fun HybridCarNavHost(
@@ -37,7 +41,8 @@ fun HybridCarNavHost(
     innerPadding: PaddingValues,
     fuelViewModel: FuelEntryViewModel,
     homeViewModel: HomeViewModel,
-    periodSummaryViewModel: PeriodSummaryViewModel
+    periodSummaryViewModel: PeriodSummaryViewModel,
+    myVehiclesViewModel: MyVehiclesViewModel
 ){
 
     NavHost(
@@ -49,9 +54,48 @@ fun HybridCarNavHost(
             HomeScreen(
                 innerPadding = innerPadding,
                 viewModel = homeViewModel,
-                onOpenPrivacy = {
-                    navController.navigate("privacy")
+                onOpenMyVehicles = {
+                    navController.navigate("my_vehicles")
                 }
+            )
+        }
+
+        composable("my_vehicles") {
+            MyVehiclesScreen(
+                innerPadding = innerPadding,
+                viewModel = myVehiclesViewModel,
+                homeViewModel = homeViewModel,
+                onBack = { navController.popBackStack() },
+                onAdd = { navController.navigate("add_vehicle") },
+                onEdit = { id -> navController.navigate("edit_vehicle/$id") },
+                onOpenPrivacy = { navController.navigate("privacy") },
+                onActiveVehicleDeleted = {
+                    navController.navigate("home") {
+                        popUpTo("home") { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        composable("add_vehicle") {
+            AddVehicleScreen(
+                viewModel = myVehiclesViewModel,
+                onCreated = {
+                    navController.navigate("home") {
+                        popUpTo("home") { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        composable("edit_vehicle/{id}") { backStackEntry ->
+            VehicleEditorScreen(
+                vehicleId = backStackEntry.arguments?.getString("id")?.toLongOrNull(),
+                viewModel = myVehiclesViewModel,
+                onSaved = { navController.popBackStack() },
+                onMissing = { navController.popBackStack() }
             )
         }
 
