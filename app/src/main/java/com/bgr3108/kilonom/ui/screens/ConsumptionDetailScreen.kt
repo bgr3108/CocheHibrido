@@ -42,6 +42,7 @@ import com.bgr3108.kilonom.ui.components.charts.ChartPoint
 import com.bgr3108.kilonom.domain.CurrentFuelConsumptionEstimate
 import com.bgr3108.kilonom.data.supportsElectricEntries
 import com.bgr3108.kilonom.data.supportsFuelEntries
+import com.bgr3108.kilonom.data.isPlugInHybrid
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,6 +101,7 @@ fun ConsumptionDetailScreen(
 
     val showFuel = vehicle.type.supportsFuelEntries
     val showElectric = vehicle.type.supportsElectricEntries
+    val isPlugInHybrid = vehicle.type.isPlugInHybrid
 
     Scaffold(
 
@@ -147,7 +149,8 @@ fun ConsumptionDetailScreen(
             historialConsumoElectrico = historialConsumoElectrico,
             currentEstimatedFuelConsumption = currentEstimatedFuelConsumption,
             showFuel = showFuel,
-            showElectric = showElectric
+            showElectric = showElectric,
+            isPlugInHybrid = isPlugInHybrid
         )
 
     }
@@ -172,7 +175,8 @@ private fun ConsumptionContent(
     historialConsumoElectrico: List<ChartPoint>,
     currentEstimatedFuelConsumption: CurrentFuelConsumptionEstimate?,
     showFuel: Boolean,
-    showElectric: Boolean
+    showElectric: Boolean,
+    isPlugInHybrid: Boolean
 
 ){
 
@@ -192,6 +196,16 @@ private fun ConsumptionContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
 
     ) {
+
+        if (isPlugInHybrid) {
+            item {
+                Text(
+                    text = "En híbridos enchufables, los consumos se calculan respecto a la distancia total recorrida. Kilonom no separa los kilómetros realizados con combustible y electricidad.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
 
         if (showFuel) {
             item {
@@ -340,7 +354,7 @@ private fun ConsumptionContent(
                         )
 
                         Text(
-                            "Electricidad",
+                            if (isPlugInHybrid) "Electricidad cargada" else "Electricidad",
                             style = MaterialTheme.typography.titleLarge
                         )
                     }
@@ -348,17 +362,17 @@ private fun ConsumptionContent(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     StatisticRow(
-                        "Consumo medio",
+                        if (isPlugInHybrid) "Media registrada" else "Consumo medio",
                         "${consumoElectrico.toSpanishDecimal()} kWh/100 km"
                     )
 
                     StatisticRow(
-                        "Mejor consumo",
+                        if (isPlugInHybrid) "Mejor registro" else "Mejor consumo",
                         "${mejorConsumoElectrico.toSpanishDecimal()} kWh/100 km"
                     )
 
                     StatisticRow(
-                        "Peor consumo",
+                        if (isPlugInHybrid) "Peor registro" else "Peor consumo",
                         "${peorConsumoElectrico.toSpanishDecimal()} kWh/100 km"
                     )
 
@@ -382,7 +396,11 @@ private fun ConsumptionContent(
                     } else {
                         LineChart(
                             points = historialConsumoElectrico,
-                            contentDescription = "Gráfico de consumo eléctrico: ${historialConsumoElectrico.size} tramos registrados"
+                            contentDescription = if (isPlugInHybrid) {
+                                "Gráfico de electricidad cargada por 100 km: ${historialConsumoElectrico.size} tramos registrados"
+                            } else {
+                                "Gráfico de consumo eléctrico: ${historialConsumoElectrico.size} tramos registrados"
+                            }
                         )
                     }
                 }

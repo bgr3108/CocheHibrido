@@ -24,11 +24,13 @@ class VehicleTypeCapabilitiesTest {
     fun plugInHybrid_supportsFuelAndElectricEntries() {
         assertTrue(VehicleType.HIBRIDO_ENCHUFABLE.supportsFuelEntries)
         assertTrue(VehicleType.HIBRIDO_ENCHUFABLE.supportsElectricEntries)
+        assertTrue(VehicleType.HIBRIDO_ENCHUFABLE.isPlugInHybrid)
     }
 
     @Test
     fun nonPlugInHybrid_supportsFuelEntriesOnly() {
         assertTrue(VehicleType.HIBRIDO.supportsFuelEntries)
         assertFalse(VehicleType.HIBRIDO.supportsElectricEntries)
+        assertFalse(VehicleType.HIBRIDO.isPlugInHybrid)
     }
 }

@@ -29,3 +29,6 @@ val VehicleType?.supportsElectricEntries: Boolean
         VehicleType.HIBRIDO,
         null -> false
     }
+
+val VehicleType?.isPlugInHybrid: Boolean
+    get() = this == VehicleType.HIBRIDO_ENCHUFABLE

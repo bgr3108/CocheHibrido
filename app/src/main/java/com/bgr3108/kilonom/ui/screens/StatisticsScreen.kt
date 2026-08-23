@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.data.supportsElectricEntries
 import com.bgr3108.kilonom.data.supportsFuelEntries
+import com.bgr3108.kilonom.data.isPlugInHybrid
 import com.bgr3108.kilonom.R
 import com.bgr3108.kilonom.ui.components.DashboardCard
 import com.bgr3108.kilonom.util.toSpanishDecimal
@@ -122,6 +123,8 @@ fun StatisticsScreen(
 
     val showElectric = vehicle.type.supportsElectricEntries
 
+    val isPlugInHybrid = vehicle.type.isPlugInHybrid
+
     var selectedTab by rememberSaveable { mutableStateOf(StatisticsTab.GLOBAL) }
 
     if (selectedTab == StatisticsTab.PERIODS) {
@@ -196,7 +199,7 @@ fun StatisticsScreen(
         ) {
 
         DashboardCard(
-            title = "Consumos",
+            title = if (isPlugInHybrid) "Consumo por 100 km" else "Consumos",
             icon = Icons.Default.LocalGasStation,
             showDetailArrow = true,
             onClick = {
@@ -207,7 +210,7 @@ fun StatisticsScreen(
             if (showFuel) {
 
                 Text(
-                    "Gasolina",
+                    if (isPlugInHybrid) "Combustible" else "Gasolina",
                     style = MaterialTheme.typography.labelMedium
                 )
 
@@ -285,7 +288,7 @@ fun StatisticsScreen(
             if (showElectric) {
 
                 Text(
-                    "Electricidad",
+                    if (isPlugInHybrid) "Electricidad cargada" else "Electricidad",
                     style = MaterialTheme.typography.labelMedium
                 )
 
