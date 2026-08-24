@@ -55,6 +55,11 @@ class PeriodSummaryCalculatorTest {
         )
 
         assertEquals(22.0, summary.totalCost, 0.0)
+        assertEquals(
+            22.0,
+            requireNotNull(calculateCostPerHundredKilometers(summary.costPerKilometer)),
+            0.0
+        )
     }
 
     @Test
@@ -71,6 +76,7 @@ class PeriodSummaryCalculatorTest {
         )
 
         assertNull(summary.distanceKilometers)
+        assertNull(calculateCostPerHundredKilometers(summary.costPerKilometer))
     }
 
     @Test
@@ -84,6 +90,23 @@ class PeriodSummaryCalculatorTest {
 
         assertEquals(250.0, summary.distanceKilometers ?: 0.0, 0.0)
         assertEquals(0.2, summary.costPerKilometer ?: 0.0, 0.0)
+    }
+
+    @Test
+    fun monthlyCostPerHundredKilometers_derivesFromTheExistingCostPerKilometer() {
+        val summary = summary(
+            entries = listOf(
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 12.0, 1_100.0),
+                entry(Calendar.AUGUST, FuelType.ELECTRICO, 10.0, 15.0, 1_300.0)
+            )
+        )
+
+        assertEquals(0.135, summary.costPerKilometer ?: 0.0, 0.0)
+        assertEquals(
+            13.5,
+            requireNotNull(calculateCostPerHundredKilometers(summary.costPerKilometer)),
+            0.0
+        )
     }
 
     @Test
@@ -111,6 +134,31 @@ class PeriodSummaryCalculatorTest {
         )
 
         assertEquals(360.0, summary.distanceKilometers ?: 0.0, 0.0)
+        assertEquals(
+            100.0 / 9.0,
+            requireNotNull(calculateCostPerHundredKilometers(summary.costPerKilometer)),
+            0.0
+        )
+    }
+
+    @Test
+    fun yearlyPeriod_keepsDistanceBetweenItsRecords() {
+        val summary = calculatePeriodSummary(
+            entries = listOf(
+                entry(Calendar.JANUARY, FuelType.GASOLINA, 10.0, 20.0, 1_100.0),
+                entry(Calendar.DECEMBER, FuelType.ELECTRICO, 10.0, 40.0, 1_500.0)
+            ),
+            vehicle = vehicle,
+            period = StatisticsPeriod.Year(2026),
+            timeZone = timeZone
+        )
+
+        assertEquals(400.0, summary.distanceKilometers ?: 0.0, 0.0)
+        assertEquals(
+            15.0,
+            requireNotNull(calculateCostPerHundredKilometers(summary.costPerKilometer)),
+            0.0
+        )
     }
 
     @Test

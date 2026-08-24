@@ -29,12 +29,15 @@ fun calculateCostPerHundredKilometers(
     costPerKilometer: Double,
     totalKilometers: Double
 ): Double? {
-    if (
-        !costPerKilometer.isFinite() ||
-        costPerKilometer < 0.0 ||
-        !totalKilometers.isFinite() ||
-        totalKilometers <= 0.0
-    ) {
+    if (!totalKilometers.isFinite() || totalKilometers <= 0.0) return null
+
+    return calculateCostPerHundredKilometers(costPerKilometer)
+}
+
+fun calculateCostPerHundredKilometers(
+    costPerKilometer: Double?
+): Double? {
+    if (costPerKilometer == null || !costPerKilometer.isFinite() || costPerKilometer < 0.0) {
         return null
     }
 

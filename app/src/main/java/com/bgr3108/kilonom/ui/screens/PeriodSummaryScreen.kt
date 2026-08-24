@@ -51,6 +51,7 @@ import com.bgr3108.kilonom.domain.PeriodSummary
 import com.bgr3108.kilonom.domain.StatisticsPeriod
 import com.bgr3108.kilonom.domain.StatisticsPeriodMode
 import com.bgr3108.kilonom.domain.currentPeriod
+import com.bgr3108.kilonom.domain.calculateCostPerHundredKilometers
 import com.bgr3108.kilonom.ui.components.StatisticRow
 import com.bgr3108.kilonom.ui.components.charts.BarChart
 import com.bgr3108.kilonom.ui.components.charts.ChartPoint
@@ -259,8 +260,10 @@ private fun SummaryContent(
         }
         StatisticRow(distanceTitle, summary.distanceKilometers?.toKilometersDisplay()?.plus(" km") ?: "—")
         StatisticRow(
-            "Coste por km",
-            summary.costPerKilometer?.let { "${it.toSpanishDecimal()} €/km" } ?: "—"
+            "Coste por 100 km",
+            calculateCostPerHundredKilometers(summary.costPerKilometer)
+                ?.let { "${it.toSpanishDecimal()} €/100 km" }
+                ?: "—"
         )
     }
 
