@@ -115,6 +115,10 @@ fun StatisticsScreen(
         .costPerKm
         .collectAsStateWithLifecycle()
 
+    val costPerHundredKm by viewModel
+        .costPerHundredKm
+        .collectAsStateWithLifecycle()
+
     val vehicle by viewModel
         .vehicle
         .collectAsStateWithLifecycle()
@@ -398,6 +402,17 @@ fun StatisticsScreen(
 
             Text(
                 "${costPerKm.toSpanishDecimal()} €/km",
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                "Coste medio por 100 km"
+            )
+
+            Text(
+                costPerHundredKm?.let { "${it.toSpanishDecimal()} €/100 km" } ?: "—",
                 style = MaterialTheme.typography.titleLarge
             )
 

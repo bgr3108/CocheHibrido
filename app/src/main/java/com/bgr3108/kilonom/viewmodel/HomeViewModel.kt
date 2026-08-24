@@ -29,6 +29,7 @@ import com.bgr3108.kilonom.domain.calculateWorstElectricConsumption
 import com.bgr3108.kilonom.domain.calculateAverageElectricPrice
 import com.bgr3108.kilonom.domain.calculateAverageFuelPrice
 import com.bgr3108.kilonom.domain.calculateCostPerKilometer
+import com.bgr3108.kilonom.domain.calculateCostPerHundredKilometers
 import com.bgr3108.kilonom.domain.calculateTotalCost
 import com.bgr3108.kilonom.domain.calculateTravelledKilometers
 import com.bgr3108.kilonom.domain.calculateElectricCharges
@@ -328,6 +329,14 @@ class HomeViewModel(
             SharingStarted.WhileSubscribed(5000),
             0.0
         )
+
+    val costPerHundredKm =
+        combine(costPerKm, totalKm, ::calculateCostPerHundredKilometers)
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                null
+            )
 
     // ============================================================
     // Últimos registros

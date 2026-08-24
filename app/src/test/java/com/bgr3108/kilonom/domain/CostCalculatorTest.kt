@@ -3,6 +3,7 @@ package com.bgr3108.kilonom.domain
 import com.bgr3108.kilonom.data.FuelEntry
 import com.bgr3108.kilonom.data.FuelType
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -176,6 +177,61 @@ class CostCalculatorTest {
                 totalCost = Double.MAX_VALUE,
                 totalKilometers = Double.MIN_VALUE
             ).isFinite()
+        )
+    }
+
+    @Test
+    fun fuelCostPerHundredKilometers_derivesFromCostPerKilometer() {
+        assertEquals(
+            8.0,
+            requireNotNull(
+                calculateCostPerHundredKilometers(costPerKilometer = 0.08, totalKilometers = 100.0)
+            ),
+            0.0
+        )
+    }
+
+    @Test
+    fun electricCostPerHundredKilometers_derivesFromCostPerKilometer() {
+        assertEquals(
+            3.5,
+            requireNotNull(
+                calculateCostPerHundredKilometers(costPerKilometer = 0.035, totalKilometers = 100.0)
+            ),
+            0.000001
+        )
+    }
+
+    @Test
+    fun plugInHybridCostPerHundredKilometers_combinesFuelAndElectricCosts() {
+        val totalCost = calculateTotalCost(
+            listOf(
+                entry(FuelType.GASOLINA, price = 12.0, quantity = 8.0),
+                entry(FuelType.ELECTRICO, price = 3.0, quantity = 10.0)
+            )
+        )
+        val costPerKilometer = calculateCostPerKilometer(totalCost, totalKilometers = 200.0)
+
+        assertEquals(
+            7.5,
+            requireNotNull(
+                calculateCostPerHundredKilometers(costPerKilometer, totalKilometers = 200.0)
+            ),
+            0.0
+        )
+    }
+
+    @Test
+    fun zeroDistance_hasNoCostPerHundredKilometers() {
+        assertNull(
+            calculateCostPerHundredKilometers(costPerKilometer = 0.08, totalKilometers = 0.0)
+        )
+    }
+
+    @Test
+    fun missingDistanceHasNoCostPerHundredKilometers() {
+        assertNull(
+            calculateCostPerHundredKilometers(costPerKilometer = 0.0, totalKilometers = Double.NaN)
         )
     }
 

@@ -25,6 +25,23 @@ fun calculateCostPerKilometer(
         ?: 0.0
 }
 
+fun calculateCostPerHundredKilometers(
+    costPerKilometer: Double,
+    totalKilometers: Double
+): Double? {
+    if (
+        !costPerKilometer.isFinite() ||
+        costPerKilometer < 0.0 ||
+        !totalKilometers.isFinite() ||
+        totalKilometers <= 0.0
+    ) {
+        return null
+    }
+
+    return (costPerKilometer * 100.0)
+        .takeIf { it.isFinite() }
+}
+
 fun calculateTotalFuelCost(
     entries: List<FuelEntry>
 ): Double = sumValidEconomicValues(entries, FuelType.GASOLINA) { it.precio }
