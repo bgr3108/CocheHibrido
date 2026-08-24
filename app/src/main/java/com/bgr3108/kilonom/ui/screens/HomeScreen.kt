@@ -103,7 +103,7 @@ fun HomeScreen(
                 if (showFuel) {
 
                     Text(
-                        "Gasolina",
+                        "Combustible",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

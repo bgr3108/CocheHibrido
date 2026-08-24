@@ -237,7 +237,7 @@ private fun PriceContent(
 
                     Text(
 
-                        text = "Gasolina",
+                        text = "Combustible",
 
                         style =
                             MaterialTheme.typography.titleLarge
@@ -282,7 +282,7 @@ private fun PriceContent(
                 } else {
                     LineChart(
                         points = historialPreciosGasolina,
-                        contentDescription = "Gráfico de precios mensuales de gasolina: ${historialPreciosGasolina.size} meses registrados",
+                        contentDescription = "Gráfico de precios mensuales de combustible: ${historialPreciosGasolina.size} meses registrados",
                         xLabelFormatter = { value ->
                             preciosMensualesGasolina
                                 .getOrNull(value.toInt())

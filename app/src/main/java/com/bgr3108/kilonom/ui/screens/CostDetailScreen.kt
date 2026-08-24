@@ -243,7 +243,7 @@ private fun CostContent(
 
                     Text(
 
-                        text = "Gasolina",
+                        text = "Combustible",
 
                         style =
                             MaterialTheme.typography.titleLarge
@@ -295,7 +295,7 @@ private fun CostContent(
                 } else {
                     BarChart(
                         points = historialCostesGasolina,
-                        contentDescription = "Gráfico de gasto mensual de gasolina: ${historialCostesGasolina.size} meses registrados",
+                        contentDescription = "Gráfico de gasto mensual de combustible: ${historialCostesGasolina.size} meses registrados",
                         xLabelFormatter = { index ->
                             costesMensualesGasolina
                                 .getOrNull(index)

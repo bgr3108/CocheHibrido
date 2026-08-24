@@ -397,7 +397,7 @@ fun AddConsumptionScreen(
                     ),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Gasolina/Diésel/GLP")
+                    Text("Combustible")
                 }
 
                 Button(

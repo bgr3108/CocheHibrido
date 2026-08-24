@@ -159,7 +159,7 @@ fun ConsumptionListScreen(
                 FilterChip(
                     selected = filterState.energyFilter == EnergyFilter.GASOLINE,
                     onClick = { viewModel.setEnergyFilter(EnergyFilter.GASOLINE) },
-                    label = { Text("Gasolina") },
+                    label = { Text("Combustible") },
                     colors = filterChipColors,
                     border = FilterChipDefaults.filterChipBorder(
                         enabled = true,
@@ -301,7 +301,7 @@ fun ConsumptionListScreen(
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = if (entry.tipo == FuelType.GASOLINA)
-                                    "Gasolina • ${entry.cantidad.toSpanishDecimal()} L"
+                                    "Combustible • ${entry.cantidad.toSpanishDecimal()} L"
                                 else
                                     "Eléctrico • ${entry.cantidad.toSpanishDecimal()} kWh"
                             )

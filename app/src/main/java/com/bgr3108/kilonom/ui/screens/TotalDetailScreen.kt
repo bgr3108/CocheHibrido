@@ -248,7 +248,7 @@ private fun TotalContent(
 
                 if (showFuel) {
                     Text(
-                        "Gasolina",
+                        "Combustible",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )

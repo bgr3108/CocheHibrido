@@ -246,7 +246,7 @@ private fun ConsumptionContent(
                         )
 
                         Text(
-                            "Gasolina",
+                            "Combustible",
                             style = MaterialTheme.typography.titleLarge
                         )
                     }
@@ -308,7 +308,7 @@ private fun ConsumptionContent(
                     } else {
                         LineChart(
                             points = historialConsumoGasolina,
-                            contentDescription = "Gráfico de consumo de gasolina: ${historialConsumoGasolina.size} tramos registrados"
+                            contentDescription = "Gráfico de consumo de combustible: ${historialConsumoGasolina.size} tramos registrados"
                         )
                     }
                 }

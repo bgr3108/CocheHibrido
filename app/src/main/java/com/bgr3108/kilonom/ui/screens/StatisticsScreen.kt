@@ -210,7 +210,7 @@ fun StatisticsScreen(
             if (showFuel) {
 
                 Text(
-                    if (isPlugInHybrid) "Combustible" else "Gasolina",
+                    "Combustible",
                     style = MaterialTheme.typography.labelMedium
                 )
 
@@ -311,7 +311,7 @@ fun StatisticsScreen(
             if (showFuel) {
 
                 Text(
-                    "Gasolina",
+                    "Combustible",
                     style = MaterialTheme.typography.labelMedium
                 )
 
@@ -367,7 +367,7 @@ fun StatisticsScreen(
             if (showFuel) {
 
                 Text(
-                    "Gasolina"
+                    "Combustible"
                 )
 
                 Text(
