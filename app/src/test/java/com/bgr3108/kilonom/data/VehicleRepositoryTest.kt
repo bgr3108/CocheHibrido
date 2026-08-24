@@ -294,6 +294,28 @@ class VehicleRepositoryTest {
     }
 
     @Test
+    fun releaseNotesForOnePointOne_areShownAfterOnePointZeroThreeWasSeen() = runBlocking {
+        val repository = repository(FakeVehiclePreferences(releaseNotesVersion = "1.0.3"))
+
+        repository.isLoading.first { !it }
+
+        assertTrue(repository.showReleaseNotes.value)
+    }
+
+    @Test
+    fun dismissedReleaseNotes_areNotShownAgainForTheSameVersion() = runBlocking {
+        val preferences = FakeVehiclePreferences()
+        val firstRepository = repository(preferences)
+        firstRepository.isLoading.first { !it }
+        firstRepository.dismissReleaseNotes()
+
+        val recreatedRepository = repository(preferences)
+        recreatedRepository.isLoading.first { !it }
+
+        assertFalse(recreatedRepository.showReleaseNotes.value)
+    }
+
+    @Test
     fun createVehicle_makesTheNewSnapshotActiveAndKeepsItsInitialKilometers() = runBlocking {
         val repository = repository(FakeVehiclePreferences())
         repository.isLoading.first { !it }
