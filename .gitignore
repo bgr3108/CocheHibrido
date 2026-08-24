@@ -15,3 +15,6 @@
 local.properties
 /PROJECT_OVERVIEW.md
 .idea/deploymentTargetSelector.xml
+# Local release artifacts
+app/release/
+*.aab
