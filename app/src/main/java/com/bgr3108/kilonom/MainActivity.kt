@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.bgr3108.kilonom.data.Vehicle
 import com.bgr3108.kilonom.ui.navigation.HybridCarNavHost
 import com.bgr3108.kilonom.ui.screens.SetupScreen
 import com.bgr3108.kilonom.ui.theme.CocheHibridoTheme
@@ -36,6 +37,7 @@ import com.bgr3108.kilonom.viewmodel.FuelEntryViewModel
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 import com.bgr3108.kilonom.viewmodel.PeriodSummaryViewModel
 import com.bgr3108.kilonom.viewmodel.MyVehiclesViewModel
+import com.bgr3108.kilonom.viewmodel.ResetState
 
 class MainActivity : ComponentActivity() {
 
@@ -83,13 +85,14 @@ fun AppContent(
         .isVehicleLoading
         .collectAsStateWithLifecycle()
     val vehicle by homeViewModel.vehicle.collectAsStateWithLifecycle()
+    val resetState by homeViewModel.resetState.collectAsStateWithLifecycle()
     val showReleaseNotes by homeViewModel.showReleaseNotes.collectAsStateWithLifecycle()
 
     if (isVehicleLoading) {
 
         CircularProgressIndicator()
 
-    } else if (vehicle.type == null) {
+    } else if (shouldShowSetup(vehicle, resetState)) {
 
         SetupScreen(
             homeViewModel = homeViewModel,
@@ -189,6 +192,10 @@ fun AppContent(
         }
     }
 }
+
+/** Keeps the current shell visible until a reset has completed successfully. */
+internal fun shouldShowSetup(vehicle: Vehicle, resetState: ResetState): Boolean =
+    vehicle.type == null && resetState == ResetState.IDLE
 
 @Composable
 private fun ReleaseNotesDialog(onDismiss: () -> Unit) {

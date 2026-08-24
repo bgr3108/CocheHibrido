@@ -74,6 +74,30 @@ class ResetApplicationDataTest {
     }
 
     @Test
+    fun retryAfterDataStoreFailure_completesResetSafely() = runBlocking {
+        val fuelEntryDao = FakeFuelEntryDao()
+        val carDao = FakeCarDao()
+        val preferences = FakeVehiclePreferences(
+            clearError = IllegalStateException("DataStore unavailable")
+        )
+        val vehicleRepository = vehicleRepository(preferences)
+
+        vehicleRepository.isLoading.first { !it }
+
+        val firstAttempt = runCatching {
+            resetApplicationData(FuelRepository(fuelEntryDao), CarRepository(carDao), vehicleRepository)
+        }
+        preferences.clearError = null
+
+        resetApplicationData(FuelRepository(fuelEntryDao), CarRepository(carDao), vehicleRepository)
+
+        assertTrue(firstAttempt.isFailure)
+        assertTrue(fuelEntryDao.entries.isEmpty())
+        assertTrue(carDao.cars.isEmpty())
+        assertEquals(Vehicle(), vehicleRepository.vehicle.value)
+    }
+
+    @Test
     fun roomFailure_doesNotClearVehiclePreferences() = runBlocking {
         val originalVehicle = configuredVehicle(VehicleType.ELECTRICO)
         val vehiclePreferences = FakeVehiclePreferences(vehicle = originalVehicle)
@@ -173,7 +197,7 @@ class ResetApplicationDataTest {
             year = 2026,
             type = VehicleType.GASOLINA
         ),
-        private val clearError: Exception? = null
+        var clearError: Exception? = null
     ) : VehiclePreferencesStore {
         var clearCalls = 0
 

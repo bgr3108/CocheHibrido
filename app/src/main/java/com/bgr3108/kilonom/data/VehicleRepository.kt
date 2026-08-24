@@ -4,6 +4,7 @@ import com.bgr3108.kilonom.database.FuelEntryDao
 import com.bgr3108.kilonom.database.VehicleDao
 import com.bgr3108.kilonom.domain.calculateVehicleCurrentKm
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -106,9 +107,13 @@ class VehicleRepository(
      * anchor rather than creating another vehicle, so an interrupted bootstrap stays safe.
      */
     private suspend fun bootstrapLegacyVehicle() = vehicleMutex.withLock {
-        val legacyVehicle = vehiclePreferences.loadVehicle()
+        val legacyVehicle = readBootstrapPreferenceOr(Vehicle()) {
+            vehiclePreferences.loadVehicle()
+        }
         val configuredLegacyVehicle = legacyVehicle.takeIf { it.isConfigured() }
-        val storedActiveId = vehiclePreferences.loadActiveVehicleId()
+        val storedActiveId = readBootstrapPreferenceOr(null) {
+            vehiclePreferences.loadActiveVehicleId()
+        }
         val storedActiveVehicle = storedActiveId?.let { vehicleDao.getVehicle(it) }
         val firstVehicle = vehicleDao.getFirstVehicle()
 
@@ -151,7 +156,39 @@ class VehicleRepository(
 
         _activeVehicleId.value = activeVehicle?.id
         _vehicle.value = activeVehicle?.toVehicle() ?: Vehicle()
-        activeVehicle?.let { vehiclePreferences.saveActiveVehicleId(it.id) }
+        activeVehicle?.let { vehicle -> saveBootstrapActiveVehicleId(vehicle.id) }
+    }
+
+    /**
+     * DataStore is only a legacy/bootstrap snapshot. A read failure must not make valid Room
+     * vehicle snapshots disappear from the active context.
+     */
+    private suspend fun <T> readBootstrapPreferenceOr(
+        defaultValue: T,
+        read: suspend () -> T
+    ): T = try {
+        read()
+    } catch (error: Throwable) {
+        if (error is CancellationException) throw error
+
+        recordBootstrapPreferenceFailure(error)
+        defaultValue
+    }
+
+    private fun recordBootstrapPreferenceFailure(error: Throwable) {
+        if (_loadError.value == null) {
+            _loadError.value = error
+        }
+    }
+
+    private suspend fun saveBootstrapActiveVehicleId(vehicleId: Long) {
+        try {
+            vehiclePreferences.saveActiveVehicleId(vehicleId)
+        } catch (error: Throwable) {
+            if (error is CancellationException) throw error
+
+            recordBootstrapPreferenceFailure(error)
+        }
     }
 
     /** Saves the legacy snapshot as a safety net and then commits the Room vehicle as the active one. */
