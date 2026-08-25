@@ -52,7 +52,8 @@ fun StatisticsScreen(
     onOpenPrice: () -> Unit,
     onOpenCost: () -> Unit,
     onOpenTotal: () -> Unit,
-    periodSummaryViewModel: PeriodSummaryViewModel
+    periodSummaryViewModel: PeriodSummaryViewModel,
+    initialTab: StatisticsTab = StatisticsTab.GLOBAL
 ){
 
     val entries by viewModel
@@ -119,13 +120,17 @@ fun StatisticsScreen(
         .vehicle
         .collectAsStateWithLifecycle()
 
+    val trendSummary by viewModel
+        .trendSummary
+        .collectAsStateWithLifecycle()
+
     val showFuel = vehicle.type.supportsFuelEntries
 
     val showElectric = vehicle.type.supportsElectricEntries
 
     val isPlugInHybrid = vehicle.type.isPlugInHybrid
 
-    var selectedTab by rememberSaveable { mutableStateOf(StatisticsTab.GLOBAL) }
+    var selectedTab by rememberSaveable(initialTab) { mutableStateOf(initialTab) }
 
     if (selectedTab == StatisticsTab.PERIODS) {
         Column(
@@ -142,6 +147,23 @@ fun StatisticsScreen(
                 viewModel = periodSummaryViewModel,
                 modifier = Modifier.weight(1f),
                 topPadding = 6.dp
+            )
+        }
+    } else if (selectedTab == StatisticsTab.TRENDS) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            StatisticsHeader(
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it },
+                bottomPadding = 6.dp
+            )
+            TrendsContent(
+                summary = trendSummary,
+                vehicleType = vehicle.type,
+                modifier = Modifier.weight(1f)
             )
         }
     } else if (entries.isEmpty()) {
@@ -454,9 +476,10 @@ fun StatisticsScreen(
 }
 }
 
-private enum class StatisticsTab {
+enum class StatisticsTab {
     GLOBAL,
-    PERIODS
+    PERIODS,
+    TRENDS
 }
 
 @Composable
@@ -491,7 +514,8 @@ private fun StatisticsHeader(
         ) {
             listOf(
                 StatisticsTab.GLOBAL to "Global",
-                StatisticsTab.PERIODS to "Periodos"
+                StatisticsTab.PERIODS to "Periodos",
+                StatisticsTab.TRENDS to "Tendencias"
             ).forEach { (tab, label) ->
                 FilterChip(
                     selected = selectedTab == tab,

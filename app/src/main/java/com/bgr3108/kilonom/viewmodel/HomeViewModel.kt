@@ -52,7 +52,11 @@ import com.bgr3108.kilonom.domain.calculateBestFuelConsumptionFromSegments
 import com.bgr3108.kilonom.domain.calculateWorstFuelConsumptionFromSegments
 import com.bgr3108.kilonom.domain.calculateFuelSegmentCountFromSegments
 import com.bgr3108.kilonom.domain.calculateElectricSegments
+import com.bgr3108.kilonom.domain.HomeTrendInsight
+import com.bgr3108.kilonom.domain.VehicleTrendSummary
+import com.bgr3108.kilonom.domain.calculateVehicleTrends
 import com.bgr3108.kilonom.domain.isValidEconomicEntry
+import com.bgr3108.kilonom.domain.selectHomeTrendInsight
 import com.bgr3108.kilonom.domain.sumValidEconomicValues
 import com.bgr3108.kilonom.ui.components.charts.ChartPoint
 
@@ -61,6 +65,11 @@ enum class ResetState {
     LOADING,
     ERROR
 }
+
+private data class ActiveVehicleTrend(
+    val vehicle: Vehicle,
+    val summary: VehicleTrendSummary
+)
 
 internal suspend fun resetApplicationData(
     fuelRepository: FuelRepository,
@@ -165,6 +174,35 @@ class HomeViewModel(
     // ============================================================
 
     val entries = activeContext.map { it.entries }
+
+    /** Both Statistics and Home derive from one calculation for the same active-vehicle snapshot. */
+    private val activeVehicleTrend = activeContext
+        .map { context ->
+            ActiveVehicleTrend(
+                vehicle = context.vehicle,
+                summary = calculateVehicleTrends(context.entries, context.vehicle)
+            )
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            ActiveVehicleTrend(Vehicle(), VehicleTrendSummary())
+        )
+
+    val trendSummary = activeVehicleTrend
+        .map { it.summary }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), VehicleTrendSummary())
+
+    val homeTrendInsight = activeVehicleTrend
+        .map { trend -> selectHomeTrendInsight(trend.summary, trend.vehicle.type) }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            HomeTrendInsight(
+                metric = com.bgr3108.kilonom.domain.HomeTrendMetric.INSUFFICIENT_DATA,
+                status = com.bgr3108.kilonom.domain.TrendStatus.INSUFFICIENT_DATA
+            )
+        )
 
     // ============================================================
     // Consumos

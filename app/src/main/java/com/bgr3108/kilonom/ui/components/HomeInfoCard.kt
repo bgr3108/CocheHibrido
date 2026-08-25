@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.CardColors
 import com.bgr3108.kilonom.ui.theme.CardBlueDark
@@ -34,6 +35,7 @@ fun HomeInfoCard(
     icon: ImageVector,
     value: String? = null,
     secondaryValue: String? = null,
+    minHeight: Dp = 180.dp,
     colors: CardColors = CardDefaults.cardColors(
         containerColor =
             if (isSystemInDarkTheme())
@@ -47,7 +49,7 @@ fun HomeInfoCard(
 
     Card(
         modifier = modifier
-            .heightIn(min = 180.dp)
+            .heightIn(min = minHeight)
             .then(
                 if (onClick != null)
                     Modifier.clickable { onClick() }

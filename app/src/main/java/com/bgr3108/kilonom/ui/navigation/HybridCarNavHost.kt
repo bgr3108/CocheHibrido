@@ -26,6 +26,7 @@ import com.bgr3108.kilonom.ui.screens.HomeScreen
 import com.bgr3108.kilonom.ui.screens.PriceDetailScreen
 import com.bgr3108.kilonom.ui.screens.PrivacyScreen
 import com.bgr3108.kilonom.ui.screens.StatisticsScreen
+import com.bgr3108.kilonom.ui.screens.StatisticsTab
 import com.bgr3108.kilonom.ui.screens.TotalDetailScreen
 import com.bgr3108.kilonom.ui.screens.MyVehiclesScreen
 import com.bgr3108.kilonom.ui.screens.AddVehicleScreen
@@ -56,6 +57,9 @@ fun HybridCarNavHost(
                 viewModel = homeViewModel,
                 onOpenMyVehicles = {
                     navController.navigate("my_vehicles")
+                },
+                onOpenTrends = {
+                    navController.navigate("stats/trends")
                 }
             )
         }
@@ -171,7 +175,28 @@ fun HybridCarNavHost(
                 onOpenTotal = {
                     navController.navigate("total_detail")
                 },
-                periodSummaryViewModel = periodSummaryViewModel
+                periodSummaryViewModel = periodSummaryViewModel,
+                initialTab = StatisticsTab.GLOBAL
+            )
+        }
+        composable("stats/trends") {
+            StatisticsScreen(
+                innerPadding = innerPadding,
+                viewModel = homeViewModel,
+                onOpenConsumption = {
+                    navController.navigate("consumption_detail")
+                },
+                onOpenPrice = {
+                    navController.navigate("price_detail")
+                },
+                onOpenCost = {
+                    navController.navigate("cost_detail")
+                },
+                onOpenTotal = {
+                    navController.navigate("total_detail")
+                },
+                periodSummaryViewModel = periodSummaryViewModel,
+                initialTab = StatisticsTab.TRENDS
             )
         }
         composable("consumption_detail") {

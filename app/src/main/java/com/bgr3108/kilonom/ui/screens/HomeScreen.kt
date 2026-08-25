@@ -22,23 +22,30 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.data.supportsElectricEntries
 import com.bgr3108.kilonom.data.supportsFuelEntries
 import com.bgr3108.kilonom.ui.components.HomeInfoCard
 import com.bgr3108.kilonom.ui.components.VehicleCollectionIcon
+import com.bgr3108.kilonom.domain.HomeTrendInsight
+import com.bgr3108.kilonom.domain.HomeTrendMetric
+import com.bgr3108.kilonom.domain.TrendStatus
 import com.bgr3108.kilonom.domain.calculateUnitPrice
 import com.bgr3108.kilonom.util.toDateTimeString
 import com.bgr3108.kilonom.util.toSpanishDecimal
+import com.bgr3108.kilonom.util.formatTrendPercentageCompact
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
+import java.util.Locale
 
 
 @Composable
 fun HomeScreen(
     innerPadding: PaddingValues,
     viewModel: HomeViewModel,
-    onOpenMyVehicles: () -> Unit
+    onOpenMyVehicles: () -> Unit,
+    onOpenTrends: () -> Unit
 ) {
 
     val precioGasolina by viewModel.precioGasolina.collectAsStateWithLifecycle()
@@ -57,6 +64,9 @@ fun HomeScreen(
         .collectAsStateWithLifecycle()
     val configuredVehicleCategories by viewModel
         .configuredVehicleCategories
+        .collectAsStateWithLifecycle()
+    val homeTrendInsight by viewModel
+        .homeTrendInsight
         .collectAsStateWithLifecycle()
 
     val showFuel = vehicle.type.supportsFuelEntries
@@ -265,6 +275,82 @@ fun HomeScreen(
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        HomeInfoCard(
+            modifier = Modifier.fillMaxWidth(),
+            title = "Tendencia",
+            icon = Icons.AutoMirrored.Filled.TrendingUp,
+            minHeight = 0.dp,
+            onClick = onOpenTrends
+        ) {
+            Text(
+                text = homeTrendInsight.title(),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = homeTrendInsight.color()
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = homeTrendInsight.toHomeTrendDescription(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 
+}
+
+private fun HomeTrendInsight.title(): String = when (metric) {
+    HomeTrendMetric.INSUFFICIENT_DATA -> "Necesitamos más datos"
+    HomeTrendMetric.STABLE -> "Todo estable"
+    HomeTrendMetric.FUEL_CONSUMPTION ->
+        if (status == TrendStatus.UP) "Consumo al alza" else "Consumo a la baja"
+
+    HomeTrendMetric.ELECTRIC_CONSUMPTION ->
+        if (status == TrendStatus.UP) "Consumo eléctrico al alza" else "Consumo eléctrico a la baja"
+
+    HomeTrendMetric.PHEV_ENERGY_CHARGED ->
+        if (status == TrendStatus.UP) "Energía cargada al alza" else "Energía cargada a la baja"
+
+    HomeTrendMetric.COST_PER_HUNDRED_KM ->
+        if (status == TrendStatus.UP) "Coste al alza" else "Coste a la baja"
+}
+
+internal fun HomeTrendInsight.toHomeTrendDescription(
+    locale: Locale = Locale.getDefault()
+): String = when (metric) {
+    HomeTrendMetric.INSUFFICIENT_DATA ->
+        "Registra algunos consumos más para detectar tendencias."
+
+    HomeTrendMetric.STABLE ->
+        "Los datos analizados se mantienen dentro de lo habitual."
+
+    HomeTrendMetric.FUEL_CONSUMPTION ->
+        "El consumo de combustible ha ${status.toVerb()} un ${percentage(locale)}."
+
+    HomeTrendMetric.ELECTRIC_CONSUMPTION ->
+        "Tu consumo eléctrico ha ${status.toVerb()} un ${percentage(locale)}."
+
+    HomeTrendMetric.PHEV_ENERGY_CHARGED ->
+        "La energía cargada por cada 100 km ha ${status.toVerb()} un ${percentage(locale)}."
+
+    HomeTrendMetric.COST_PER_HUNDRED_KM ->
+        "Tu coste por 100 km ha ${status.toVerb()} un ${percentage(locale)}."
+}
+
+private fun TrendStatus.toVerb(): String = if (this == TrendStatus.UP) "aumentado" else "bajado"
+
+private fun HomeTrendInsight.percentage(locale: Locale): String = formatTrendPercentageCompact(
+    percentageChange = requireNotNull(percentageChange),
+    locale = locale
+)
+
+@Composable
+private fun HomeTrendInsight.color() = when (status) {
+    TrendStatus.UP -> MaterialTheme.colorScheme.error
+    TrendStatus.DOWN -> MaterialTheme.colorScheme.primary
+    TrendStatus.STABLE,
+    TrendStatus.INSUFFICIENT_DATA -> MaterialTheme.colorScheme.onSurface
 }

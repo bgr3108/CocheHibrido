@@ -124,7 +124,8 @@ fun AppContent(
         val showBottomBar = currentRoute in listOf(
             "home",
             "consumption",
-            "stats"
+            "stats",
+            "stats/trends"
         )
         val navigateToTopLevel: (String) -> Unit = { route ->
             navController.navigate(route) {
@@ -181,7 +182,7 @@ fun AppContent(
                                 unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                 indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                             ),
-                            selected = currentRoute == "stats",
+                            selected = currentRoute == "stats" || currentRoute == "stats/trends",
                             onClick = { navigateToTopLevel("stats") },
                             icon = { Icon(Icons.Default.BarChart, contentDescription = null) },
                             label = { Text("Estadísticas") }
