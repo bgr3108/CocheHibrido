@@ -16,7 +16,13 @@ class ActiveVehicleEntriesTest {
             mutableListOf(entry(id = 1, km = 1_250.0))
         )
         val preferences = Preferences(activeVehicleId = 1)
-        val repository = VehicleRepository(EmptyCatalog, preferences, InMemoryVehicleDao(listOf(vehicleA, vehicleB)), entries)
+        val repository = VehicleRepository(
+            EmptyCatalog,
+            preferences,
+            InMemoryVehicleDao(listOf(vehicleA, vehicleB)),
+            entries,
+            InMemoryMaintenanceDao()
+        )
         val fuelRepository = FuelRepository(entries)
 
         repository.isLoading.first { !it }
@@ -73,7 +79,8 @@ class ActiveVehicleEntriesTest {
             EmptyCatalog,
             Preferences(activeVehicleId = null),
             InMemoryVehicleDao(),
-            entries
+            entries,
+            InMemoryMaintenanceDao()
         )
         repository.isLoading.first { !it }
         assertEquals(null, repository.activeVehicleId.value)
@@ -82,6 +89,43 @@ class ActiveVehicleEntriesTest {
             runBlocking { fuelRepository(entries).addEntryForVehicle(entry(id = 0, km = 100.0), 0) }
         }
         assertEquals(emptyList<FuelEntry>(), entries.entries)
+    }
+
+    @Test
+    fun maintenanceRecordsAndOdometerRemainIsolatedWhenTheActiveVehicleChanges() = runBlocking {
+        val maintenanceDao = InMemoryMaintenanceDao(
+            items = mutableListOf(
+                maintenanceItem(id = 1, vehicleId = 1, type = MaintenanceType.OIL_AND_FILTER),
+                maintenanceItem(id = 2, vehicleId = 2, type = MaintenanceType.ITV)
+            ),
+            records = mutableListOf(
+                MaintenanceRecordEntity(id = 1, itemId = 1, odometerKm = 1_300, createdAt = 1, updatedAt = 1),
+                MaintenanceRecordEntity(id = 2, itemId = 2, odometerKm = 8_500, createdAt = 2, updatedAt = 2)
+            )
+        )
+        val repository = VehicleRepository(
+            EmptyCatalog,
+            Preferences(activeVehicleId = 1),
+            InMemoryVehicleDao(
+                listOf(
+                    vehicle(id = 1, type = VehicleType.GASOLINA, initialKm = 1_000.0),
+                    vehicle(id = 2, type = VehicleType.ELECTRICO, initialKm = 8_000.0)
+                )
+            ),
+            InMemoryFuelEntryDao(),
+            maintenanceDao
+        )
+        repository.isLoading.first { !it }
+
+        assertEquals(1_300.0, repository.currentKm(1), 0.0)
+        assertEquals(1L, maintenanceDao.observeRecordsForVehicle(repository.activeVehicleId.value!!).first().single().id)
+
+        repository.selectActiveVehicle(2)
+
+        assertEquals(8_500.0, repository.currentKm(2), 0.0)
+        assertEquals(2L, maintenanceDao.observeRecordsForVehicle(repository.activeVehicleId.value!!).first().single().id)
+        assertEquals(1_300L, maintenanceDao.getMinimumOdometerKmForVehicle(1))
+        assertEquals(8_500L, maintenanceDao.getMaximumOdometerKmForVehicle(2))
     }
 
     private fun repository(fuelEntries: InMemoryFuelEntryDao): VehicleRepository =
@@ -94,7 +138,8 @@ class ActiveVehicleEntriesTest {
                     vehicle(id = 2, type = VehicleType.ELECTRICO, initialKm = 8_000.0)
                 )
             ),
-            fuelEntries
+            fuelEntries,
+            InMemoryMaintenanceDao()
         )
 
     private fun fuelRepository(entries: InMemoryFuelEntryDao) = FuelRepository(entries)
@@ -120,6 +165,15 @@ class ActiveVehicleEntriesTest {
         tipo = FuelType.GASOLINA,
         km = km,
         vehicleId = 1L
+    )
+
+    private fun maintenanceItem(id: Long, vehicleId: Long, type: MaintenanceType) = MaintenanceItemEntity(
+        id = id,
+        vehicleId = vehicleId,
+        type = type,
+        trackingKey = type.name,
+        createdAt = id,
+        updatedAt = id
     )
 
     private object EmptyCatalog : VehicleCatalog {

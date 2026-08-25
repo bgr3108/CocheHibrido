@@ -9,12 +9,14 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.bgr3108.kilonom.data.Car
 import com.bgr3108.kilonom.data.FuelEntry
+import com.bgr3108.kilonom.data.MaintenanceItemEntity
+import com.bgr3108.kilonom.data.MaintenanceRecordEntity
 import com.bgr3108.kilonom.data.VehicleEntity
 
 
 @Database(
-    entities = [Car::class, FuelEntry::class, VehicleEntity::class],
-    version = 11,
+    entities = [Car::class, FuelEntry::class, VehicleEntity::class, MaintenanceItemEntity::class, MaintenanceRecordEntity::class],
+    version = 12,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -23,6 +25,7 @@ abstract class HybridCarDatabase : RoomDatabase() {
     abstract fun carDao(): CarDao
     abstract fun fuelEntryDao(): FuelEntryDao
     abstract fun vehicleDao(): VehicleDao
+    abstract fun maintenanceDao(): MaintenanceDao
 
     companion object {
         @Volatile
@@ -39,7 +42,7 @@ abstract class HybridCarDatabase : RoomDatabase() {
                         dropAllTables = false,
                         1, 2, 3, 4, 5, 6, 7, 8
                     )
-                    .addMigrations(MIGRATION_9_10, MIGRATION_10_11)
+                    .addMigrations(MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
                     .build()
                     .also { Instance = it }
             }
@@ -122,6 +125,52 @@ abstract class HybridCarDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE `fuel_entries_new` RENAME TO `fuel_entries`")
                 db.execSQL(
                     "CREATE INDEX IF NOT EXISTS `index_fuel_entries_vehicleId_fecha` ON `fuel_entries` (`vehicleId`, `fecha`)"
+                )
+            }
+        }
+
+        val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `maintenance_items` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `vehicleId` INTEGER NOT NULL,
+                        `type` TEXT NOT NULL,
+                        `tyrePosition` TEXT,
+                        `customName` TEXT,
+                        `trackingKey` TEXT NOT NULL,
+                        `nextDueKm` INTEGER,
+                        `nextDueDate` INTEGER,
+                        `createdAt` INTEGER NOT NULL,
+                        `updatedAt` INTEGER NOT NULL,
+                        FOREIGN KEY(`vehicleId`) REFERENCES `vehicles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_maintenance_items_vehicleId` ON `maintenance_items` (`vehicleId`)"
+                )
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_maintenance_items_vehicleId_trackingKey` ON `maintenance_items` (`vehicleId`, `trackingKey`)"
+                )
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `maintenance_records` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `itemId` INTEGER NOT NULL,
+                        `performedDate` INTEGER,
+                        `odometerKm` INTEGER,
+                        `cost` REAL,
+                        `notes` TEXT,
+                        `createdAt` INTEGER NOT NULL,
+                        `updatedAt` INTEGER NOT NULL,
+                        FOREIGN KEY(`itemId`) REFERENCES `maintenance_items`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_maintenance_records_itemId_performedDate` ON `maintenance_records` (`itemId`, `performedDate`)"
                 )
             }
         }

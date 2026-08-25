@@ -1,6 +1,7 @@
 package com.bgr3108.kilonom.data
 
 import com.bgr3108.kilonom.database.FuelEntryDao
+import com.bgr3108.kilonom.database.MaintenanceDao
 import com.bgr3108.kilonom.database.VehicleDao
 import com.bgr3108.kilonom.domain.calculateVehicleCurrentKm
 import kotlinx.coroutines.CoroutineScope
@@ -14,7 +15,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -31,14 +31,16 @@ class VehicleRepository(
     val vehicleDataSource: VehicleCatalog,
     private val vehiclePreferences: VehiclePreferencesStore,
     private val vehicleDao: VehicleDao,
-    private val fuelEntryDao: FuelEntryDao
+    private val fuelEntryDao: FuelEntryDao,
+    private val maintenanceDao: MaintenanceDao
 ) {
 
     data class VehicleSummary(
         val vehicle: VehicleEntity,
         val currentKm: Double,
         val entryCount: Int,
-        val minimumValidEntryKm: Double?
+        val maintenanceRecordCount: Int,
+        val minimumValidRecordedKm: Double?
     )
 
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -67,15 +69,21 @@ class VehicleRepository(
                 flowOf(emptyList())
             } else {
                 combine(vehicles.map { entity ->
-                    fuelEntryDao.observeEntries(entity.id).map { entries ->
+                    combine(
+                        fuelEntryDao.observeEntries(entity.id),
+                        maintenanceDao.observeOdometerKilometersForVehicle(entity.id),
+                        maintenanceDao.observeRecordCountForVehicle(entity.id)
+                    ) { entries, maintenanceKilometers, maintenanceRecordCount ->
+                        val recordedKilometers = entries.map { it.km } + maintenanceKilometers.map(Long::toDouble)
                         VehicleSummary(
                             vehicle = entity,
                             currentKm = calculateVehicleCurrentKm(
                                 initialKm = entity.initialKm,
-                                entryKilometers = entries.map { it.km }
+                                entryKilometers = recordedKilometers
                             ),
                             entryCount = entries.size,
-                            minimumValidEntryKm = entries.map { it.km }
+                            maintenanceRecordCount = maintenanceRecordCount,
+                            minimumValidRecordedKm = recordedKilometers
                                 .filter { it.isFinite() && it >= 0.0 }
                                 .minOrNull()
                         )
@@ -237,22 +245,29 @@ class VehicleRepository(
 
     /**
      * Updates a snapshot only when its initial mileage remains compatible with its history.
-     * Vehicles with recorded entries keep their propulsion and capacities unchanged.
+     * Vehicles with consumption or maintenance history keep their structural metadata unchanged.
      */
     suspend fun updateVehicle(vehicleId: Long, updatedVehicle: Vehicle): VehicleEntity = vehicleMutex.withLock {
         val current = vehicleDao.getVehicle(vehicleId) ?: error("Vehículo no encontrado")
         val entryKilometers = fuelEntryDao.getKilometersForVehicle(vehicleId)
-        val minimumEntryKm = entryKilometers.filter { it.isFinite() && it >= 0.0 }.minOrNull()
+        val maintenanceKilometers = maintenanceDao.getOdometerKilometersForVehicle(vehicleId)
+        val minimumRecordedKm = (entryKilometers + maintenanceKilometers.map(Long::toDouble))
+            .filter { it.isFinite() && it >= 0.0 }
+            .minOrNull()
         require(updatedVehicle.initialKm.isFinite() && updatedVehicle.initialKm >= 0.0) {
             "El kilometraje inicial no es válido"
         }
-        require(minimumEntryKm == null || updatedVehicle.initialKm <= minimumEntryKm) {
-            "El kilometraje inicial no puede superar el primer consumo registrado"
+        require(minimumRecordedKm == null || updatedVehicle.initialKm <= minimumRecordedKm) {
+            "El kilometraje inicial no puede superar el primer kilometraje registrado"
         }
-        val hasEntries = fuelEntryDao.countEntries(vehicleId) > 0
-        val entity = if (hasEntries) {
+        val hasRecordedActivity = fuelEntryDao.countEntries(vehicleId) > 0 ||
+            maintenanceDao.countRecordsForVehicle(vehicleId) > 0
+        val entity = if (hasRecordedActivity) {
             require(updatedVehicle.type == current.type) {
-                "No se puede cambiar la propulsión de un vehículo con consumos registrados"
+                "No se puede cambiar la propulsión de un vehículo con datos registrados"
+            }
+            require(updatedVehicle.category == current.category) {
+                "No se puede cambiar el tipo de vehículo con datos registrados"
             }
             current.copy(initialKm = updatedVehicle.initialKm)
         } else {
@@ -263,7 +278,7 @@ class VehicleRepository(
         entity
     }
 
-    /** Deletes one snapshot; Room cascades its associated fuel entries. */
+    /** Deletes one snapshot; Room cascades its associated entries and maintenance history. */
     suspend fun deleteVehicle(vehicleId: Long) = vehicleMutex.withLock {
         val target = vehicleDao.getVehicle(vehicleId) ?: return@withLock
         val deletingActive = target.id == _activeVehicleId.value
@@ -296,7 +311,8 @@ class VehicleRepository(
         val entity = vehicleDao.getVehicle(vehicleId) ?: return 0.0
         return calculateVehicleCurrentKm(
             initialKm = entity.initialKm,
-            entryKilometers = fuelEntryDao.getKilometersForVehicle(vehicleId)
+            entryKilometers = fuelEntryDao.getKilometersForVehicle(vehicleId) +
+                maintenanceDao.getOdometerKilometersForVehicle(vehicleId).map(Long::toDouble)
         )
     }
 

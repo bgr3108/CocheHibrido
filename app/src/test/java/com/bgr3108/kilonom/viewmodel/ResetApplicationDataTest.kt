@@ -13,7 +13,11 @@ import com.bgr3108.kilonom.data.VehiclePreferencesStore
 import com.bgr3108.kilonom.data.VehicleRepository
 import com.bgr3108.kilonom.data.VehicleType
 import com.bgr3108.kilonom.data.InMemoryFuelEntryDao
+import com.bgr3108.kilonom.data.InMemoryMaintenanceDao
 import com.bgr3108.kilonom.data.InMemoryVehicleDao
+import com.bgr3108.kilonom.data.MaintenanceItemEntity
+import com.bgr3108.kilonom.data.MaintenanceRecordEntity
+import com.bgr3108.kilonom.data.MaintenanceType
 import com.bgr3108.kilonom.database.FuelEntryDao
 import com.bgr3108.kilonom.database.CarDao
 import kotlinx.coroutines.flow.Flow
@@ -94,6 +98,57 @@ class ResetApplicationDataTest {
         assertTrue(firstAttempt.isFailure)
         assertTrue(fuelEntryDao.entries.isEmpty())
         assertTrue(carDao.cars.isEmpty())
+        assertEquals(Vehicle(), vehicleRepository.vehicle.value)
+    }
+
+    @Test
+    fun successfulReset_cascadesMaintenanceWithTheVehicle() = runBlocking {
+        val maintenanceDao = InMemoryMaintenanceDao(
+            items = mutableListOf(
+                MaintenanceItemEntity(
+                    id = 1,
+                    vehicleId = 1,
+                    type = MaintenanceType.ITV,
+                    trackingKey = "ITV",
+                    createdAt = 1,
+                    updatedAt = 1
+                )
+            ),
+            records = mutableListOf(
+                MaintenanceRecordEntity(id = 1, itemId = 1, odometerKm = 1_200, createdAt = 1, updatedAt = 1)
+            )
+        )
+        val vehicleDao = InMemoryVehicleDao(
+            initialVehicles = listOf(
+                com.bgr3108.kilonom.data.VehicleEntity(
+                    id = 1,
+                    category = VehicleCategory.COCHE,
+                    brand = "Marca",
+                    model = "Modelo",
+                    year = 2026,
+                    type = VehicleType.GASOLINA,
+                    fuelTankCapacity = 40.0,
+                    batteryCapacity = 0.0,
+                    initialKm = 1_000.0,
+                    createdAt = 1
+                )
+            ),
+            onVehicleDeleted = maintenanceDao::cascadeVehicleDelete
+        )
+        val preferences = FakeVehiclePreferences()
+        val vehicleRepository = VehicleRepository(
+            EmptyVehicleCatalog,
+            preferences,
+            vehicleDao,
+            InMemoryFuelEntryDao(),
+            maintenanceDao
+        )
+        vehicleRepository.isLoading.first { !it }
+
+        resetApplicationData(FuelRepository(InMemoryFuelEntryDao()), CarRepository(FakeCarDao()), vehicleRepository)
+
+        assertTrue(maintenanceDao.items.isEmpty())
+        assertTrue(maintenanceDao.records.isEmpty())
         assertEquals(Vehicle(), vehicleRepository.vehicle.value)
     }
 
@@ -180,7 +235,8 @@ class ResetApplicationDataTest {
         EmptyVehicleCatalog,
         preferences,
         InMemoryVehicleDao(),
-        InMemoryFuelEntryDao()
+        InMemoryFuelEntryDao(),
+        InMemoryMaintenanceDao()
     )
 
     private fun configuredVehicle(type: VehicleType) = Vehicle(

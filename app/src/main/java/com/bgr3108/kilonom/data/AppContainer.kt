@@ -19,6 +19,8 @@ class AppContainer(context: Context) {
         VehicleDataSource(context),
         VehiclePreferences(context),
         database.vehicleDao(),
-        database.fuelEntryDao()
+        database.fuelEntryDao(),
+        database.maintenanceDao()
     )
+
 }

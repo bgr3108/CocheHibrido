@@ -54,20 +54,20 @@ fun VehicleEditorScreen(
     }
     LaunchedEffect(summary.vehicle.id) { viewModel.selectCategory(summary.vehicle.category) }
     val pendingInitialKmChange = remember { mutableStateOf<Vehicle?>(null) }
-    val hasEntries = summary.entryCount > 0
+    val hasRecordedActivity = summary.entryCount > 0 || summary.maintenanceRecordCount > 0
     VehicleForm(
         title = "Editar vehículo",
         initialVehicle = summary.vehicle.toVehicle(),
         availableVehicles = catalog,
         selectedCategory = category,
         onCategoryChanged = viewModel::selectCategory,
-        catalogEditable = !hasEntries,
-        minimumEntryKm = summary.minimumValidEntryKm,
+        catalogEditable = !hasRecordedActivity,
+        minimumRecordedKm = summary.minimumValidRecordedKm,
         currentKm = summary.currentKm,
         isSaving = isSaving,
         errorMessage = error,
         onSubmit = { updated ->
-            if (hasEntries && updated.initialKm != summary.vehicle.initialKm) pendingInitialKmChange.value = updated
+            if (hasRecordedActivity && updated.initialKm != summary.vehicle.initialKm) pendingInitialKmChange.value = updated
             else viewModel.updateVehicle(summary.vehicle.id, updated, onSaved)
         }
     )

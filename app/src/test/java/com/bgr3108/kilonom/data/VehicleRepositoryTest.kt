@@ -2,6 +2,7 @@ package com.bgr3108.kilonom.data
 
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import com.bgr3108.kilonom.domain.calculateTravelledKilometers
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -184,6 +185,54 @@ class VehicleRepositoryTest {
         repository.isLoading.first { !it }
 
         assertEquals(50_000.0, repository.currentKm(1), 0.0)
+    }
+
+    @Test
+    fun currentKm_includesMaintenanceOdometerButNeverReminderKilometers() = runBlocking {
+        val vehicle = entity(id = 1, initialKm = 20_000.0)
+        val item = maintenanceItem()
+        val maintenanceDao = InMemoryMaintenanceDao(
+            items = mutableListOf(item.copy(nextDueKm = 50_000)),
+            records = mutableListOf(maintenanceRecord(odometerKm = 27_000))
+        )
+        val repository = repository(
+            preferences = FakeVehiclePreferences(activeVehicleId = 1),
+            vehicleDao = InMemoryVehicleDao(listOf(vehicle)),
+            fuelEntryDao = InMemoryFuelEntryDao(mutableListOf(entry(km = 25_000.0))),
+            maintenanceDao = maintenanceDao
+        )
+
+        repository.isLoading.first { !it }
+
+        assertEquals(27_000.0, repository.currentKm(1), 0.0)
+        assertEquals(
+            5_000.0,
+            calculateTravelledKilometers(
+                listOf(entry(km = 25_000.0)),
+                initialKilometers = 20_000.0
+            ),
+            0.0
+        )
+    }
+
+    @Test
+    fun currentKm_returnsToNextRealReadingWhenMaximumMaintenanceRecordIsDeleted() = runBlocking {
+        val vehicle = entity(id = 1, initialKm = 20_000.0)
+        val maintenanceDao = InMemoryMaintenanceDao(
+            items = mutableListOf(maintenanceItem()),
+            records = mutableListOf(maintenanceRecord(odometerKm = 27_000))
+        )
+        val repository = repository(
+            preferences = FakeVehiclePreferences(activeVehicleId = 1),
+            vehicleDao = InMemoryVehicleDao(listOf(vehicle)),
+            fuelEntryDao = InMemoryFuelEntryDao(mutableListOf(entry(km = 25_000.0))),
+            maintenanceDao = maintenanceDao
+        )
+        repository.isLoading.first { !it }
+
+        maintenanceDao.deleteRecordForVehicle(1, 1)
+
+        assertEquals(25_000.0, repository.currentKm(1), 0.0)
     }
 
     @Test
@@ -380,6 +429,44 @@ class VehicleRepositoryTest {
     }
 
     @Test
+    fun updateVehicle_rejectsInitialKilometersAboveTheFirstMaintenanceOdometer() = runBlocking {
+        val maintenanceDao = InMemoryMaintenanceDao(
+            items = mutableListOf(maintenanceItem()),
+            records = mutableListOf(maintenanceRecord(odometerKm = 1_250))
+        )
+        val repository = repository(
+            preferences = FakeVehiclePreferences(activeVehicleId = 1),
+            vehicleDao = InMemoryVehicleDao(listOf(entity(id = 1, initialKm = 1_000.0))),
+            maintenanceDao = maintenanceDao
+        )
+        repository.isLoading.first { !it }
+
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { repository.updateVehicle(1, configuredVehicle(initialKm = 1_251.0)) }
+        }
+        Unit
+    }
+
+    @Test
+    fun updateVehicleWithMaintenance_rejectsStructuralChanges() = runBlocking {
+        val maintenanceDao = InMemoryMaintenanceDao(
+            items = mutableListOf(maintenanceItem()),
+            records = mutableListOf(maintenanceRecord(odometerKm = 1_250))
+        )
+        val repository = repository(
+            preferences = FakeVehiclePreferences(activeVehicleId = 1),
+            vehicleDao = InMemoryVehicleDao(listOf(entity(id = 1, initialKm = 1_000.0))),
+            maintenanceDao = maintenanceDao
+        )
+        repository.isLoading.first { !it }
+
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { repository.updateVehicle(1, configuredVehicle(type = VehicleType.ELECTRICO, initialKm = 1_000.0)) }
+        }
+        Unit
+    }
+
+    @Test
     fun deleteActiveVehicle_selectsTheOldestRemainingVehicle() = runBlocking {
         val first = entity(id = 1, createdAt = 1)
         val second = entity(id = 2, createdAt = 2)
@@ -438,8 +525,9 @@ class VehicleRepositoryTest {
     private fun repository(
         preferences: FakeVehiclePreferences,
         vehicleDao: InMemoryVehicleDao = InMemoryVehicleDao(),
-        fuelEntryDao: InMemoryFuelEntryDao = InMemoryFuelEntryDao()
-    ) = VehicleRepository(EmptyVehicleCatalog, preferences, vehicleDao, fuelEntryDao)
+        fuelEntryDao: InMemoryFuelEntryDao = InMemoryFuelEntryDao(),
+        maintenanceDao: InMemoryMaintenanceDao = InMemoryMaintenanceDao()
+    ) = VehicleRepository(EmptyVehicleCatalog, preferences, vehicleDao, fuelEntryDao, maintenanceDao)
 
     private fun configuredVehicle(
         type: VehicleType = VehicleType.HIBRIDO_ENCHUFABLE,
@@ -480,6 +568,23 @@ class VehicleRepositoryTest {
         tipo = FuelType.GASOLINA,
         km = km,
         vehicleId = 1L
+    )
+
+    private fun maintenanceItem() = MaintenanceItemEntity(
+        id = 1,
+        vehicleId = 1,
+        type = MaintenanceType.OIL_AND_FILTER,
+        trackingKey = "OIL_AND_FILTER",
+        createdAt = 0,
+        updatedAt = 0
+    )
+
+    private fun maintenanceRecord(odometerKm: Long) = MaintenanceRecordEntity(
+        id = 1,
+        itemId = 1,
+        odometerKm = odometerKm,
+        createdAt = 0,
+        updatedAt = 0
     )
 
     private object EmptyVehicleCatalog : VehicleCatalog {

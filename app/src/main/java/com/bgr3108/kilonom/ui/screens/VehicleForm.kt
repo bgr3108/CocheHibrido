@@ -51,7 +51,7 @@ fun VehicleForm(
     selectedCategory: VehicleCategory,
     onCategoryChanged: (VehicleCategory) -> Unit,
     catalogEditable: Boolean,
-    minimumEntryKm: Double? = null,
+    minimumRecordedKm: Double? = null,
     currentKm: Double? = null,
     isSaving: Boolean,
     errorMessage: String?,
@@ -91,8 +91,8 @@ fun VehicleForm(
     val kmError = when {
         initialKmText.isBlank() -> null
         initialKm == null -> "Introduce un kilometraje válido"
-        minimumEntryKm != null && initialKm > minimumEntryKm ->
-            "El kilometraje inicial no puede superar el primer consumo registrado"
+        minimumRecordedKm != null && initialKm > minimumRecordedKm ->
+            "El kilometraje inicial no puede superar el primer kilometraje registrado"
         else -> null
     }
     val isValid = isVehicleSelectionCompatible(selectedVehicle, category) &&

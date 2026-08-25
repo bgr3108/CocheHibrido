@@ -72,7 +72,7 @@ class Migration10To11Test {
         }
 
         val database = Room.databaseBuilder(context, HybridCarDatabase::class.java, TEST_DATABASE)
-            .addMigrations(HybridCarDatabase.MIGRATION_10_11)
+            .addMigrations(HybridCarDatabase.MIGRATION_10_11, HybridCarDatabase.MIGRATION_11_12)
             .allowMainThreadQueries()
             .build()
         val migrated = database.openHelper.writableDatabase
