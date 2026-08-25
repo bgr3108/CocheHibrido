@@ -287,6 +287,10 @@ class VehicleRepositoryTest {
         val repository = repository(preferences)
 
         repository.isLoading.first { !it }
+
+        assertTrue(repository.showReleaseNotes.value)
+        assertNull(preferences.releaseNotesVersion)
+
         repository.dismissReleaseNotes()
 
         assertFalse(repository.showReleaseNotes.value)

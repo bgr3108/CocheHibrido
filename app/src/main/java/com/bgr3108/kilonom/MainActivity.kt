@@ -7,6 +7,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
@@ -19,10 +21,15 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -32,6 +39,8 @@ import com.bgr3108.kilonom.data.Vehicle
 import com.bgr3108.kilonom.ui.navigation.HybridCarNavHost
 import com.bgr3108.kilonom.ui.screens.SetupScreen
 import com.bgr3108.kilonom.ui.theme.CocheHibridoTheme
+import com.bgr3108.kilonom.util.ExternalLinks
+import com.bgr3108.kilonom.util.openExternalUrl
 import com.bgr3108.kilonom.viewmodel.AppViewModelProvider
 import com.bgr3108.kilonom.viewmodel.FuelEntryViewModel
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
@@ -62,12 +71,17 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             CocheHibridoTheme {
-                AppContent(
-                    fuelViewModel = fuelViewModel,
-                    homeViewModel = homeViewModel,
-                    periodSummaryViewModel = periodSummaryViewModel,
-                    myVehiclesViewModel = myVehiclesViewModel
-                )
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AppContent(
+                        fuelViewModel = fuelViewModel,
+                        homeViewModel = homeViewModel,
+                        periodSummaryViewModel = periodSummaryViewModel,
+                        myVehiclesViewModel = myVehiclesViewModel
+                    )
+                }
             }
         }
     }
@@ -199,17 +213,40 @@ internal fun shouldShowSetup(vehicle: Vehicle, resetState: ResetState): Boolean 
 
 @Composable
 private fun ReleaseNotesDialog(onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    val videoOpenError = remember { mutableStateOf(false) }
+
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {},
         title = {
             Text(stringResource(R.string.whats_new_title))
         },
         text = {
-            Text(stringResource(R.string.whats_new_message))
+            Column {
+                Text(stringResource(R.string.whats_new_message))
+                if (videoOpenError.value) {
+                    Text(
+                        text = "No se pudo abrir el vídeo. Inténtalo de nuevo cuando tengas un navegador disponible.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.whats_new_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    videoOpenError.value = !context.openExternalUrl(
+                        ExternalLinks.INSTAGRAM_REEL_1_1_URL
+                    )
+                }
+            ) {
+                Text(stringResource(R.string.whats_new_video))
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,

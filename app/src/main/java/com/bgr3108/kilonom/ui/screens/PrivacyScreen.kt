@@ -1,6 +1,5 @@
 package com.bgr3108.kilonom.ui.screens
 
-import android.content.Intent
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -29,13 +28,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.net.toUri
 import androidx.compose.ui.unit.dp
 import com.bgr3108.kilonom.ui.theme.CardBlueDark
 import com.bgr3108.kilonom.ui.theme.CardBlueLight
-
-private const val PRIVACY_POLICY_URL =
-    "https://bgr3108.github.io/CocheHibrido/privacy/"
+import com.bgr3108.kilonom.util.ExternalLinks
+import com.bgr3108.kilonom.util.openExternalUrl
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,14 +114,9 @@ fun PrivacyScreen(
 
                     PrivacyPolicySection(
                         onOpenPolicy = {
-                            policyOpenError.value = runCatching {
-                                context.startActivity(
-                                    Intent(
-                                        Intent.ACTION_VIEW,
-          PRIVACY_POLICY_URL.toUri()
-                                    )
-                                )
-                            }.isFailure
+                            policyOpenError.value = !context.openExternalUrl(
+                                ExternalLinks.PRIVACY_POLICY_URL
+                            )
                         },
                         showOpenError = policyOpenError.value
                     )

@@ -40,6 +40,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.data.VehicleCategory
@@ -50,6 +51,8 @@ import com.bgr3108.kilonom.ui.theme.CardBlueDark
 import com.bgr3108.kilonom.ui.theme.CardBlueLight
 import com.bgr3108.kilonom.util.toKilometersDisplay
 import com.bgr3108.kilonom.util.toSpanishDecimal
+import com.bgr3108.kilonom.util.ExternalLinks
+import com.bgr3108.kilonom.util.openExternalUrl
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 import com.bgr3108.kilonom.viewmodel.MyVehiclesViewModel
 import com.bgr3108.kilonom.viewmodel.ResetState
@@ -65,6 +68,7 @@ fun MyVehiclesScreen(
     onOpenPrivacy: () -> Unit,
     onActiveVehicleDeleted: () -> Unit
 ) {
+    val context = LocalContext.current
     val summaries by viewModel.vehicleSummaries.collectAsStateWithLifecycle()
     val activeVehicleId by viewModel.activeVehicleId.collectAsStateWithLifecycle()
     val isWorking by viewModel.isWorking.collectAsStateWithLifecycle()
@@ -76,6 +80,7 @@ fun MyVehiclesScreen(
     val globalMenuExpanded = remember { mutableStateOf(false) }
     val showResetDialog = remember { mutableStateOf(false) }
     val resetRequested = remember { mutableStateOf(false) }
+    val instagramOpenError = remember { mutableStateOf(false) }
 
     LaunchedEffect(resetRequested.value, resetState) {
         if (resetRequested.value && resetState == ResetState.IDLE) {
@@ -112,6 +117,15 @@ fun MyVehiclesScreen(
                 onDismissRequest = { globalMenuExpanded.value = false }
             ) {
                 DropdownMenuItem(
+                    text = { Text("Instagram de Kilonom") },
+                    onClick = {
+                        globalMenuExpanded.value = false
+                        instagramOpenError.value = !context.openExternalUrl(
+                            ExternalLinks.INSTAGRAM_PROFILE_URL
+                        )
+                    }
+                )
+                DropdownMenuItem(
                     text = { Text("Privacidad") },
                     onClick = {
                         globalMenuExpanded.value = false
@@ -146,6 +160,12 @@ fun MyVehiclesScreen(
             )
         }
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        if (instagramOpenError.value) {
+            Text(
+                "No se pudo abrir Instagram. Inténtalo de nuevo cuando tengas un navegador disponible.",
+                color = MaterialTheme.colorScheme.error
+            )
+        }
         ExtendedFloatingActionButton(
             onClick = onAdd,
             icon = { Icon(Icons.Default.Add, contentDescription = null) },
