@@ -18,3 +18,10 @@ local.properties
 # Local release artifacts
 app/release/
 *.aab
+
+# Local signing credentials
+*.jks
+*.keystore
+keystore.properties
+key.properties
+signing.properties
