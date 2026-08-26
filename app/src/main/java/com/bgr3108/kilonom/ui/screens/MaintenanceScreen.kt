@@ -36,6 +36,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.domain.MaintenanceDueStatus
+import com.bgr3108.kilonom.domain.MaintenanceDueMeasure
+import com.bgr3108.kilonom.domain.primaryDueMeasure
 import com.bgr3108.kilonom.ui.theme.CardBlueDark
 import com.bgr3108.kilonom.ui.theme.CardBlueLight
 import com.bgr3108.kilonom.viewmodel.MaintenanceItemUiModel
@@ -54,6 +56,7 @@ fun MaintenanceScreen(
     onAdd: () -> Unit,
     onOpenItem: (Long) -> Unit
 ) {
+    RefreshMaintenanceForCurrentDayOnResume(viewModel)
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showAllHistory by remember { mutableStateOf(false) }
     val shownRecords = if (showAllHistory) state.records else state.records.take(5)
@@ -200,33 +203,47 @@ internal fun MaintenanceCard(onClick: (() -> Unit)? = null, content: @Composable
 internal fun maintenanceSecondaryColor() = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f)
 
 internal fun com.bgr3108.kilonom.domain.MaintenanceDueInfo.primaryStatusText(): String = when (status) {
-    MaintenanceDueStatus.OVERDUE -> overdueTexts().firstOrNull() ?: "Vencido"
-    MaintenanceDueStatus.DUE_SOON -> dueSoonTexts().firstOrNull() ?: "Toca ahora"
-    MaintenanceDueStatus.UP_TO_DATE -> listOfNotNull(
-        dueKm?.let { "Próximo a los ${it.formatKilometers()} km" },
-        dueDate?.formatMaintenanceDate()
-    ).firstOrNull() ?: "Al día"
+    MaintenanceDueStatus.OVERDUE -> statusTexts().firstOrNull() ?: "Vencido"
+    MaintenanceDueStatus.DUE_SOON -> statusTexts().firstOrNull() ?: "Toca ahora"
+    MaintenanceDueStatus.UP_TO_DATE -> statusTexts().firstOrNull() ?: "Al día"
     MaintenanceDueStatus.NO_DUE_CONFIGURED -> "Sin próximo aviso configurado"
 }
 
 internal fun com.bgr3108.kilonom.domain.MaintenanceDueInfo.secondaryStatusText(): String? = when (status) {
-    MaintenanceDueStatus.OVERDUE -> overdueTexts().drop(1).firstOrNull()
-    MaintenanceDueStatus.DUE_SOON -> dueSoonTexts().drop(1).firstOrNull()
-    MaintenanceDueStatus.UP_TO_DATE -> listOfNotNull(
-        dueKm?.let { "Próximo a los ${it.formatKilometers()} km" },
-        dueDate?.formatMaintenanceDate()
-    ).drop(1).firstOrNull()
+    MaintenanceDueStatus.OVERDUE,
+    MaintenanceDueStatus.DUE_SOON,
+    MaintenanceDueStatus.UP_TO_DATE -> statusTexts().drop(1).firstOrNull()
     MaintenanceDueStatus.NO_DUE_CONFIGURED -> null
 }
 
-private fun com.bgr3108.kilonom.domain.MaintenanceDueInfo.overdueTexts(): List<String> = buildList {
-    remainingKm?.takeIf { it < 0 }?.let { add("Vencido hace ${abs(it).formatKilometers()} km") }
-    remainingDays?.takeIf { it < 0 }?.let { add("Vencido hace ${abs(it)} ${if (abs(it) == 1L) "día" else "días"}") }
+private fun com.bgr3108.kilonom.domain.MaintenanceDueInfo.statusTexts(): List<String> =
+    dueMeasuresInDisplayOrder().mapNotNull { statusTextFor(it) }
+
+private fun com.bgr3108.kilonom.domain.MaintenanceDueInfo.dueMeasuresInDisplayOrder(): List<MaintenanceDueMeasure> {
+    val primary = primaryDueMeasure() ?: return emptyList()
+    return listOf(primary) + (MaintenanceDueMeasure.entries - primary)
 }
 
-private fun com.bgr3108.kilonom.domain.MaintenanceDueInfo.dueSoonTexts(): List<String> = buildList {
-    remainingKm?.let { remaining -> add(if (remaining == 0L) "Toca ahora" else "Faltan ${remaining.formatKilometers()} km") }
-    remainingDays?.let { remaining -> add(if (remaining == 0L) "Toca hoy" else "Faltan $remaining ${if (remaining == 1L) "día" else "días"}") }
+private fun com.bgr3108.kilonom.domain.MaintenanceDueInfo.statusTextFor(
+    measure: MaintenanceDueMeasure
+): String? = when (measure) {
+    MaintenanceDueMeasure.KILOMETERS -> remainingKm?.let { remaining ->
+        when (status) {
+            MaintenanceDueStatus.OVERDUE -> remaining.takeIf { it < 0 }?.let { "Vencido hace ${abs(it).formatKilometers()} km" }
+            MaintenanceDueStatus.DUE_SOON -> remaining.takeIf { it >= 0 }?.let { if (it == 0L) "Toca ahora" else "Faltan ${it.formatKilometers()} km" }
+            MaintenanceDueStatus.UP_TO_DATE -> dueKm?.let { "Próximo a los ${it.formatKilometers()} km" }
+            MaintenanceDueStatus.NO_DUE_CONFIGURED -> null
+        }
+    }
+
+    MaintenanceDueMeasure.DATE -> remainingDays?.let { remaining ->
+        when (status) {
+            MaintenanceDueStatus.OVERDUE -> remaining.takeIf { it < 0 }?.let { "Vencido hace ${abs(it)} ${if (abs(it) == 1L) "día" else "días"}" }
+            MaintenanceDueStatus.DUE_SOON -> remaining.takeIf { it >= 0 }?.let { if (it == 0L) "Toca hoy" else "Faltan $it ${if (it == 1L) "día" else "días"}" }
+            MaintenanceDueStatus.UP_TO_DATE -> dueDate?.formatMaintenanceDate()
+            MaintenanceDueStatus.NO_DUE_CONFIGURED -> null
+        }
+    }
 }
 
 internal fun Long.formatKilometers(): String = NumberFormat.getIntegerInstance(Locale.getDefault()).format(this)

@@ -38,6 +38,7 @@ import com.bgr3108.kilonom.util.toDateTimeString
 import com.bgr3108.kilonom.util.toSpanishDecimal
 import com.bgr3108.kilonom.util.formatTrendPercentageCompact
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
+import com.bgr3108.kilonom.viewmodel.MaintenanceViewModel
 import java.util.Locale
 
 
@@ -45,6 +46,7 @@ import java.util.Locale
 fun HomeScreen(
     innerPadding: PaddingValues,
     viewModel: HomeViewModel,
+    maintenanceViewModel: MaintenanceViewModel,
     onOpenMyVehicles: () -> Unit,
     onOpenTrends: () -> Unit,
     onOpenMaintenance: () -> Unit
@@ -70,6 +72,13 @@ fun HomeScreen(
     val homeTrendInsight by viewModel
         .homeTrendInsight
         .collectAsStateWithLifecycle()
+    val maintenanceHomeInsight by maintenanceViewModel
+        .homeInsight
+        .collectAsStateWithLifecycle()
+    val maintenanceAccentColor = maintenanceHomeInsight.homeAccentColor()
+    val maintenanceMessageColor = maintenanceHomeInsight.homeMessageColor()
+
+    RefreshMaintenanceForCurrentDayOnResume(maintenanceViewModel)
 
     val showFuel = vehicle.type.supportsFuelEntries
 
@@ -282,17 +291,19 @@ fun HomeScreen(
 
         HomeInfoCard(
             modifier = Modifier.fillMaxWidth(),
-            title = "Mantenimiento",
+            title = maintenanceHomeInsight.homeTitle(),
             icon = Icons.Default.Build,
             minHeight = 0.dp,
             headerToContentSpacing = 4.dp,
             contentTopSpacing = 0.dp,
+            titleColor = maintenanceAccentColor,
+            iconTint = maintenanceAccentColor,
             onClick = onOpenMaintenance
         ) {
             Text(
-                "Consulta próximos avisos e historial.",
+                maintenanceHomeInsight.homeMessage(),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f)
+                color = maintenanceMessageColor
             )
         }
 

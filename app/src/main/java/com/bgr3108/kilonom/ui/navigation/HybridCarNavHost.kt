@@ -61,6 +61,7 @@ fun HybridCarNavHost(
             HomeScreen(
                 innerPadding = innerPadding,
                 viewModel = homeViewModel,
+                maintenanceViewModel = maintenanceViewModel,
                 onOpenMyVehicles = {
                     navController.navigate("my_vehicles")
                 },

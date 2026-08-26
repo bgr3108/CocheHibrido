@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
@@ -38,6 +39,8 @@ fun HomeInfoCard(
     minHeight: Dp = 180.dp,
     headerToContentSpacing: Dp = 18.dp,
     contentTopSpacing: Dp = 10.dp,
+    titleColor: Color = MaterialTheme.colorScheme.onSurface,
+    iconTint: Color = MaterialTheme.colorScheme.primary,
     colors: CardColors = CardDefaults.cardColors(
         containerColor =
             if (isSystemInDarkTheme())
@@ -79,13 +82,14 @@ fun HomeInfoCard(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = titleColor
                 )
 
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = iconTint
                 )
             }
 

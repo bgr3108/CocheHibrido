@@ -13,6 +13,11 @@ data class MaintenanceDueInfo(
     val remainingDays: Long?
 )
 
+enum class MaintenanceDueMeasure {
+    KILOMETERS,
+    DATE
+}
+
 fun createMaintenanceDueInfo(
     item: MaintenanceItemEntity,
     currentKm: Long,
@@ -64,3 +69,43 @@ fun maintenanceUrgencySortValue(info: MaintenanceDueInfo): Pair<Int, Double> {
     }
     return group to normalizedRemaining
 }
+
+/**
+ * Chooses the same due criterion that orders reminders in the maintenance screen.
+ * Kilometres and dates are normalised by the existing due-soon policy only to rank
+ * urgency; they are never converted into one another.
+ */
+fun MaintenanceDueInfo.primaryDueMeasure(): MaintenanceDueMeasure? {
+    val candidates = buildList {
+        remainingKm?.let { remaining ->
+            if (isRelevantForStatus(remaining, MaintenanceDueMeasure.KILOMETERS)) {
+                add(MaintenanceDueMeasure.KILOMETERS to normalizedRemaining(remaining, MaintenanceReminderPolicy.DUE_SOON_KILOMETERS))
+            }
+        }
+        remainingDays?.let { remaining ->
+            if (isRelevantForStatus(remaining, MaintenanceDueMeasure.DATE)) {
+                add(MaintenanceDueMeasure.DATE to normalizedRemaining(remaining, MaintenanceReminderPolicy.DUE_SOON_DAYS))
+            }
+        }
+    }
+    return candidates.minWithOrNull(compareBy<Pair<MaintenanceDueMeasure, Double>> { it.second }
+        .thenBy { it.first.ordinal })?.first
+}
+
+private fun MaintenanceDueInfo.isRelevantForStatus(
+    remaining: Long,
+    measure: MaintenanceDueMeasure
+): Boolean = when (status) {
+    MaintenanceDueStatus.OVERDUE -> remaining < 0
+    MaintenanceDueStatus.DUE_SOON -> remaining in 0..dueSoonLimitFor(measure)
+    MaintenanceDueStatus.UP_TO_DATE -> remaining > dueSoonLimitFor(measure)
+    MaintenanceDueStatus.NO_DUE_CONFIGURED -> false
+}
+
+private fun dueSoonLimitFor(measure: MaintenanceDueMeasure): Long = when (measure) {
+    MaintenanceDueMeasure.KILOMETERS -> MaintenanceReminderPolicy.DUE_SOON_KILOMETERS
+    MaintenanceDueMeasure.DATE -> MaintenanceReminderPolicy.DUE_SOON_DAYS
+}
+
+private fun normalizedRemaining(remaining: Long, threshold: Long): Double =
+    remaining.toDouble() / threshold

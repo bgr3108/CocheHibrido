@@ -12,10 +12,13 @@ import com.bgr3108.kilonom.data.TyrePosition
 import com.bgr3108.kilonom.data.VehicleEntity
 import com.bgr3108.kilonom.data.VehicleRepository
 import com.bgr3108.kilonom.domain.MaintenanceDueInfo
+import com.bgr3108.kilonom.domain.MaintenanceHomeInsight
+import com.bgr3108.kilonom.domain.MaintenanceHomeInsightItem
 import com.bgr3108.kilonom.domain.availableMaintenanceTypes
 import com.bgr3108.kilonom.domain.createMaintenanceDueInfo
 import com.bgr3108.kilonom.domain.displayMaintenanceName
 import com.bgr3108.kilonom.domain.maintenanceUrgencySortValue
+import com.bgr3108.kilonom.domain.selectMaintenanceHomeInsight
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +27,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -89,6 +93,7 @@ class MaintenanceViewModel(
     private val actionMutex = Mutex()
     private val isWorking = MutableStateFlow(false)
     private val errorMessage = MutableStateFlow<String?>(null)
+    private val currentDay = MutableStateFlow(todayAtStartOfDay())
 
     private val activeItems = maintenanceRepository.observeActiveItems()
     private val activeRecords = maintenanceRepository.observeActiveRecords()
@@ -104,9 +109,10 @@ class MaintenanceViewModel(
 
     val state: StateFlow<MaintenanceUiState> = combine(
         sourceSnapshot,
+        currentDay,
         isWorking,
         errorMessage
-    ) { source, working, error ->
+    ) { source, today, working, error ->
         val vehicle = source.vehicle
         val summaries = source.summaries
         val items = source.items
@@ -119,7 +125,7 @@ class MaintenanceViewModel(
             MaintenanceItemUiModel(
                 item = item,
                 name = item.displayMaintenanceName(),
-                due = createMaintenanceDueInfo(item, currentKm, todayAtStartOfDay(), ::daysBetween)
+                due = createMaintenanceDueInfo(item, currentKm, today, ::daysBetween)
             )
         }.sortedWith(compareBy<MaintenanceItemUiModel> { maintenanceUrgencySortValue(it.due).first }
             .thenBy { maintenanceUrgencySortValue(it.due).second }
@@ -138,6 +144,18 @@ class MaintenanceViewModel(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MaintenanceUiState())
 
+    val homeInsight: StateFlow<MaintenanceHomeInsight> = state
+        .map { currentState ->
+            selectMaintenanceHomeInsight(
+                currentState.items.map { MaintenanceHomeInsightItem(it.name, it.due) }
+            )
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            MaintenanceHomeInsight(com.bgr3108.kilonom.domain.MaintenanceHomeInsightType.NO_ITEMS)
+        )
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val detailRecords: StateFlow<List<MaintenanceRecordEntity>> = selectedItemId
         .flatMapLatest { itemId -> itemId?.let(maintenanceRepository::observeRecordsForActiveItem) ?: flowOf(emptyList()) }
@@ -145,6 +163,11 @@ class MaintenanceViewModel(
 
     fun selectDetailItem(itemId: Long?) {
         selectedItemId.value = itemId
+    }
+
+    /** Refreshes date-based reminders when a maintenance surface becomes visible again. */
+    fun refreshForCurrentDay() {
+        currentDay.value = todayAtStartOfDay()
     }
 
     fun createItem(
