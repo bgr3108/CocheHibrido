@@ -261,7 +261,8 @@ class VehicleRepository(
             "El kilometraje inicial no puede superar el primer kilometraje registrado"
         }
         val hasRecordedActivity = fuelEntryDao.countEntries(vehicleId) > 0 ||
-            maintenanceDao.countRecordsForVehicle(vehicleId) > 0
+            maintenanceDao.countRecordsForVehicle(vehicleId) > 0 ||
+            maintenanceDao.countItemsForVehicle(vehicleId) > 0
         val entity = if (hasRecordedActivity) {
             require(updatedVehicle.type == current.type) {
                 "No se puede cambiar la propulsión de un vehículo con datos registrados"

@@ -41,5 +41,12 @@ object AppViewModelProvider {
             )
         }
 
+        initializer {
+            MaintenanceViewModel(
+                hybridCarApplication().container.maintenanceRepository,
+                hybridCarApplication().container.vehicleRepository
+            )
+        }
+
     }
 }

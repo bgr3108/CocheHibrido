@@ -36,6 +36,8 @@ fun HomeInfoCard(
     value: String? = null,
     secondaryValue: String? = null,
     minHeight: Dp = 180.dp,
+    headerToContentSpacing: Dp = 18.dp,
+    contentTopSpacing: Dp = 10.dp,
     colors: CardColors = CardDefaults.cardColors(
         containerColor =
             if (isSystemInDarkTheme())
@@ -87,7 +89,7 @@ fun HomeInfoCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(headerToContentSpacing))
 
             if (value != null) {
 
@@ -100,7 +102,7 @@ fun HomeInfoCard(
 
             if (secondaryValue != null) {
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(contentTopSpacing))
 
                 Text(
                     text = secondaryValue,
@@ -111,7 +113,7 @@ fun HomeInfoCard(
 
             content?.let {
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(contentTopSpacing))
 
                 it()
             }

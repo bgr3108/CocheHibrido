@@ -44,7 +44,10 @@ class MaintenanceRepository(
     ): Long = database.withTransaction {
         val vehicle = requireActiveVehicle()
         val normalizedItem = normalizeAndValidateItem(item.copy(vehicleId = vehicle.id, id = 0), vehicle)
-        record?.let { validateRecord(it.copy(id = 0), vehicle.initialKm) }
+        record?.let {
+            validateRecord(it.copy(id = 0), vehicle.initialKm)
+            validateDueKilometersAfterRecord(normalizedItem, it)
+        }
         maintenanceDao.insertItemWithRecord(normalizedItem, record?.copy(id = 0, itemId = 0))
     }
 
@@ -57,10 +60,16 @@ class MaintenanceRepository(
         val existing = maintenanceDao.getItemForVehicle(item.id, vehicle.id)
             ?: error("El mantenimiento no pertenece al vehículo activo")
         val normalizedItem = normalizeAndValidateItem(
-            item.copy(vehicleId = vehicle.id, id = existing.id, createdAt = existing.createdAt),
+            item.copy(
+                vehicleId = vehicle.id,
+                id = existing.id,
+                createdAt = existing.createdAt,
+                trackingKey = ""
+            ),
             vehicle
         )
         validateRecord(record.copy(id = 0, itemId = existing.id), vehicle.initialKm)
+        validateDueKilometersAfterRecord(normalizedItem, record)
         maintenanceDao.updateItemWithNewRecord(normalizedItem, record.copy(id = 0, itemId = existing.id))
     }
 
@@ -68,8 +77,16 @@ class MaintenanceRepository(
         val vehicle = requireActiveVehicle()
         val existing = maintenanceDao.getItemForVehicle(item.id, vehicle.id)
             ?: error("El mantenimiento no pertenece al vehículo activo")
+        require(item.type == existing.type && item.tyrePosition == existing.tyrePosition) {
+            "No se puede cambiar el tipo ni la posición del seguimiento"
+        }
         val normalizedItem = normalizeAndValidateItem(
-            item.copy(vehicleId = vehicle.id, id = existing.id, createdAt = existing.createdAt),
+            item.copy(
+                vehicleId = vehicle.id,
+                id = existing.id,
+                createdAt = existing.createdAt,
+                trackingKey = ""
+            ),
             vehicle
         )
         maintenanceDao.updateItem(normalizedItem)
@@ -155,6 +172,17 @@ class MaintenanceRepository(
         }
         require(record.cost == null || (record.cost.isFinite() && record.cost >= 0.0)) {
             "El coste no es válido"
+        }
+    }
+
+    private fun validateDueKilometersAfterRecord(
+        item: MaintenanceItemEntity,
+        record: MaintenanceRecordEntity
+    ) {
+        require(
+            item.nextDueKm == null || record.odometerKm == null || item.nextDueKm >= record.odometerKm
+        ) {
+            "El próximo kilometraje no puede ser anterior al mantenimiento realizado"
         }
     }
 }

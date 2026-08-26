@@ -145,6 +145,9 @@ internal class InMemoryMaintenanceDao(
     override suspend fun countRecordsForVehicle(vehicleId: Long): Int =
         records.count { rowFor(it, vehicleId) != null }
 
+    override suspend fun countItemsForVehicle(vehicleId: Long): Int =
+        items.count { it.vehicleId == vehicleId }
+
     override fun observeRecordCountForVehicle(vehicleId: Long): Flow<Int> =
         recordsFlow.map { values -> values.count { rowFor(it, vehicleId) != null } }
 

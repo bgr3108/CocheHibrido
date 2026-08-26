@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.LocalGasStation
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -45,7 +46,8 @@ fun HomeScreen(
     innerPadding: PaddingValues,
     viewModel: HomeViewModel,
     onOpenMyVehicles: () -> Unit,
-    onOpenTrends: () -> Unit
+    onOpenTrends: () -> Unit,
+    onOpenMaintenance: () -> Unit
 ) {
 
     val precioGasolina by viewModel.precioGasolina.collectAsStateWithLifecycle()
@@ -274,6 +276,24 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        HomeInfoCard(
+            modifier = Modifier.fillMaxWidth(),
+            title = "Mantenimiento",
+            icon = Icons.Default.Build,
+            minHeight = 0.dp,
+            headerToContentSpacing = 4.dp,
+            contentTopSpacing = 0.dp,
+            onClick = onOpenMaintenance
+        ) {
+            Text(
+                "Consulta próximos avisos e historial.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f)
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))

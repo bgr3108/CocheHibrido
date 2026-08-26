@@ -35,6 +35,11 @@ import com.bgr3108.kilonom.viewmodel.FuelEntryViewModel
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 import com.bgr3108.kilonom.viewmodel.PeriodSummaryViewModel
 import com.bgr3108.kilonom.viewmodel.MyVehiclesViewModel
+import com.bgr3108.kilonom.viewmodel.MaintenanceViewModel
+import com.bgr3108.kilonom.ui.screens.MaintenanceScreen
+import com.bgr3108.kilonom.ui.screens.MaintenanceDetailScreen
+import com.bgr3108.kilonom.ui.screens.MaintenanceFormScreen
+import com.bgr3108.kilonom.ui.screens.MaintenanceFormMode
 
 @Composable
 fun HybridCarNavHost(
@@ -43,7 +48,8 @@ fun HybridCarNavHost(
     fuelViewModel: FuelEntryViewModel,
     homeViewModel: HomeViewModel,
     periodSummaryViewModel: PeriodSummaryViewModel,
-    myVehiclesViewModel: MyVehiclesViewModel
+    myVehiclesViewModel: MyVehiclesViewModel,
+    maintenanceViewModel: MaintenanceViewModel
 ){
 
     NavHost(
@@ -60,7 +66,72 @@ fun HybridCarNavHost(
                 },
                 onOpenTrends = {
                     navController.navigate("stats/trends")
+                },
+                onOpenMaintenance = {
+                    navController.navigate("maintenance") {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
+            )
+        }
+
+        composable("maintenance") {
+            MaintenanceScreen(
+                innerPadding = innerPadding,
+                viewModel = maintenanceViewModel,
+                onAdd = { navController.navigate("maintenance/add") },
+                onOpenItem = { itemId -> navController.navigate("maintenance/item/$itemId") }
+            )
+        }
+        composable("maintenance/add") {
+            MaintenanceFormScreen(
+                innerPadding = innerPadding,
+                mode = MaintenanceFormMode.CREATE_ITEM,
+                viewModel = maintenanceViewModel,
+                onClose = { navController.popBackStack() }
+            )
+        }
+        composable("maintenance/item/{itemId}") { entry ->
+            val itemId = entry.arguments?.getString("itemId")?.toLongOrNull()
+            MaintenanceDetailScreen(
+                innerPadding = innerPadding,
+                itemId = itemId,
+                viewModel = maintenanceViewModel,
+                onBack = { navController.popBackStack() },
+                onRegister = { id -> navController.navigate("maintenance/item/$id/register") },
+                onEditItem = { id -> navController.navigate("maintenance/item/$id/edit") },
+                onEditRecord = { id -> navController.navigate("maintenance/record/$id/edit") }
+            )
+        }
+        composable("maintenance/item/{itemId}/register") { entry ->
+            MaintenanceFormScreen(
+                innerPadding = innerPadding,
+                mode = MaintenanceFormMode.REGISTER_RECORD,
+                itemId = entry.arguments?.getString("itemId")?.toLongOrNull(),
+                viewModel = maintenanceViewModel,
+                onClose = { navController.popBackStack() }
+            )
+        }
+        composable("maintenance/item/{itemId}/edit") { entry ->
+            MaintenanceFormScreen(
+                innerPadding = innerPadding,
+                mode = MaintenanceFormMode.EDIT_ITEM,
+                itemId = entry.arguments?.getString("itemId")?.toLongOrNull(),
+                viewModel = maintenanceViewModel,
+                onClose = { navController.popBackStack() }
+            )
+        }
+        composable("maintenance/record/{recordId}/edit") { entry ->
+            MaintenanceFormScreen(
+                innerPadding = innerPadding,
+                mode = MaintenanceFormMode.EDIT_RECORD,
+                recordId = entry.arguments?.getString("recordId")?.toLongOrNull(),
+                viewModel = maintenanceViewModel,
+                onClose = { navController.popBackStack() }
             )
         }
 

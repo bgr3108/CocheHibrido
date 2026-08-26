@@ -107,6 +107,9 @@ interface MaintenanceDao {
     )
     suspend fun countRecordsForVehicle(vehicleId: Long): Int
 
+    @Query("SELECT COUNT(*) FROM maintenance_items WHERE vehicleId = :vehicleId")
+    suspend fun countItemsForVehicle(vehicleId: Long): Int
+
     @Query(
         """
         SELECT COUNT(*) FROM maintenance_records AS records

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.AlertDialog
@@ -46,6 +47,7 @@ import com.bgr3108.kilonom.viewmodel.FuelEntryViewModel
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 import com.bgr3108.kilonom.viewmodel.PeriodSummaryViewModel
 import com.bgr3108.kilonom.viewmodel.MyVehiclesViewModel
+import com.bgr3108.kilonom.viewmodel.MaintenanceViewModel
 import com.bgr3108.kilonom.viewmodel.ResetState
 
 class MainActivity : ComponentActivity() {
@@ -66,6 +68,10 @@ class MainActivity : ComponentActivity() {
         AppViewModelProvider.Factory
     }
 
+    private val maintenanceViewModel: MaintenanceViewModel by viewModels {
+        AppViewModelProvider.Factory
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -79,7 +85,8 @@ class MainActivity : ComponentActivity() {
                         fuelViewModel = fuelViewModel,
                         homeViewModel = homeViewModel,
                         periodSummaryViewModel = periodSummaryViewModel,
-                        myVehiclesViewModel = myVehiclesViewModel
+                        myVehiclesViewModel = myVehiclesViewModel,
+                        maintenanceViewModel = maintenanceViewModel
                     )
                 }
             }
@@ -92,7 +99,8 @@ fun AppContent(
     fuelViewModel: FuelEntryViewModel,
     homeViewModel: HomeViewModel,
     periodSummaryViewModel: PeriodSummaryViewModel,
-    myVehiclesViewModel: MyVehiclesViewModel
+    myVehiclesViewModel: MyVehiclesViewModel,
+    maintenanceViewModel: MaintenanceViewModel
 ) {
     val navController = rememberNavController()
     val isVehicleLoading by homeViewModel
@@ -125,7 +133,8 @@ fun AppContent(
             "home",
             "consumption",
             "stats",
-            "stats/trends"
+            "stats/trends",
+            "maintenance"
         )
         val navigateToTopLevel: (String) -> Unit = { route ->
             navController.navigate(route) {
@@ -187,6 +196,19 @@ fun AppContent(
                             icon = { Icon(Icons.Default.BarChart, contentDescription = null) },
                             label = { Text("Estadísticas") }
                         )
+                        NavigationBarItem(
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                            ),
+                            selected = currentRoute == "maintenance",
+                            onClick = { navigateToTopLevel("maintenance") },
+                            icon = { Icon(Icons.Default.Build, contentDescription = null) },
+                            label = { Text("Mantenimiento") }
+                        )
                     }
                 }
             }
@@ -198,7 +220,8 @@ fun AppContent(
                 fuelViewModel = fuelViewModel,
                 homeViewModel = homeViewModel,
                 periodSummaryViewModel = periodSummaryViewModel,
-                myVehiclesViewModel = myVehiclesViewModel
+                myVehiclesViewModel = myVehiclesViewModel,
+                maintenanceViewModel = maintenanceViewModel
             )
         }
 

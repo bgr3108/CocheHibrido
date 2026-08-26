@@ -23,4 +23,13 @@ class AppContainer(context: Context) {
         database.maintenanceDao()
     )
 
+    /** Shared vehicle-scoped maintenance boundary, consumed by the Phase 2 UI. */
+    val maintenanceRepository: MaintenanceRepository by lazy {
+        MaintenanceRepository(
+            database = database,
+            maintenanceDao = database.maintenanceDao(),
+            vehicleRepository = vehicleRepository
+        )
+    }
+
 }
