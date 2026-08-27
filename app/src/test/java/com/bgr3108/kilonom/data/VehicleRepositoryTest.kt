@@ -347,8 +347,8 @@ class VehicleRepositoryTest {
     }
 
     @Test
-    fun releaseNotesForOnePointOne_areShownAfterOnePointZeroThreeWasSeen() = runBlocking {
-        val repository = repository(FakeVehiclePreferences(releaseNotesVersion = "1.0.3"))
+    fun releaseNotesForCurrentVersion_areShownAfterOnePointOneWasSeen() = runBlocking {
+        val repository = repository(FakeVehiclePreferences(releaseNotesVersion = "1.1.0"))
 
         repository.isLoading.first { !it }
 

@@ -12,12 +12,4 @@ class ExternalLinksTest {
             ExternalLinks.INSTAGRAM_PROFILE_URL
         )
     }
-
-    @Test
-    fun instagramReelUrl_isTheKilonomOnePointOneReel() {
-        assertEquals(
-            "https://www.instagram.com/p/DcdvMd4qsnt/",
-            ExternalLinks.INSTAGRAM_REEL_1_1_URL
-        )
-    }
 }

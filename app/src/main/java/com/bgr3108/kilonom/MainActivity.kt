@@ -238,7 +238,7 @@ internal fun shouldShowSetup(vehicle: Vehicle, resetState: ResetState): Boolean 
 @Composable
 private fun ReleaseNotesDialog(onDismiss: () -> Unit) {
     val context = LocalContext.current
-    val videoOpenError = remember { mutableStateOf(false) }
+    val instagramOpenError = remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = {},
@@ -248,9 +248,9 @@ private fun ReleaseNotesDialog(onDismiss: () -> Unit) {
         text = {
             Column {
                 Text(stringResource(R.string.whats_new_message))
-                if (videoOpenError.value) {
+                if (instagramOpenError.value) {
                     Text(
-                        text = "No se pudo abrir el vídeo. Inténtalo de nuevo cuando tengas un navegador disponible.",
+                        text = "No se pudo abrir Instagram. Inténtalo de nuevo cuando tengas un navegador disponible.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -265,12 +265,12 @@ private fun ReleaseNotesDialog(onDismiss: () -> Unit) {
         dismissButton = {
             TextButton(
                 onClick = {
-                    videoOpenError.value = !context.openExternalUrl(
-                        ExternalLinks.INSTAGRAM_REEL_1_1_URL
+                    instagramOpenError.value = !context.openExternalUrl(
+                        ExternalLinks.INSTAGRAM_PROFILE_URL
                     )
                 }
             ) {
-                Text(stringResource(R.string.whats_new_video))
+                Text(stringResource(R.string.whats_new_instagram))
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,

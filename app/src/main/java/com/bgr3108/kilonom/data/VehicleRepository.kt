@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-internal const val RELEASE_NOTES_VERSION = "1.1.0"
+internal const val RELEASE_NOTES_VERSION = "1.2.0"
 
 /**
  * Resolves a single Room-backed active vehicle. Consumers must derive all vehicle-scoped data
