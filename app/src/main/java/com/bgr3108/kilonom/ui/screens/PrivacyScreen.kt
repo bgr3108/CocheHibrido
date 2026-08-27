@@ -69,7 +69,7 @@ fun PrivacyScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Kilonom almacena los datos de tus vehículos y consumos localmente en tu dispositivo.",
+                text = "Kilonom almacena localmente en tu dispositivo información de tus vehículos, consumos y mantenimiento, como fechas, kilometraje, costes, notas y próximos avisos.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onBackground
             )

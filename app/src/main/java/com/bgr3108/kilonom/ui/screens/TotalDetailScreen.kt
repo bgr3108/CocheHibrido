@@ -74,8 +74,8 @@ fun TotalDetailScreen(
         .gastoTotalVehiculo
         .collectAsStateWithLifecycle()
 
-    val costPerKm by viewModel
-        .costPerKm
+    val costPerHundredKm by viewModel
+        .costPerHundredKm
         .collectAsStateWithLifecycle()
 
     val vehicle by viewModel
@@ -144,7 +144,7 @@ fun TotalDetailScreen(
 
             gastoTotalVehiculo = gastoTotalVehiculo,
 
-            costPerKm = costPerKm,
+            costPerHundredKm = costPerHundredKm,
 
             showFuel = showFuel,
 
@@ -172,7 +172,7 @@ private fun TotalContent(
 
     gastoTotalVehiculo: Double,
 
-    costPerKm: Double,
+    costPerHundredKm: Double?,
 
     showFuel: Boolean,
 
@@ -314,8 +314,8 @@ private fun TotalContent(
                 )
 
                 StatisticRow(
-                    "Coste por km",
-                    "${costPerKm.toSpanishDecimal()} €/km"
+                    "Coste por 100 km",
+                    costPerHundredKm?.let { "${it.toSpanishDecimal()} €/100 km" } ?: "—"
                 )
             }
         }
