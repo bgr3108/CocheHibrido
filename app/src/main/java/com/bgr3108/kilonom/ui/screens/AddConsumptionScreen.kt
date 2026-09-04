@@ -1,9 +1,10 @@
 package com.bgr3108.kilonom.ui.screens
 
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -12,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 
 import com.bgr3108.kilonom.data.FuelEntry
 import com.bgr3108.kilonom.data.FuelType
@@ -42,8 +44,10 @@ import com.bgr3108.kilonom.data.initialFuelLevelAfter
 import com.bgr3108.kilonom.data.isFullTankLevel
 import com.bgr3108.kilonom.data.isSupportedFuelLevelAfter
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun AddConsumptionScreen(
@@ -375,6 +379,9 @@ fun AddConsumptionScreen(
 
         if (showFuelOption && showElectricOption) {
             Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
 
@@ -395,7 +402,7 @@ fun AddConsumptionScreen(
                             else
                                 MaterialTheme.colorScheme.onSurface
                     ),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.widthIn(min = 132.dp)
                 ) {
                     Text("Combustible")
                 }
@@ -417,7 +424,7 @@ fun AddConsumptionScreen(
                             else
                                 MaterialTheme.colorScheme.onSurface
                     ),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.widthIn(min = 132.dp)
                 ) {
                     Text("Eléctrico")
                 }
@@ -668,47 +675,45 @@ private fun FuelLevelAfterSelector(
         style = MaterialTheme.typography.bodyLarge
     )
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        fuelLevelAfterSteps.forEachIndexed { index, level ->
-            val selected = selectedLevel == level
-            val label = when (index) {
-                0 -> "Vacío"
-                2 -> "¼"
-                4 -> "½"
-                6 -> "¾"
-                8 -> "Lleno"
-                else -> null
-            }
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.weight(1f)
+    val fontScale = LocalDensity.current.fontScale
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        if (shouldUseScrollableFuelLevelSelector(maxWidth, fontScale)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(if (label == null) 20.dp else 28.dp)
-                        .background(
-                            color = if (selected) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.outline
-                            },
-                            shape = CircleShape
-                        )
-                        .clickable { onLevelSelected(level) }
-                        .semantics {
-                            contentDescription = "Nivel del depósito ${fuelLevelAfterPercentageText(level)}"
-                        }
-                )
-                if (label != null) {
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.labelSmall,
-                        maxLines = 1
+                fuelLevelAfterSteps.forEachIndexed { index, level ->
+                    FuelLevelAfterOption(
+                        level = level,
+                        label = fuelLevelAfterLabel(index),
+                        selected = selectedLevel == level,
+                        modifier = Modifier
+                            .widthIn(min = 48.dp)
+                            .heightIn(min = 64.dp),
+                        onLevelSelected = onLevelSelected
+                    )
+                }
+            }
+        } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp),
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                fuelLevelAfterSteps.forEachIndexed { index, level ->
+                    FuelLevelAfterOption(
+                        level = level,
+                        label = fuelLevelAfterLabel(index),
+                        selected = selectedLevel == level,
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = 48.dp),
+                        onLevelSelected = onLevelSelected
                     )
                 }
             }
@@ -722,6 +727,65 @@ private fun FuelLevelAfterSelector(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
+}
+
+@Composable
+private fun FuelLevelAfterOption(
+    level: Double,
+    label: String,
+    selected: Boolean,
+    modifier: Modifier,
+    onLevelSelected: (Double) -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier
+            .selectable(
+                selected = selected,
+                role = Role.RadioButton,
+                onClick = { onLevelSelected(level) }
+            )
+            .semantics {
+                contentDescription = "Nivel del depósito ${fuelLevelAfterPercentageText(level)}"
+            }
+    ) {
+        Box(
+            modifier = Modifier
+                .size(20.dp)
+                .background(
+                    color = if (selected) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.outline
+                    },
+                    shape = CircleShape
+                )
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+/** Keeps the compact nine-position selector fixed whenever its labels fit side by side. */
+internal fun shouldUseScrollableFuelLevelSelector(availableWidth: androidx.compose.ui.unit.Dp, fontScale: Float): Boolean =
+    availableWidth < 300.dp || fontScale > 1.1f
+
+internal fun fuelLevelAfterLabel(index: Int): String = when (index) {
+    0 -> "Vacío"
+    1 -> "1/8"
+    2 -> "1/4"
+    3 -> "3/8"
+    4 -> "1/2"
+    5 -> "5/8"
+    6 -> "3/4"
+    7 -> "7/8"
+    8 -> "Lleno"
+    else -> error("Unsupported fuel level index: $index")
 }
 
 private fun defaultFuelTypeFor(vehicleType: VehicleType?): FuelType =

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -175,7 +176,12 @@ fun MaintenanceFormScreen(
         }
         if (maintenanceType == MaintenanceType.TYRES) {
             Text("Posición", style = MaterialTheme.typography.titleMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 TyrePosition.entries.forEach { position ->
                     FilterChip(
                         selected = tyrePosition == position.name,
@@ -225,7 +231,7 @@ fun MaintenanceFormScreen(
                     OutlinedTextField(
                         value = recordKm,
                         onValueChange = { if (it.all(Char::isDigit)) recordKm = it },
-                        label = { Text("Kilometraje") },
+                        label = { Text("Kilometraje (opcional)") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                         enabled = !state.isWorking,
@@ -319,7 +325,7 @@ fun MaintenanceFormScreen(
                 )
                 val recordDraft = if (includeRecord) MaintenanceRecordDraft(
                     performedDate = recordDate,
-                    odometerKm = if (documentType) null else recordKm.toLongOrNull(),
+                    odometerKm = if (documentType) null else optionalOdometerKm(recordKm),
                     cost = cost.toLocalizedDoubleOrNull(),
                     notes = notes
                 ) else null
@@ -370,8 +376,8 @@ internal fun validateMaintenanceForm(
     if (hasDueDate && dueDate == null) return "Introduce la próxima fecha"
     if (includeRecord) {
         if (recordDate == null) return "Introduce la fecha del mantenimiento"
-        val km = recordKm.toLongOrNull()
-        if (!documentType && km == null) return "Introduce el kilometraje del mantenimiento"
+        val km = optionalOdometerKm(recordKm)
+        if (!documentType && recordKm.isNotBlank() && km == null) return "El kilometraje no es válido"
         val due = dueKm.toLongOrNull()
         if (!documentType && hasDueKm && km != null && due != null && due < km) {
             return "El próximo kilometraje no puede ser anterior al mantenimiento realizado"
@@ -379,6 +385,11 @@ internal fun validateMaintenanceForm(
     }
     return null
 }
+
+internal fun optionalOdometerKm(value: String): Long? = value.trim()
+    .takeIf { it.isNotEmpty() }
+    ?.toLongOrNull()
+    ?.takeIf { it >= 0L }
 
 internal fun validateSelectedMaintenanceType(type: MaintenanceType?): String? =
     if (type == null) "Selecciona un tipo de mantenimiento" else null

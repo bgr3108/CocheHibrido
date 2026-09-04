@@ -1,8 +1,10 @@
 package com.bgr3108.kilonom.ui.screens
 
 import com.bgr3108.kilonom.data.MaintenanceType
+import com.bgr3108.kilonom.data.MaintenanceRecordEntity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Test
 
@@ -32,10 +34,20 @@ class MaintenanceFormValidationTest {
     }
 
     @Test
-    fun physicalRecordRequiresDateAndKilometres_butDocumentsDoNotRequireKilometres() {
+    fun physicalRecordRequiresDate_butKilometresAreOptional() {
         assertEquals("Introduce la fecha del mantenimiento", validate(includeRecord = true))
-        assertEquals("Introduce el kilometraje del mantenimiento", validate(includeRecord = true, recordDate = 1L))
+        assertNull(validate(includeRecord = true, recordDate = 1L))
+        assertNull(validate(includeRecord = true, recordDate = 1L, recordKm = "42000"))
         assertNull(validate(type = MaintenanceType.ITV, document = true, includeRecord = true, recordDate = 1L))
+    }
+
+    @Test
+    fun optionalKilometres_keepEmptyValuesNull_andRejectInvalidValues() {
+        assertNull(optionalOdometerKm(""))
+        assertNull(optionalOdometerKm("  "))
+        assertEquals(42_000L, optionalOdometerKm("42000"))
+        assertEquals("El kilometraje no es válido", validate(includeRecord = true, recordDate = 1L, recordKm = "-1"))
+        assertEquals("El kilometraje no es válido", validate(includeRecord = true, recordDate = 1L, recordKm = "999999999999999999999999"))
     }
 
     @Test
@@ -45,6 +57,26 @@ class MaintenanceFormValidationTest {
             "El próximo kilometraje no puede ser anterior al mantenimiento realizado",
             validate(includeRecord = true, recordDate = 1L, recordKm = "42000", hasDueKm = true, dueKm = "41000")
         )
+    }
+
+    @Test
+    fun nextDueKilometresAreValidWhenThePerformedOdometerIsMissing() {
+        assertNull(validate(includeRecord = true, recordDate = 1L, hasDueKm = true, dueKm = "50000"))
+    }
+
+    @Test
+    fun historyDetailsOmitKilometresWhenTheRecordHasNoOdometer() {
+        val details = MaintenanceRecordEntity(
+            itemId = 1,
+            performedDate = 1L,
+            odometerKm = null,
+            cost = 95.0,
+            createdAt = 1L,
+            updatedAt = 1L
+        ).detailsText().orEmpty()
+
+        assertFalse(details.contains("km"))
+        assertFalse(details.contains("null"))
     }
 
     @Test

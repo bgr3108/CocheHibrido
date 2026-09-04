@@ -216,6 +216,25 @@ class VehicleRepositoryTest {
     }
 
     @Test
+    fun currentKm_ignoresMaintenanceRecordsWithoutAnOdometer() = runBlocking {
+        val vehicle = entity(id = 1, initialKm = 20_000.0)
+        val maintenanceDao = InMemoryMaintenanceDao(
+            items = mutableListOf(maintenanceItem().copy(nextDueKm = 50_000)),
+            records = mutableListOf(maintenanceRecord(odometerKm = null))
+        )
+        val repository = repository(
+            preferences = FakeVehiclePreferences(activeVehicleId = 1),
+            vehicleDao = InMemoryVehicleDao(listOf(vehicle)),
+            fuelEntryDao = InMemoryFuelEntryDao(mutableListOf(entry(km = 25_000.0))),
+            maintenanceDao = maintenanceDao
+        )
+
+        repository.isLoading.first { !it }
+
+        assertEquals(25_000.0, repository.currentKm(1), 0.0)
+    }
+
+    @Test
     fun currentKm_returnsToNextRealReadingWhenMaximumMaintenanceRecordIsDeleted() = runBlocking {
         val vehicle = entity(id = 1, initialKm = 20_000.0)
         val maintenanceDao = InMemoryMaintenanceDao(
@@ -231,6 +250,26 @@ class VehicleRepositoryTest {
         repository.isLoading.first { !it }
 
         maintenanceDao.deleteRecordForVehicle(1, 1)
+
+        assertEquals(25_000.0, repository.currentKm(1), 0.0)
+    }
+
+    @Test
+    fun currentKm_recalculatesWhenEditingRemovesTheMaximumMaintenanceOdometer() = runBlocking {
+        val vehicle = entity(id = 1, initialKm = 20_000.0)
+        val maintenanceDao = InMemoryMaintenanceDao(
+            items = mutableListOf(maintenanceItem()),
+            records = mutableListOf(maintenanceRecord(odometerKm = 27_000))
+        )
+        val repository = repository(
+            preferences = FakeVehiclePreferences(activeVehicleId = 1),
+            vehicleDao = InMemoryVehicleDao(listOf(vehicle)),
+            fuelEntryDao = InMemoryFuelEntryDao(mutableListOf(entry(km = 25_000.0))),
+            maintenanceDao = maintenanceDao
+        )
+        repository.isLoading.first { !it }
+
+        maintenanceDao.updateRecord(maintenanceRecord(odometerKm = null))
 
         assertEquals(25_000.0, repository.currentKm(1), 0.0)
     }
@@ -579,7 +618,7 @@ class VehicleRepositoryTest {
         updatedAt = 0
     )
 
-    private fun maintenanceRecord(odometerKm: Long) = MaintenanceRecordEntity(
+    private fun maintenanceRecord(odometerKm: Long?) = MaintenanceRecordEntity(
         id = 1,
         itemId = 1,
         odometerKm = odometerKm,
