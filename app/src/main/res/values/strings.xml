@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Kilonom</string>
     <string name="current_estimated_consumption_note">Estimación basada en el nivel indicado del depósito. El consumo real se calculará al completar un nuevo llenado.</string>
-    <string name="whats_new_title">Novedades en Kilonom 1.2</string>
-    <string name="whats_new_message">Kilonom 1.2 incorpora nuevas herramientas para ayudarte a entender y gestionar mejor tus vehículos.\n\n• Nueva sección de Mantenimiento para registrar revisiones, frenos, neumáticos, batería, ITV, seguro y otros trabajos.\n\n• Configura próximos avisos por fecha o kilometraje y consulta rápidamente qué tienes pendiente.\n\n• Nuevas Tendencias para detectar cambios en consumo, coste por 100 km y precio de la energía.\n\n• El kilometraje actual también puede actualizarse a partir de los registros de mantenimiento.\n\n• Mejoras visuales, de estabilidad y de navegación.</string>
+    <string name="whats_new_title">Novedades en Kilonom 1.2.1</string>
+    <string name="whats_new_message">Kilonom 1.2.1 mejora la accesibilidad y corrige varios detalles detectados durante las pruebas.\n\n• Mejor adaptación de textos y controles con tamaño de fuente o zoom de pantalla elevados.\n\n• El selector de nivel del depósito ahora mantiene visibles todas sus opciones en condiciones normales y se adapta mejor en pantallas estrechas.\n\n• El popup de novedades ahora permite desplazarse correctamente cuando el contenido no cabe en pantalla.\n\n• El kilometraje pasa a ser opcional al registrar mantenimientos.\n\n• Correcciones menores de interfaz y estabilidad.</string>
     <string name="whats_new_confirm">Entendido</string>
     <string name="whats_new_instagram">Instagram de Kilonom</string>
 </resources>

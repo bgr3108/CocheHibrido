@@ -43,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -148,6 +149,9 @@ fun AppContent(
             "stats/trends",
             "maintenance"
         )
+        val showAllBottomNavigationLabels = shouldShowAllBottomNavigationLabels(
+            LocalDensity.current.fontScale
+        )
         val navigateToTopLevel: (String) -> Unit = { route ->
             navController.navigate(route) {
                 popUpTo(navController.graph.findStartDestination().id) {
@@ -174,7 +178,15 @@ fun AppContent(
                             selected = currentRoute == "home",
                             onClick = { navigateToTopLevel("home") },
                             icon = { Icon(Icons.Default.Home, contentDescription = null) },
-                            label = { Text("Inicio") }
+                            alwaysShowLabel = showAllBottomNavigationLabels,
+                            label = {
+                                Text(
+                                    text = "Inicio",
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         )
 
                         NavigationBarItem(
@@ -193,7 +205,15 @@ fun AppContent(
                                     contentDescription = null
                                 )
                             },
-                            label = { Text("Consumos") }
+                            alwaysShowLabel = showAllBottomNavigationLabels,
+                            label = {
+                                Text(
+                                    text = "Consumos",
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         )
                         NavigationBarItem(
                             colors = NavigationBarItemDefaults.colors(
@@ -206,7 +226,15 @@ fun AppContent(
                             selected = currentRoute == "stats" || currentRoute == "stats/trends",
                             onClick = { navigateToTopLevel("stats") },
                             icon = { Icon(Icons.Default.BarChart, contentDescription = null) },
-                            label = { Text("Estadísticas") }
+                            alwaysShowLabel = showAllBottomNavigationLabels,
+                            label = {
+                                Text(
+                                    text = "Estadísticas",
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         )
                         NavigationBarItem(
                             colors = NavigationBarItemDefaults.colors(
@@ -219,7 +247,15 @@ fun AppContent(
                             selected = currentRoute == "maintenance",
                             onClick = { navigateToTopLevel("maintenance") },
                             icon = { Icon(Icons.Default.Build, contentDescription = null) },
-                            label = { Text("Mantenimiento") }
+                            alwaysShowLabel = showAllBottomNavigationLabels,
+                            label = {
+                                Text(
+                                    text = "Mantenimiento",
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         )
                     }
                 }
@@ -246,6 +282,9 @@ fun AppContent(
 /** Keeps the current shell visible until a reset has completed successfully. */
 internal fun shouldShowSetup(vehicle: Vehicle, resetState: ResetState): Boolean =
     vehicle.type == null && resetState == ResetState.IDLE
+
+/** Keeps every tab label visible at normal scale and lets Material show only the selected one above it. */
+internal fun shouldShowAllBottomNavigationLabels(fontScale: Float): Boolean = fontScale <= 1.15f
 
 @Composable
 private fun ReleaseNotesDialog(onDismiss: () -> Unit) {
