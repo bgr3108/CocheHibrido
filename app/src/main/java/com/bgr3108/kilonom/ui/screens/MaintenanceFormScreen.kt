@@ -316,12 +316,18 @@ fun MaintenanceFormScreen(
                     dueDate = dueDate
                 )
                 if (formError.value != null) return@Button
+                val reminderDueValues = selectedReminderDueValues(
+                    hasDueKm = hasDueKm,
+                    dueKm = dueKm,
+                    hasDueDate = hasDueDate,
+                    dueDate = dueDate
+                )
                 val draft = MaintenanceItemDraft(
                     type = selectedMaintenanceType,
                     tyrePosition = tyrePosition?.let(TyrePosition::valueOf),
                     customName = customName.trim().takeIf { it.isNotEmpty() },
-                    nextDueKm = dueKm.toLongOrNull(),
-                    nextDueDate = dueDate
+                    nextDueKm = reminderDueValues.first,
+                    nextDueDate = reminderDueValues.second
                 )
                 val recordDraft = if (includeRecord) MaintenanceRecordDraft(
                     performedDate = recordDate,
@@ -349,6 +355,14 @@ private data class MaintenanceFormDefaults(
     val nextDueKm: String, val nextDueDate: Long?, val recordDate: Long?, val recordKm: String,
     val cost: String, val notes: String, val includeRecord: Boolean, val reminderMode: ReminderMode
 )
+
+internal fun selectedReminderDueValues(
+    hasDueKm: Boolean,
+    dueKm: String,
+    hasDueDate: Boolean,
+    dueDate: Long?
+): Pair<Long?, Long?> =
+    (if (hasDueKm) dueKm.toLongOrNull() else null) to (if (hasDueDate) dueDate else null)
 
 @Composable
 private fun DateField(label: String, value: Long?, enabled: Boolean, onClick: () -> Unit) {

@@ -84,6 +84,28 @@ class MaintenanceFormValidationTest {
         assertNull(validate(hasDueKm = true, dueKm = "50000"))
     }
 
+    @Test
+    fun changingReminderModeDoesNotPersistThePreviouslySelectedLimit() {
+        assertEquals(
+            50_000L to null,
+            selectedReminderDueValues(
+                hasDueKm = true,
+                dueKm = "50000",
+                hasDueDate = false,
+                dueDate = 1L
+            )
+        )
+        assertEquals(
+            null to 1L,
+            selectedReminderDueValues(
+                hasDueKm = false,
+                dueKm = "50000",
+                hasDueDate = true,
+                dueDate = 1L
+            )
+        )
+    }
+
     private fun validate(
         type: MaintenanceType = MaintenanceType.BRAKES,
         document: Boolean = false,
