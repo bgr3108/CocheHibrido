@@ -99,6 +99,13 @@ fun PrivacyScreen(
                     HorizontalDivider()
 
                     PrivacySection(
+                        title = "Aplicaciones externas",
+                        description = "Si eliges añadir un aviso de mantenimiento al calendario, Kilonom abre tu aplicación de calendario para que revises y guardes el evento. Kilonom no lee ni gestiona el contenido de tu calendario."
+                    )
+
+                    HorizontalDivider()
+
+                    PrivacySection(
                         title = "Copias de seguridad",
                         description = "Android puede incluir los datos de Kilonom en las copias de seguridad o transferencias entre dispositivos asociadas a tu cuenta de Google, dependiendo de la configuración de tu dispositivo."
                     )

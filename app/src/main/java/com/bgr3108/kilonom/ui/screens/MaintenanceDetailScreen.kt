@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -28,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -51,6 +53,8 @@ fun MaintenanceDetailScreen(
     val item = state.items.firstOrNull { it.item.id == itemId }
     val itemToDelete = remember { mutableStateOf<MaintenanceItemEntity?>(null) }
     val recordToDelete = remember { mutableStateOf<MaintenanceRecordEntity?>(null) }
+    val calendarOpenError = remember(itemId, item?.item?.nextDueDate) { mutableStateOf(false) }
+    val context = LocalContext.current
 
     LaunchedEffect(itemId) { viewModel.selectDetailItem(itemId) }
     if (item == null) {
@@ -76,6 +80,29 @@ fun MaintenanceDetailScreen(
                 Spacer(Modifier.height(6.dp))
                 item.item.nextDueKm?.let { Text("${it.formatKilometers()} km") }
                 item.item.nextDueDate?.let { Text(it.formatMaintenanceDate()) }
+            }
+        }
+        state.vehicle?.let { vehicle ->
+            item.item.toMaintenanceCalendarEvent(vehicle)?.let { calendarEvent ->
+                OutlinedButton(
+                    onClick = { calendarOpenError.value = !context.openMaintenanceCalendar(calendarEvent) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Event, contentDescription = null)
+                    Text("  Añadir al calendario")
+                }
+                Text(
+                    "Se abrirá tu aplicación de calendario para que puedas revisar y guardar el evento.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = maintenanceSecondaryColor()
+                )
+                if (calendarOpenError.value) {
+                    Text(
+                        "No se ha encontrado una aplicación de calendario compatible.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
         item.item.recurrenceSummary()?.let { summary ->
