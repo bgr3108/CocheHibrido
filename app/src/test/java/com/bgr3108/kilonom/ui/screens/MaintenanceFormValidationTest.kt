@@ -1,7 +1,9 @@
 package com.bgr3108.kilonom.ui.screens
 
 import com.bgr3108.kilonom.data.MaintenanceType
+import com.bgr3108.kilonom.data.MaintenanceTimeUnit
 import com.bgr3108.kilonom.data.MaintenanceRecordEntity
+import com.bgr3108.kilonom.domain.MaintenanceNextDueUpdate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertFalse
@@ -103,6 +105,50 @@ class MaintenanceFormValidationTest {
                 hasDueDate = true,
                 dueDate = 1L
             )
+        )
+    }
+
+    @Test
+    fun recurringIntervalsAcceptKilometresTimeOrBoth_andRejectZero() {
+        assertNull(validateIntervalConfiguration(MaintenanceIntervalMode.KM, "30000", "", null))
+        assertNull(validateIntervalConfiguration(MaintenanceIntervalMode.TIME, "", "2", MaintenanceTimeUnit.YEARS))
+        assertNull(validateIntervalConfiguration(MaintenanceIntervalMode.BOTH, "30000", "2", MaintenanceTimeUnit.YEARS))
+        assertEquals(
+            "Introduce un intervalo de kilometraje válido.",
+            validateIntervalConfiguration(MaintenanceIntervalMode.KM, "0", "", null)
+        )
+        assertEquals(
+            "Introduce un intervalo de tiempo válido.",
+            validateIntervalConfiguration(MaintenanceIntervalMode.TIME, "", "0", MaintenanceTimeUnit.MONTHS)
+        )
+    }
+
+    @Test
+    fun reminderLeadsAllowZero_andRejectInvalidValues() {
+        assertNull(validateReminderLeads("0", "0", validateKm = true, validateDays = true))
+        assertEquals(
+            "El aviso previo por kilometraje no puede ser negativo.",
+            validateReminderLeads("-1", "30", validateKm = true, validateDays = false)
+        )
+        assertEquals(
+            "El aviso previo por fecha no puede ser negativo.",
+            validateReminderLeads("1000", "-1", validateKm = false, validateDays = true)
+        )
+    }
+
+    @Test
+    fun nextDueChoiceMapsToAutomaticManualOrExplicitClear() {
+        assertEquals(
+            MaintenanceNextDueUpdate.AutomaticFromInterval,
+            MaintenanceNextDueMode.AUTOMATIC.toRepositoryUpdate(null to null)
+        )
+        assertEquals(
+            MaintenanceNextDueUpdate.Manual(50_000L, null),
+            MaintenanceNextDueMode.MANUAL.toRepositoryUpdate(50_000L to null)
+        )
+        assertEquals(
+            MaintenanceNextDueUpdate.Clear,
+            MaintenanceNextDueMode.NONE.toRepositoryUpdate(50_000L to 1L)
         )
     }
 

@@ -43,10 +43,33 @@ class MaintenanceRepository(
 
     suspend fun createItemForActiveVehicle(
         item: MaintenanceItemEntity,
-        record: MaintenanceRecordEntity? = null
+        record: MaintenanceRecordEntity? = null,
+        nextDueUpdate: MaintenanceNextDueUpdate = MaintenanceNextDueUpdate.Manual(
+            nextDueKm = item.nextDueKm,
+            nextDueDate = item.nextDueDate
+        )
     ): Long = database.withTransaction {
         val vehicle = requireActiveVehicle()
-        val normalizedItem = normalizeAndValidateItem(item.copy(vehicleId = vehicle.id, id = 0), vehicle)
+        val candidateItem = item.copy(
+            vehicleId = vehicle.id,
+            id = 0,
+            nextDueKm = null,
+            nextDueDate = null
+        )
+        val due = when {
+            record != null -> resolveNextDue(candidateItem, record, nextDueUpdate)
+            nextDueUpdate is MaintenanceNextDueUpdate.Manual -> MaintenanceNextDue(
+                nextDueUpdate.nextDueKm,
+                nextDueUpdate.nextDueDate
+            )
+
+            nextDueUpdate == MaintenanceNextDueUpdate.Clear -> MaintenanceNextDue(null, null)
+            else -> error("El cálculo automático requiere un mantenimiento realizado")
+        }
+        val normalizedItem = normalizeAndValidateItem(
+            candidateItem.copy(nextDueKm = due.nextDueKm, nextDueDate = due.nextDueDate),
+            vehicle
+        )
         record?.let {
             validateRecord(it.copy(id = 0), vehicle.initialKm)
             validateDueKilometersAfterRecord(normalizedItem, it)

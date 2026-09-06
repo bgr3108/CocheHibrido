@@ -17,6 +17,7 @@ import com.bgr3108.kilonom.data.DEFAULT_REMINDER_LEAD_KM
 import com.bgr3108.kilonom.domain.MaintenanceDueInfo
 import com.bgr3108.kilonom.domain.MaintenanceHomeInsight
 import com.bgr3108.kilonom.domain.MaintenanceHomeInsightItem
+import com.bgr3108.kilonom.domain.MaintenanceNextDueUpdate
 import com.bgr3108.kilonom.domain.availableMaintenanceTypes
 import com.bgr3108.kilonom.domain.createMaintenanceDueInfo
 import com.bgr3108.kilonom.domain.displayMaintenanceName
@@ -181,6 +182,10 @@ class MaintenanceViewModel(
     fun createItem(
         draft: MaintenanceItemDraft,
         record: MaintenanceRecordDraft?,
+        nextDueUpdate: MaintenanceNextDueUpdate = MaintenanceNextDueUpdate.Manual(
+            draft.nextDueKm,
+            draft.nextDueDate
+        ),
         onComplete: () -> Unit
     ) = runAction(onComplete) {
         val now = System.currentTimeMillis()
@@ -201,24 +206,24 @@ class MaintenanceViewModel(
                 reminderLeadKm = draft.reminderLeadKm,
                 reminderLeadDays = draft.reminderLeadDays
             ),
-            record = record?.toEntity(itemId = 0, now = now)
+            record = record?.toEntity(itemId = 0, now = now),
+            nextDueUpdate = nextDueUpdate
         )
     }
 
     fun registerRecord(
         item: MaintenanceItemEntity,
-        reminder: MaintenanceItemDraft,
         record: MaintenanceRecordDraft,
+        nextDueUpdate: MaintenanceNextDueUpdate,
         onComplete: () -> Unit
     ) = runAction(onComplete) {
         val now = System.currentTimeMillis()
         maintenanceRepository.registerRecordForActiveVehicle(
             item = item.copy(
-                nextDueKm = reminder.nextDueKm,
-                nextDueDate = reminder.nextDueDate,
                 updatedAt = now
             ),
-            record = record.toEntity(item.id, now)
+            record = record.toEntity(item.id, now),
+            nextDueUpdate = nextDueUpdate
         )
     }
 
@@ -232,6 +237,11 @@ class MaintenanceViewModel(
                 customName = draft.customName,
                 nextDueKm = draft.nextDueKm,
                 nextDueDate = draft.nextDueDate,
+                intervalKm = draft.intervalKm,
+                intervalTimeValue = draft.intervalTimeValue,
+                intervalTimeUnit = draft.intervalTimeUnit,
+                reminderLeadKm = draft.reminderLeadKm,
+                reminderLeadDays = draft.reminderLeadDays,
                 updatedAt = System.currentTimeMillis()
             )
         )

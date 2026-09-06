@@ -78,6 +78,13 @@ fun MaintenanceDetailScreen(
                 item.item.nextDueDate?.let { Text(it.formatMaintenanceDate()) }
             }
         }
+        item.item.recurrenceSummary()?.let { summary ->
+            SectionTitle("Intervalo de mantenimiento")
+            MaintenanceCard {
+                Text(summary, style = MaterialTheme.typography.titleMedium)
+                item.item.reminderLeadSummaries().forEach { Text(it, color = maintenanceSecondaryColor()) }
+            }
+        }
         Button(onClick = { onRegister(item.item.id) }, modifier = Modifier.fillMaxWidth()) {
             Text("Registrar mantenimiento")
         }
