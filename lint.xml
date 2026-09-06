@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- Legacy API 24–25 fallback: preserves the official full-bleed navy launcher asset. -->
+    <issue id="IconLauncherShape">
+        <ignore path="app/src/main/res/mipmap-mdpi/ic_launcher.png" />
+        <ignore path="app/src/main/res/mipmap-hdpi/ic_launcher.png" />
+        <ignore path="app/src/main/res/mipmap-xhdpi/ic_launcher.png" />
+        <ignore path="app/src/main/res/mipmap-xxhdpi/ic_launcher.png" />
+        <ignore path="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" />
+    </issue>
+</lint>
