@@ -227,7 +227,12 @@ internal class InMemoryMaintenanceDao(
             item_nextDueKm = item.nextDueKm,
             item_nextDueDate = item.nextDueDate,
             item_createdAt = item.createdAt,
-            item_updatedAt = item.updatedAt
+            item_updatedAt = item.updatedAt,
+            item_intervalKm = item.intervalKm,
+            item_intervalTimeValue = item.intervalTimeValue,
+            item_intervalTimeUnit = item.intervalTimeUnit,
+            item_reminderLeadKm = item.reminderLeadKm,
+            item_reminderLeadDays = item.reminderLeadDays
         )
     }
 }

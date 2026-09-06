@@ -1,6 +1,8 @@
 package com.bgr3108.kilonom.domain
 
 import com.bgr3108.kilonom.data.MaintenanceItemEntity
+import com.bgr3108.kilonom.data.DEFAULT_REMINDER_LEAD_DAYS
+import com.bgr3108.kilonom.data.DEFAULT_REMINDER_LEAD_KM
 
 enum class MaintenanceDueStatus {
     OVERDUE,
@@ -10,8 +12,8 @@ enum class MaintenanceDueStatus {
 }
 
 object MaintenanceReminderPolicy {
-    const val DUE_SOON_KILOMETERS: Long = 1_000
-    const val DUE_SOON_DAYS: Long = 30
+    const val DEFAULT_DUE_SOON_KILOMETERS: Long = DEFAULT_REMINDER_LEAD_KM
+    const val DEFAULT_DUE_SOON_DAYS: Long = DEFAULT_REMINDER_LEAD_DAYS
 }
 
 fun calculateMaintenanceDueStatus(
@@ -22,6 +24,10 @@ fun calculateMaintenanceDueStatus(
 ): MaintenanceDueStatus {
     val dueKm = item.nextDueKm
     val dueDate = item.nextDueDate
+    val leadKm = item.reminderLeadKm
+    val leadDays = item.reminderLeadDays
+    require(leadKm >= 0L) { "El aviso previo por kilometraje no es válido" }
+    require(leadDays >= 0L) { "El aviso previo por fecha no es válido" }
     if (dueKm == null && dueDate == null) return MaintenanceDueStatus.NO_DUE_CONFIGURED
 
     val overdueByKm = dueKm != null && currentKm > dueKm
@@ -31,10 +37,10 @@ fun calculateMaintenanceDueStatus(
     // The overdue branch above guarantees non-negative remaining values here, including zero
     // for "toca ahora" and "toca hoy".
     val dueSoonByKm = dueKm?.minus(currentKm)?.let { remainingKm ->
-        remainingKm <= MaintenanceReminderPolicy.DUE_SOON_KILOMETERS
+        remainingKm <= leadKm
     } ?: false
     val dueSoonByDate = dueDate?.let { due ->
-        daysBetween(today, due) <= MaintenanceReminderPolicy.DUE_SOON_DAYS
+        daysBetween(today, due) <= leadDays
     } ?: false
     return if (dueSoonByKm || dueSoonByDate) {
         MaintenanceDueStatus.DUE_SOON

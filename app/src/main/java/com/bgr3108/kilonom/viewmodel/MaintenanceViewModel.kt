@@ -7,10 +7,13 @@ import com.bgr3108.kilonom.data.MaintenanceItemEntity
 import com.bgr3108.kilonom.data.MaintenanceRecordEntity
 import com.bgr3108.kilonom.data.MaintenanceRecordWithItem
 import com.bgr3108.kilonom.data.MaintenanceRepository
+import com.bgr3108.kilonom.data.MaintenanceTimeUnit
 import com.bgr3108.kilonom.data.MaintenanceType
 import com.bgr3108.kilonom.data.TyrePosition
 import com.bgr3108.kilonom.data.VehicleEntity
 import com.bgr3108.kilonom.data.VehicleRepository
+import com.bgr3108.kilonom.data.DEFAULT_REMINDER_LEAD_DAYS
+import com.bgr3108.kilonom.data.DEFAULT_REMINDER_LEAD_KM
 import com.bgr3108.kilonom.domain.MaintenanceDueInfo
 import com.bgr3108.kilonom.domain.MaintenanceHomeInsight
 import com.bgr3108.kilonom.domain.MaintenanceHomeInsightItem
@@ -73,7 +76,12 @@ data class MaintenanceItemDraft(
     val tyrePosition: TyrePosition? = null,
     val customName: String? = null,
     val nextDueKm: Long? = null,
-    val nextDueDate: Long? = null
+    val nextDueDate: Long? = null,
+    val intervalKm: Long? = null,
+    val intervalTimeValue: Int? = null,
+    val intervalTimeUnit: MaintenanceTimeUnit? = null,
+    val reminderLeadKm: Long = DEFAULT_REMINDER_LEAD_KM,
+    val reminderLeadDays: Long = DEFAULT_REMINDER_LEAD_DAYS
 )
 
 data class MaintenanceRecordDraft(
@@ -186,7 +194,12 @@ class MaintenanceViewModel(
                 nextDueKm = draft.nextDueKm,
                 nextDueDate = draft.nextDueDate,
                 createdAt = now,
-                updatedAt = now
+                updatedAt = now,
+                intervalKm = draft.intervalKm,
+                intervalTimeValue = draft.intervalTimeValue,
+                intervalTimeUnit = draft.intervalTimeUnit,
+                reminderLeadKm = draft.reminderLeadKm,
+                reminderLeadDays = draft.reminderLeadDays
             ),
             record = record?.toEntity(itemId = 0, now = now)
         )

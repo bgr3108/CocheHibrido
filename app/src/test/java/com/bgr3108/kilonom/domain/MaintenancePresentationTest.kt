@@ -62,12 +62,32 @@ class MaintenancePresentationTest {
         assertEquals(120.0, record.cost ?: error("Cost must remain present"), 0.0)
     }
 
+    @Test
+    fun homeInsightUsesTheItemSpecificReminderLead() {
+        val due = createMaintenanceDueInfo(
+            item = item(nextDueKm = 50_000, reminderLeadKm = 2_000),
+            currentKm = 48_000,
+            today = 0,
+            daysBetween = { from, to -> to - from }
+        )
+
+        val insight = selectMaintenanceHomeInsight(
+            listOf(MaintenanceHomeInsightItem("Aceite y filtro", due))
+        )
+
+        assertEquals(MaintenanceDueStatus.DUE_SOON, due.status)
+        assertEquals(MaintenanceHomeInsightType.SINGLE_DUE_SOON, insight.type)
+        assertEquals(2_000L, insight.amount)
+    }
+
     private fun item(
         type: MaintenanceType = MaintenanceType.BRAKES,
         position: TyrePosition? = null,
         customName: String? = null,
         nextDueKm: Long? = null,
-        nextDueDate: Long? = null
+        nextDueDate: Long? = null,
+        reminderLeadKm: Long = 1_000,
+        reminderLeadDays: Long = 30
     ) = MaintenanceItemEntity(
         vehicleId = 1,
         type = type,
@@ -75,8 +95,10 @@ class MaintenancePresentationTest {
         customName = customName,
         trackingKey = "TEST",
         nextDueKm = nextDueKm,
-        nextDueDate = nextDueDate,
-        createdAt = 0,
-        updatedAt = 0
-    )
+            nextDueDate = nextDueDate,
+            createdAt = 0,
+            updatedAt = 0,
+            reminderLeadKm = reminderLeadKm,
+            reminderLeadDays = reminderLeadDays
+        )
 }

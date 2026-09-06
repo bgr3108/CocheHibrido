@@ -188,11 +188,17 @@ class VehicleRepositoryTest {
     }
 
     @Test
-    fun currentKm_includesMaintenanceOdometerButNeverReminderKilometers() = runBlocking {
+    fun currentKm_includesMaintenanceOdometerButNeverDueIntervalOrReminderKilometers() = runBlocking {
         val vehicle = entity(id = 1, initialKm = 20_000.0)
         val item = maintenanceItem()
         val maintenanceDao = InMemoryMaintenanceDao(
-            items = mutableListOf(item.copy(nextDueKm = 50_000)),
+            items = mutableListOf(
+                item.copy(
+                    nextDueKm = 50_000,
+                    intervalKm = 30_000,
+                    reminderLeadKm = 2_000
+                )
+            ),
             records = mutableListOf(maintenanceRecord(odometerKm = 27_000))
         )
         val repository = repository(

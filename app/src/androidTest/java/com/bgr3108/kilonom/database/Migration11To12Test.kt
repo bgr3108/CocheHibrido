@@ -56,7 +56,7 @@ class Migration11To12Test {
         }
 
         val database = Room.databaseBuilder(context, HybridCarDatabase::class.java, TEST_DATABASE)
-            .addMigrations(HybridCarDatabase.MIGRATION_11_12)
+            .addMigrations(HybridCarDatabase.MIGRATION_11_12, HybridCarDatabase.MIGRATION_12_13)
             .allowMainThreadQueries()
             .build()
         val migrated = database.openHelper.writableDatabase
@@ -80,10 +80,10 @@ class Migration11To12Test {
         assertForeignKey(migrated, "maintenance_items", "vehicles")
         assertForeignKey(migrated, "maintenance_records", "maintenance_items")
 
-        migrated.execSQL("INSERT INTO maintenance_items VALUES(10, 1, 'OIL_AND_FILTER', NULL, NULL, 'OIL_AND_FILTER', 5000, NULL, 10, 10)")
+        migrated.execSQL("INSERT INTO maintenance_items (`id`, `vehicleId`, `type`, `tyrePosition`, `customName`, `trackingKey`, `nextDueKm`, `nextDueDate`, `createdAt`, `updatedAt`) VALUES(10, 1, 'OIL_AND_FILTER', NULL, NULL, 'OIL_AND_FILTER', 5000, NULL, 10, 10)")
         migrated.execSQL("INSERT INTO maintenance_records VALUES(20, 10, 1000, 1500, 95.0, NULL, 10, 10)")
         migrated.execSQL("INSERT INTO maintenance_records VALUES(21, 10, 1100, 1600, NULL, 'Revisión', 11, 11)")
-        migrated.execSQL("INSERT INTO maintenance_items VALUES(11, 2, 'ITV', NULL, NULL, 'ITV', NULL, 2000, 20, 20)")
+        migrated.execSQL("INSERT INTO maintenance_items (`id`, `vehicleId`, `type`, `tyrePosition`, `customName`, `trackingKey`, `nextDueKm`, `nextDueDate`, `createdAt`, `updatedAt`) VALUES(11, 2, 'ITV', NULL, NULL, 'ITV', NULL, 2000, 20, 20)")
         migrated.execSQL("INSERT INTO maintenance_records VALUES(22, 11, NULL, NULL, 0.0, NULL, 20, 20)")
 
         migrated.query("SELECT cost FROM maintenance_records WHERE id = 21").use { cursor ->
@@ -123,7 +123,7 @@ class Migration11To12Test {
 
     private fun assertUniqueTrackingKey(database: androidx.sqlite.db.SupportSQLiteDatabase) {
         val result = runCatching {
-            database.execSQL("INSERT INTO maintenance_items VALUES(12, 2, 'ITV', NULL, NULL, 'ITV', NULL, NULL, 20, 20)")
+            database.execSQL("INSERT INTO maintenance_items (`id`, `vehicleId`, `type`, `tyrePosition`, `customName`, `trackingKey`, `nextDueKm`, `nextDueDate`, `createdAt`, `updatedAt`) VALUES(12, 2, 'ITV', NULL, NULL, 'ITV', NULL, NULL, 20, 20)")
         }
         assertTrue(result.isFailure)
     }

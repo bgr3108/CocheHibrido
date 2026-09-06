@@ -95,8 +95,15 @@ class ActiveVehicleEntriesTest {
     fun maintenanceRecordsAndOdometerRemainIsolatedWhenTheActiveVehicleChanges() = runBlocking {
         val maintenanceDao = InMemoryMaintenanceDao(
             items = mutableListOf(
-                maintenanceItem(id = 1, vehicleId = 1, type = MaintenanceType.OIL_AND_FILTER),
-                maintenanceItem(id = 2, vehicleId = 2, type = MaintenanceType.ITV)
+                maintenanceItem(id = 1, vehicleId = 1, type = MaintenanceType.OIL_AND_FILTER).copy(
+                    intervalKm = 10_000L,
+                    reminderLeadKm = 1_500L
+                ),
+                maintenanceItem(id = 2, vehicleId = 2, type = MaintenanceType.ITV).copy(
+                    intervalTimeValue = 12,
+                    intervalTimeUnit = MaintenanceTimeUnit.MONTHS,
+                    reminderLeadDays = 14L
+                )
             ),
             records = mutableListOf(
                 MaintenanceRecordEntity(id = 1, itemId = 1, odometerKm = 1_300, createdAt = 1, updatedAt = 1),
@@ -118,11 +125,14 @@ class ActiveVehicleEntriesTest {
         repository.isLoading.first { !it }
 
         assertEquals(1_300.0, repository.currentKm(1), 0.0)
+        assertEquals(1_500L, maintenanceDao.observeItems(1).first().single().reminderLeadKm)
         assertEquals(1L, maintenanceDao.observeRecordsForVehicle(repository.activeVehicleId.value!!).first().single().id)
 
         repository.selectActiveVehicle(2)
 
         assertEquals(8_500.0, repository.currentKm(2), 0.0)
+        assertEquals(MaintenanceTimeUnit.MONTHS, maintenanceDao.observeItems(2).first().single().intervalTimeUnit)
+        assertEquals(14L, maintenanceDao.observeItems(2).first().single().reminderLeadDays)
         assertEquals(2L, maintenanceDao.observeRecordsForVehicle(repository.activeVehicleId.value!!).first().single().id)
         assertEquals(1_300L, maintenanceDao.getMinimumOdometerKmForVehicle(1))
         assertEquals(8_500L, maintenanceDao.getMaximumOdometerKmForVehicle(2))

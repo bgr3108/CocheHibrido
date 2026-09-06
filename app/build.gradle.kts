@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.bgr3108.kilonom"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 37
         versionCode = 8
         versionName = "1.2.2"

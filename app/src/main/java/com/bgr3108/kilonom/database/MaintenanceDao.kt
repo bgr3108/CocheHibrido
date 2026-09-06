@@ -37,7 +37,11 @@ interface MaintenanceDao {
                items.tyrePosition AS item_tyrePosition, items.customName AS item_customName,
                items.trackingKey AS item_trackingKey, items.nextDueKm AS item_nextDueKm,
                items.nextDueDate AS item_nextDueDate, items.createdAt AS item_createdAt,
-               items.updatedAt AS item_updatedAt
+               items.updatedAt AS item_updatedAt, items.intervalKm AS item_intervalKm,
+               items.intervalTimeValue AS item_intervalTimeValue,
+               items.intervalTimeUnit AS item_intervalTimeUnit,
+               items.reminderLeadKm AS item_reminderLeadKm,
+               items.reminderLeadDays AS item_reminderLeadDays
         FROM maintenance_records AS records
         INNER JOIN maintenance_items AS items ON items.id = records.itemId
         WHERE items.vehicleId = :vehicleId
@@ -53,7 +57,11 @@ interface MaintenanceDao {
                items.tyrePosition AS item_tyrePosition, items.customName AS item_customName,
                items.trackingKey AS item_trackingKey, items.nextDueKm AS item_nextDueKm,
                items.nextDueDate AS item_nextDueDate, items.createdAt AS item_createdAt,
-               items.updatedAt AS item_updatedAt
+               items.updatedAt AS item_updatedAt, items.intervalKm AS item_intervalKm,
+               items.intervalTimeValue AS item_intervalTimeValue,
+               items.intervalTimeUnit AS item_intervalTimeUnit,
+               items.reminderLeadKm AS item_reminderLeadKm,
+               items.reminderLeadDays AS item_reminderLeadDays
         FROM maintenance_records AS records
         INNER JOIN maintenance_items AS items ON items.id = records.itemId
         WHERE records.id = :recordId AND items.vehicleId = :vehicleId
@@ -182,7 +190,12 @@ data class MaintenanceRecordWithItemRow(
     val item_nextDueKm: Long?,
     val item_nextDueDate: Long?,
     val item_createdAt: Long,
-    val item_updatedAt: Long
+    val item_updatedAt: Long,
+    val item_intervalKm: Long?,
+    val item_intervalTimeValue: Int?,
+    val item_intervalTimeUnit: com.bgr3108.kilonom.data.MaintenanceTimeUnit?,
+    val item_reminderLeadKm: Long,
+    val item_reminderLeadDays: Long
 ) {
     fun toDomain(): MaintenanceRecordWithItem = MaintenanceRecordWithItem(
         record = MaintenanceRecordEntity(id, itemId, performedDate, odometerKm, cost, notes, createdAt, updatedAt),
@@ -196,7 +209,12 @@ data class MaintenanceRecordWithItemRow(
             nextDueKm = item_nextDueKm,
             nextDueDate = item_nextDueDate,
             createdAt = item_createdAt,
-            updatedAt = item_updatedAt
+            updatedAt = item_updatedAt,
+            intervalKm = item_intervalKm,
+            intervalTimeValue = item_intervalTimeValue,
+            intervalTimeUnit = item_intervalTimeUnit,
+            reminderLeadKm = item_reminderLeadKm,
+            reminderLeadDays = item_reminderLeadDays
         )
     )
 }

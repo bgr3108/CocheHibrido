@@ -5,6 +5,9 @@ import com.bgr3108.kilonom.database.HybridCarDatabase
 import com.bgr3108.kilonom.database.MaintenanceDao
 import com.bgr3108.kilonom.domain.availableMaintenanceTypes
 import com.bgr3108.kilonom.domain.createMaintenanceTrackingKey
+import com.bgr3108.kilonom.domain.MaintenanceNextDue
+import com.bgr3108.kilonom.domain.MaintenanceNextDueUpdate
+import com.bgr3108.kilonom.domain.resolveNextMaintenanceDueUpdate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -54,18 +57,26 @@ class MaintenanceRepository(
     /** Future form flow: atomically change the item reminder and append one historical record. */
     suspend fun registerRecordForActiveVehicle(
         item: MaintenanceItemEntity,
-        record: MaintenanceRecordEntity
+        record: MaintenanceRecordEntity,
+        nextDueUpdate: MaintenanceNextDueUpdate = MaintenanceNextDueUpdate.Manual(
+            nextDueKm = item.nextDueKm,
+            nextDueDate = item.nextDueDate
+        )
     ) = database.withTransaction {
         val vehicle = requireActiveVehicle()
         val existing = maintenanceDao.getItemForVehicle(item.id, vehicle.id)
             ?: error("El mantenimiento no pertenece al vehículo activo")
+        val candidateItem = item.copy(
+            nextDueKm = null,
+            nextDueDate = null,
+            vehicleId = vehicle.id,
+            id = existing.id,
+            createdAt = existing.createdAt,
+            trackingKey = ""
+        )
+        val due = resolveNextDue(candidateItem, record, nextDueUpdate)
         val normalizedItem = normalizeAndValidateItem(
-            item.copy(
-                vehicleId = vehicle.id,
-                id = existing.id,
-                createdAt = existing.createdAt,
-                trackingKey = ""
-            ),
+            candidateItem.copy(nextDueKm = due.nextDueKm, nextDueDate = due.nextDueDate),
             vehicle
         )
         validateRecord(record.copy(id = 0, itemId = existing.id), vehicle.initialKm)
@@ -135,6 +146,21 @@ class MaintenanceRepository(
         require(item.nextDueDate == null || item.nextDueDate >= 0) {
             "La próxima fecha no es válida"
         }
+        require(item.intervalKm == null || item.intervalKm > 0L) {
+            "El intervalo de kilometraje debe ser positivo"
+        }
+        require((item.intervalTimeValue == null) == (item.intervalTimeUnit == null)) {
+            "El intervalo temporal requiere valor y unidad"
+        }
+        require(item.intervalTimeValue == null || item.intervalTimeValue > 0) {
+            "El intervalo temporal debe ser positivo"
+        }
+        require(item.reminderLeadKm >= 0L) {
+            "El aviso previo por kilometraje no es válido"
+        }
+        require(item.reminderLeadDays >= 0L) {
+            "El aviso previo por fecha no es válido"
+        }
         when (item.type) {
             MaintenanceType.TYRES -> require(item.tyrePosition != null) {
                 "La posición de los neumáticos es obligatoria"
@@ -185,4 +211,17 @@ class MaintenanceRepository(
             "El próximo kilometraje no puede ser anterior al mantenimiento realizado"
         }
     }
+
+    private fun resolveNextDue(
+        item: MaintenanceItemEntity,
+        record: MaintenanceRecordEntity,
+        update: MaintenanceNextDueUpdate
+    ): MaintenanceNextDue = resolveNextMaintenanceDueUpdate(
+        update = update,
+        performedDate = record.performedDate,
+        performedKm = record.odometerKm,
+        intervalKm = item.intervalKm,
+        intervalTimeValue = item.intervalTimeValue,
+        intervalTimeUnit = item.intervalTimeUnit
+    )
 }

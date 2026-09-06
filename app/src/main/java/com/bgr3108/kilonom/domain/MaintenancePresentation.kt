@@ -10,7 +10,9 @@ data class MaintenanceDueInfo(
     val dueKm: Long?,
     val dueDate: Long?,
     val remainingKm: Long?,
-    val remainingDays: Long?
+    val remainingDays: Long?,
+    val reminderLeadKm: Long = MaintenanceReminderPolicy.DEFAULT_DUE_SOON_KILOMETERS,
+    val reminderLeadDays: Long = MaintenanceReminderPolicy.DEFAULT_DUE_SOON_DAYS
 )
 
 enum class MaintenanceDueMeasure {
@@ -28,7 +30,9 @@ fun createMaintenanceDueInfo(
     dueKm = item.nextDueKm,
     dueDate = item.nextDueDate,
     remainingKm = item.nextDueKm?.minus(currentKm),
-    remainingDays = item.nextDueDate?.let { daysBetween(today, it) }
+    remainingDays = item.nextDueDate?.let { daysBetween(today, it) },
+    reminderLeadKm = item.reminderLeadKm,
+    reminderLeadDays = item.reminderLeadDays
 )
 
 fun MaintenanceItemEntity.displayMaintenanceName(): String = when (type) {
@@ -58,8 +62,8 @@ fun MaintenanceType.isDocumentMaintenance(): Boolean = this in setOf(
 /** Stable urgency ranking: overdue, due soon and then up-to-date reminders. */
 fun maintenanceUrgencySortValue(info: MaintenanceDueInfo): Pair<Int, Double> {
     val normalizedRemaining = listOfNotNull(
-        info.remainingKm?.toDouble()?.div(MaintenanceReminderPolicy.DUE_SOON_KILOMETERS),
-        info.remainingDays?.toDouble()?.div(MaintenanceReminderPolicy.DUE_SOON_DAYS)
+        info.remainingKm?.toDouble()?.div(info.reminderLeadKm.coerceAtLeast(1L)),
+        info.remainingDays?.toDouble()?.div(info.reminderLeadDays.coerceAtLeast(1L))
     ).minOrNull() ?: Double.MAX_VALUE
     val group = when (info.status) {
         MaintenanceDueStatus.OVERDUE -> 0
@@ -79,12 +83,12 @@ fun MaintenanceDueInfo.primaryDueMeasure(): MaintenanceDueMeasure? {
     val candidates = buildList {
         remainingKm?.let { remaining ->
             if (isRelevantForStatus(remaining, MaintenanceDueMeasure.KILOMETERS)) {
-                add(MaintenanceDueMeasure.KILOMETERS to normalizedRemaining(remaining, MaintenanceReminderPolicy.DUE_SOON_KILOMETERS))
+                add(MaintenanceDueMeasure.KILOMETERS to normalizedRemaining(remaining, reminderLeadKm))
             }
         }
         remainingDays?.let { remaining ->
             if (isRelevantForStatus(remaining, MaintenanceDueMeasure.DATE)) {
-                add(MaintenanceDueMeasure.DATE to normalizedRemaining(remaining, MaintenanceReminderPolicy.DUE_SOON_DAYS))
+                add(MaintenanceDueMeasure.DATE to normalizedRemaining(remaining, reminderLeadDays))
             }
         }
     }
@@ -102,10 +106,10 @@ private fun MaintenanceDueInfo.isRelevantForStatus(
     MaintenanceDueStatus.NO_DUE_CONFIGURED -> false
 }
 
-private fun dueSoonLimitFor(measure: MaintenanceDueMeasure): Long = when (measure) {
-    MaintenanceDueMeasure.KILOMETERS -> MaintenanceReminderPolicy.DUE_SOON_KILOMETERS
-    MaintenanceDueMeasure.DATE -> MaintenanceReminderPolicy.DUE_SOON_DAYS
+private fun MaintenanceDueInfo.dueSoonLimitFor(measure: MaintenanceDueMeasure): Long = when (measure) {
+    MaintenanceDueMeasure.KILOMETERS -> reminderLeadKm
+    MaintenanceDueMeasure.DATE -> reminderLeadDays
 }
 
 private fun normalizedRemaining(remaining: Long, threshold: Long): Double =
-    remaining.toDouble() / threshold
+    remaining.toDouble() / threshold.coerceAtLeast(1L)
