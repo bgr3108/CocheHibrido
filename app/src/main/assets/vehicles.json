@@ -1246,5 +1246,45 @@
     "type": "DIESEL",
     "batteryCapacity": null,
     "fuelTankCapacity": 50
+  },
+  {
+    "brand": "Hyundai",
+    "model": "ix35 1.6 GDi",
+    "year": 2010,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Hyundai",
+    "model": "ix35 2.0 MPI",
+    "year": 2010,
+    "type": "GASOLINA",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Hyundai",
+    "model": "ix35 1.7 CRDi",
+    "year": 2010,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Hyundai",
+    "model": "ix35 2.0 CRDi 136CV",
+    "year": 2010,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
+  },
+  {
+    "brand": "Hyundai",
+    "model": "ix35 2.0 CRDi 184CV",
+    "year": 2010,
+    "type": "DIESEL",
+    "batteryCapacity": null,
+    "fuelTankCapacity": 55
   }
 ]
