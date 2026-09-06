@@ -31,6 +31,7 @@ import com.bgr3108.kilonom.ui.screens.TotalDetailScreen
 import com.bgr3108.kilonom.ui.screens.MyVehiclesScreen
 import com.bgr3108.kilonom.ui.screens.AddVehicleScreen
 import com.bgr3108.kilonom.ui.screens.VehicleEditorScreen
+import com.bgr3108.kilonom.ui.screens.UsageGuideScreen
 import com.bgr3108.kilonom.viewmodel.FuelEntryViewModel
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 import com.bgr3108.kilonom.viewmodel.PeriodSummaryViewModel
@@ -144,6 +145,7 @@ fun HybridCarNavHost(
                 onBack = { navController.popBackStack() },
                 onAdd = { navController.navigate("add_vehicle") },
                 onEdit = { id -> navController.navigate("edit_vehicle/$id") },
+                onOpenUsageGuide = { navController.navigate("usage_guide") },
                 onOpenPrivacy = { navController.navigate("privacy") },
                 onActiveVehicleDeleted = {
                     navController.navigate("home") {
@@ -152,6 +154,10 @@ fun HybridCarNavHost(
                     }
                 }
             )
+        }
+
+        composable("usage_guide") {
+            UsageGuideScreen(onBack = { navController.popBackStack() })
         }
 
         composable("add_vehicle") {

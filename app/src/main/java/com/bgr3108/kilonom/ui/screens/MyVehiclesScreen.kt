@@ -65,6 +65,7 @@ fun MyVehiclesScreen(
     onBack: () -> Unit,
     onAdd: () -> Unit,
     onEdit: (Long) -> Unit,
+    onOpenUsageGuide: () -> Unit,
     onOpenPrivacy: () -> Unit,
     onActiveVehicleDeleted: () -> Unit
 ) {
@@ -116,6 +117,14 @@ fun MyVehiclesScreen(
                 expanded = globalMenuExpanded.value,
                 onDismissRequest = { globalMenuExpanded.value = false }
             ) {
+                DropdownMenuItem(
+                    text = { Text("Guía de uso") },
+                    leadingIcon = { Icon(Icons.Default.Info, contentDescription = null) },
+                    onClick = {
+                        globalMenuExpanded.value = false
+                        onOpenUsageGuide()
+                    }
+                )
                 DropdownMenuItem(
                     text = { Text("Instagram de Kilonom") },
                     onClick = {
