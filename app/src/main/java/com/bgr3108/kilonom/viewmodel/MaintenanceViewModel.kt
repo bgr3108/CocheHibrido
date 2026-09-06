@@ -70,6 +70,10 @@ data class MaintenanceUiState(
     val hasItems: Boolean get() = items.isNotEmpty()
     val upcomingItems: List<MaintenanceItemUiModel>
         get() = items.filter { it.due.status != com.bgr3108.kilonom.domain.MaintenanceDueStatus.NO_DUE_CONFIGURED }
+
+    /** Existing follow-ups without a concrete next due point remain actionable and must be visible. */
+    val itemsWithoutReminder: List<MaintenanceItemUiModel>
+        get() = items.filter { it.due.status == com.bgr3108.kilonom.domain.MaintenanceDueStatus.NO_DUE_CONFIGURED }
 }
 
 data class MaintenanceItemDraft(

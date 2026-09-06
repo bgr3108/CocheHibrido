@@ -100,6 +100,12 @@ fun MaintenanceScreen(
                         MaintenanceItemCard(item, onClick = { onOpenItem(item.item.id) })
                     }
                 }
+                if (state.itemsWithoutReminder.isNotEmpty()) {
+                    item { SectionTitle("Sin próximo aviso") }
+                    items(state.itemsWithoutReminder, key = { maintenanceUnconfiguredItemKey(it.item.id) }) { item ->
+                        MaintenanceItemCard(item, onClick = { onOpenItem(item.item.id) })
+                    }
+                }
                 item { SectionTitle("Historial reciente") }
                 if (shownRecords.isEmpty()) {
                     item {
@@ -254,6 +260,8 @@ internal fun Double.formatMaintenanceMoney(): String = NumberFormat.getCurrencyI
 
 /** Keys are namespaced because an item and a record can legitimately have the same database id. */
 internal fun maintenanceUpcomingItemKey(itemId: Long): String = "upcoming-item:$itemId"
+
+internal fun maintenanceUnconfiguredItemKey(itemId: Long): String = "unconfigured-item:$itemId"
 
 internal fun maintenanceHistoryRecordKey(recordId: Long): String = "history-record:$recordId"
 
