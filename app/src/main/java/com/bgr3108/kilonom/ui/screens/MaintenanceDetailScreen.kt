@@ -1,6 +1,7 @@
 package com.bgr3108.kilonom.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -32,6 +33,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.data.MaintenanceItemEntity
@@ -115,16 +118,10 @@ fun MaintenanceDetailScreen(
         Button(onClick = { onRegister(item.item.id) }, modifier = Modifier.fillMaxWidth()) {
             Text("Registrar mantenimiento")
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            OutlinedButton(onClick = { onEditItem(item.item.id) }, modifier = Modifier.weight(1f)) {
-                Icon(Icons.Default.Edit, contentDescription = null)
-                Text("  Editar seguimiento")
-            }
-            OutlinedButton(onClick = { itemToDelete.value = item.item }, modifier = Modifier.weight(1f)) {
-                Icon(Icons.Default.Delete, contentDescription = null)
-                Text("  Eliminar")
-            }
-        }
+        MaintenanceDetailActions(
+            onEdit = { onEditItem(item.item.id) },
+            onDelete = { itemToDelete.value = item.item }
+        )
         SectionTitle("Historial")
         if (records.isEmpty()) {
             Text("Aún no hay mantenimientos realizados.", color = maintenanceSecondaryColor())
@@ -178,6 +175,50 @@ fun MaintenanceDetailScreen(
         )
     }
 }
+
+@Composable
+private fun MaintenanceDetailActions(
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val stackActions = shouldStackMaintenanceDetailActions(
+            fontScale = LocalDensity.current.fontScale,
+            availableWidth = maxWidth
+        )
+
+        if (stackActions) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                EditMaintenanceItemButton(onClick = onEdit, modifier = Modifier.fillMaxWidth())
+                DeleteMaintenanceItemButton(onClick = onDelete, modifier = Modifier.fillMaxWidth())
+            }
+        } else {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                EditMaintenanceItemButton(onClick = onEdit, modifier = Modifier.weight(1.45f))
+                DeleteMaintenanceItemButton(onClick = onDelete, modifier = Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+private fun EditMaintenanceItemButton(onClick: () -> Unit, modifier: Modifier) {
+    OutlinedButton(onClick = onClick, modifier = modifier) {
+        Icon(Icons.Default.Edit, contentDescription = null)
+        Text("  Editar seguimiento")
+    }
+}
+
+@Composable
+private fun DeleteMaintenanceItemButton(onClick: () -> Unit, modifier: Modifier) {
+    OutlinedButton(onClick = onClick, modifier = modifier) {
+        Icon(Icons.Default.Delete, contentDescription = null)
+        Text("  Eliminar")
+    }
+}
+
+internal fun shouldStackMaintenanceDetailActions(fontScale: Float, availableWidth: Dp): Boolean =
+    fontScale > 1.15f || availableWidth < 360.dp
 
 @Composable
 internal fun MissingMaintenanceScreen(innerPadding: PaddingValues, onBack: () -> Unit) {
