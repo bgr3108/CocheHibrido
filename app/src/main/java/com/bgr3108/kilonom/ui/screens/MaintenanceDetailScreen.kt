@@ -77,12 +77,12 @@ fun MaintenanceDetailScreen(
         }
         SectionTitle("Próximo")
         MaintenanceCard {
-            Text(item.due.primaryStatusText(), style = MaterialTheme.typography.titleMedium)
-            item.due.secondaryStatusText()?.let { Text(it, color = maintenanceSecondaryColor()) }
-            if (item.item.nextDueKm != null || item.item.nextDueDate != null) {
-                Spacer(Modifier.height(6.dp))
-                item.item.nextDueKm?.let { Text("${it.formatKilometers()} km") }
-                item.item.nextDueDate?.let { Text(it.formatMaintenanceDate()) }
+            item.nextDueDetailLines().forEachIndexed { index, line ->
+                Text(
+                    text = line,
+                    style = if (index == 0) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyMedium,
+                    color = if (index == 0) MaterialTheme.colorScheme.onSurface else maintenanceSecondaryColor()
+                )
             }
         }
         state.vehicle?.let { vehicle ->
@@ -219,6 +219,17 @@ private fun DeleteMaintenanceItemButton(onClick: () -> Unit, modifier: Modifier)
 
 internal fun shouldStackMaintenanceDetailActions(fontScale: Float, availableWidth: Dp): Boolean =
     fontScale > 1.15f || availableWidth < 360.dp
+
+/** Concrete due values for the detail card, kept distinct from list status copy. */
+internal fun com.bgr3108.kilonom.viewmodel.MaintenanceItemUiModel.nextDueDetailLines(): List<String> =
+    if (item.nextDueKm == null && item.nextDueDate == null) {
+        listOf(due.primaryStatusText())
+    } else {
+        buildList {
+            item.nextDueDate?.let { add(it.formatMaintenanceDate()) }
+            item.nextDueKm?.let { add("${it.formatKilometers()} km") }
+        }
+    }
 
 @Composable
 internal fun MissingMaintenanceScreen(innerPadding: PaddingValues, onBack: () -> Unit) {
