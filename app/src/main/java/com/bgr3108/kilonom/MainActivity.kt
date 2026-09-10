@@ -50,6 +50,8 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bgr3108.kilonom.data.Vehicle
+import com.bgr3108.kilonom.ui.components.AdBannerSlot
+import com.bgr3108.kilonom.ui.components.routeUsesAdBannerSlot
 import com.bgr3108.kilonom.ui.navigation.HybridCarNavHost
 import com.bgr3108.kilonom.ui.screens.SetupScreen
 import com.bgr3108.kilonom.ui.theme.CocheHibridoTheme
@@ -142,13 +144,7 @@ fun AppContent(
 
         val currentRoute = navBackStackEntry?.destination?.route
 
-        val showBottomBar = currentRoute in listOf(
-            "home",
-            "consumption",
-            "stats",
-            "stats/trends",
-            "maintenance"
-        )
+        val showBottomBar = routeUsesAdBannerSlot(currentRoute)
         val showAllBottomNavigationLabels = shouldShowAllBottomNavigationLabels(
             LocalDensity.current.fontScale
         )
@@ -164,10 +160,12 @@ fun AppContent(
         Scaffold(
             bottomBar = {
                 if (showBottomBar) {
-                    NavigationBar(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ) {
-                        NavigationBarItem(
+                    Column {
+                        AdBannerSlot()
+                        NavigationBar(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ) {
+                            NavigationBarItem(
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = MaterialTheme.colorScheme.primary,
                                 selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -257,6 +255,7 @@ fun AppContent(
                                 )
                             }
                         )
+                        }
                     }
                 }
             }
