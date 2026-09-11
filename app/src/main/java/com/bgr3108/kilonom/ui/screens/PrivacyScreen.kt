@@ -93,7 +93,21 @@ fun PrivacyScreen(
                 ) {
                     PrivacySection(
                         title = "Tus datos",
-                        description = "Kilonom no requiere una cuenta y no envía tus datos al desarrollador ni a servidores propios. La aplicación no utiliza publicidad, analítica ni sistemas de seguimiento."
+                        description = "Kilonom no requiere una cuenta y no envía tus vehículos, consumos ni mantenimientos al desarrollador ni a servidores propios. La aplicación no utiliza Firebase, analítica propia ni seguimiento propio."
+                    )
+
+                    HorizontalDivider()
+
+                    PrivacySection(
+                        title = "Publicidad y consentimiento",
+                        description = "Kilonom puede mostrar publicidad mediante Google AdMob cuando hay conexión. UMP gestiona tus opciones de consentimiento y, si aceptas, la publicidad puede personalizarse. Google y sus socios pueden procesar identificadores y datos técnicos necesarios para la publicidad según tus preferencias; puedes revisar esas opciones cuando estén disponibles."
+                    )
+
+                    HorizontalDivider()
+
+                    PrivacySection(
+                        title = "Funciones locales",
+                        description = "Los datos locales de tus vehículos, consumos y mantenimiento no se envían a un servidor propio. Si no hay conexión o no se puede solicitar publicidad, Kilonom sigue funcionando normalmente."
                     )
 
                     HorizontalDivider()

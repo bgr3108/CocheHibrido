@@ -1,7 +1,9 @@
 package com.bgr3108.kilonom.ui.components
 
-import androidx.compose.ui.unit.dp
-import org.junit.Assert.assertEquals
+import com.bgr3108.kilonom.ads.AdBannerLoadState
+import com.bgr3108.kilonom.ads.AdsUiState
+import com.bgr3108.kilonom.ads.shouldLoadBanner
+import com.bgr3108.kilonom.ads.shouldReserveBannerSpace
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -23,8 +25,30 @@ class AdBannerSlotTest {
     }
 
     @Test
-    fun onlyDebugBuilds_reservePlaceholderHeight() {
-        assertEquals(AdBannerSlotHeight, adBannerSlotHeight(isDebugBuild = true))
-        assertEquals(0.dp, adBannerSlotHeight(isDebugBuild = false))
+    fun banner_reservesHeightOnlyAfterItIsLoaded() {
+        val readyState = AdsUiState(
+            consentResolved = true,
+            canRequestAds = true,
+            mobileAdsInitialized = true
+        )
+
+        assertFalse(shouldReserveBannerSpace(readyState, AdBannerLoadState.LOADING))
+        assertTrue(shouldReserveBannerSpace(readyState, AdBannerLoadState.LOADED))
+        assertFalse(shouldReserveBannerSpace(readyState, AdBannerLoadState.FAILED))
+    }
+
+    @Test
+    fun banner_isNotRequestedBeforeConsentAllowsAds() {
+        assertFalse(shouldLoadBanner(AdsUiState()))
+        assertFalse(
+            shouldLoadBanner(
+                AdsUiState(consentResolved = true, canRequestAds = false, mobileAdsInitialized = true)
+            )
+        )
+        assertTrue(
+            shouldLoadBanner(
+                AdsUiState(consentResolved = true, canRequestAds = true, mobileAdsInitialized = true)
+            )
+        )
     }
 }

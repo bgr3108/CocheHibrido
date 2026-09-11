@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
@@ -34,6 +35,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +52,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bgr3108.kilonom.data.Vehicle
+import com.bgr3108.kilonom.ads.AdsManager
 import com.bgr3108.kilonom.ui.components.AdBannerSlot
 import com.bgr3108.kilonom.ui.components.routeUsesAdBannerSlot
 import com.bgr3108.kilonom.ui.navigation.HybridCarNavHost
@@ -101,7 +104,8 @@ class MainActivity : ComponentActivity() {
                         homeViewModel = homeViewModel,
                         periodSummaryViewModel = periodSummaryViewModel,
                         myVehiclesViewModel = myVehiclesViewModel,
-                        maintenanceViewModel = maintenanceViewModel
+                        maintenanceViewModel = maintenanceViewModel,
+                        adsManager = (application as HybridCarApplication).adsManager
                     )
                 }
             }
@@ -110,12 +114,13 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppContent(
+internal fun AppContent(
     fuelViewModel: FuelEntryViewModel,
     homeViewModel: HomeViewModel,
     periodSummaryViewModel: PeriodSummaryViewModel,
     myVehiclesViewModel: MyVehiclesViewModel,
-    maintenanceViewModel: MaintenanceViewModel
+    maintenanceViewModel: MaintenanceViewModel,
+    adsManager: AdsManager
 ) {
     val navController = rememberNavController()
     val isVehicleLoading by homeViewModel
@@ -124,6 +129,12 @@ fun AppContent(
     val vehicle by homeViewModel.vehicle.collectAsStateWithLifecycle()
     val resetState by homeViewModel.resetState.collectAsStateWithLifecycle()
     val showReleaseNotes by homeViewModel.showReleaseNotes.collectAsStateWithLifecycle()
+    val adsUiState by adsManager.uiState.collectAsStateWithLifecycle()
+    val activity = LocalActivity.current
+
+    LaunchedEffect(activity) {
+        activity?.let(adsManager::requestConsent)
+    }
 
     if (isVehicleLoading) {
 
@@ -161,7 +172,7 @@ fun AppContent(
             bottomBar = {
                 if (showBottomBar) {
                     Column {
-                        AdBannerSlot()
+                        AdBannerSlot(adsUiState = adsUiState)
                         NavigationBar(
                             containerColor = MaterialTheme.colorScheme.surface
                         ) {
@@ -268,7 +279,11 @@ fun AppContent(
                 homeViewModel = homeViewModel,
                 periodSummaryViewModel = periodSummaryViewModel,
                 myVehiclesViewModel = myVehiclesViewModel,
-                maintenanceViewModel = maintenanceViewModel
+                maintenanceViewModel = maintenanceViewModel,
+                showAdPrivacyOptions = adsUiState.privacyOptionsRequired,
+                onOpenAdPrivacyOptions = {
+                    activity?.let(adsManager::showPrivacyOptions)
+                }
             )
         }
 

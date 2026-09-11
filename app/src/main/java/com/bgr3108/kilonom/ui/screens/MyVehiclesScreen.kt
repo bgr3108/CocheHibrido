@@ -67,6 +67,8 @@ fun MyVehiclesScreen(
     onEdit: (Long) -> Unit,
     onOpenUsageGuide: () -> Unit,
     onOpenPrivacy: () -> Unit,
+    showAdPrivacyOptions: Boolean,
+    onOpenAdPrivacyOptions: () -> Unit,
     onActiveVehicleDeleted: () -> Unit
 ) {
     val context = LocalContext.current
@@ -141,6 +143,15 @@ fun MyVehiclesScreen(
                         onOpenPrivacy()
                     }
                 )
+                if (showAdPrivacyOptions) {
+                    DropdownMenuItem(
+                        text = { Text("Preferencias de publicidad") },
+                        onClick = {
+                            globalMenuExpanded.value = false
+                            onOpenAdPrivacyOptions()
+                        }
+                    )
+                }
                 DropdownMenuItem(
                     text = { Text("Borrar todos los datos") },
                     onClick = {

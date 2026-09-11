@@ -50,7 +50,9 @@ fun HybridCarNavHost(
     homeViewModel: HomeViewModel,
     periodSummaryViewModel: PeriodSummaryViewModel,
     myVehiclesViewModel: MyVehiclesViewModel,
-    maintenanceViewModel: MaintenanceViewModel
+    maintenanceViewModel: MaintenanceViewModel,
+    showAdPrivacyOptions: Boolean,
+    onOpenAdPrivacyOptions: () -> Unit
 ){
 
     NavHost(
@@ -147,6 +149,8 @@ fun HybridCarNavHost(
                 onEdit = { id -> navController.navigate("edit_vehicle/$id") },
                 onOpenUsageGuide = { navController.navigate("usage_guide") },
                 onOpenPrivacy = { navController.navigate("privacy") },
+                showAdPrivacyOptions = showAdPrivacyOptions,
+                onOpenAdPrivacyOptions = onOpenAdPrivacyOptions,
                 onActiveVehicleDeleted = {
                     navController.navigate("home") {
                         popUpTo("home") { inclusive = false }
