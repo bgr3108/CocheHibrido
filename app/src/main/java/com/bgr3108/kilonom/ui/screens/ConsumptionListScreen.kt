@@ -138,10 +138,6 @@ fun ConsumptionListScreen(
                 .padding(16.dp)
         ) {
 
-        Text("Consumos", style = MaterialTheme.typography.headlineSmall)
-
-        Spacer(modifier = Modifier.height(12.dp))
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()

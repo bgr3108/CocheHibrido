@@ -1,0 +1,220 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "6fc6d3d40085d3cb8b649390b3ee56db",
+    "entities": [
+      {
+        "tableName": "fuel_stations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`externalId` TEXT NOT NULL, `name` TEXT NOT NULL, `address` TEXT NOT NULL, `municipality` TEXT NOT NULL, `province` TEXT NOT NULL, `postalCode` TEXT, `latitude` REAL, `longitude` REAL, `schedule` TEXT, `margin` TEXT, `saleType` TEXT, `submissionType` TEXT, `sourceUpdatedAtMillis` INTEGER, PRIMARY KEY(`externalId`))",
+        "fields": [
+          {
+            "fieldPath": "externalId",
+            "columnName": "externalId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "municipality",
+            "columnName": "municipality",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "province",
+            "columnName": "province",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "postalCode",
+            "columnName": "postalCode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "schedule",
+            "columnName": "schedule",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "margin",
+            "columnName": "margin",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "saleType",
+            "columnName": "saleType",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "submissionType",
+            "columnName": "submissionType",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "sourceUpdatedAtMillis",
+            "columnName": "sourceUpdatedAtMillis",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "externalId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_fuel_stations_province",
+            "unique": false,
+            "columnNames": [
+              "province"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_fuel_stations_province` ON `${TABLE_NAME}` (`province`)"
+          },
+          {
+            "name": "index_fuel_stations_municipality",
+            "unique": false,
+            "columnNames": [
+              "municipality"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_fuel_stations_municipality` ON `${TABLE_NAME}` (`municipality`)"
+          }
+        ]
+      },
+      {
+        "tableName": "fuel_station_prices",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`stationId` TEXT NOT NULL, `productCode` TEXT NOT NULL, `productName` TEXT NOT NULL, `price` REAL NOT NULL, PRIMARY KEY(`stationId`, `productCode`), FOREIGN KEY(`stationId`) REFERENCES `fuel_stations`(`externalId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "stationId",
+            "columnName": "stationId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "productCode",
+            "columnName": "productCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "productName",
+            "columnName": "productName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "price",
+            "columnName": "price",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "stationId",
+            "productCode"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_fuel_station_prices_stationId",
+            "unique": false,
+            "columnNames": [
+              "stationId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_fuel_station_prices_stationId` ON `${TABLE_NAME}` (`stationId`)"
+          },
+          {
+            "name": "index_fuel_station_prices_productCode",
+            "unique": false,
+            "columnNames": [
+              "productCode"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_fuel_station_prices_productCode` ON `${TABLE_NAME}` (`productCode`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "fuel_stations",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "stationId"
+            ],
+            "referencedColumns": [
+              "externalId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "station_cache_metadata",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `downloadedAtMillis` INTEGER NOT NULL, `sourceUpdatedAtMillis` INTEGER, `sourceUrl` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "downloadedAtMillis",
+            "columnName": "downloadedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceUpdatedAtMillis",
+            "columnName": "sourceUpdatedAtMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "sourceUrl",
+            "columnName": "sourceUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6fc6d3d40085d3cb8b649390b3ee56db')"
+    ]
+  }
+}

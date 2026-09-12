@@ -505,11 +505,6 @@ private fun StatisticsHeader(
                 bottom = bottomPadding
             )
     ) {
-        Text(
-            text = "Estadísticas",
-            style = MaterialTheme.typography.headlineSmall
-        )
-        Spacer(modifier = Modifier.height(12.dp))
         androidx.compose.foundation.layout.Row(
             modifier = Modifier
                 .fillMaxWidth()

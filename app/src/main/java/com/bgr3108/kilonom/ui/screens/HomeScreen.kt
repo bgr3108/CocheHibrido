@@ -17,7 +17,6 @@ import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,7 +28,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.data.supportsElectricEntries
 import com.bgr3108.kilonom.data.supportsFuelEntries
 import com.bgr3108.kilonom.ui.components.HomeInfoCard
-import com.bgr3108.kilonom.ui.components.VehicleCollectionIcon
 import com.bgr3108.kilonom.domain.HomeTrendInsight
 import com.bgr3108.kilonom.domain.HomeTrendMetric
 import com.bgr3108.kilonom.domain.TrendStatus
@@ -47,7 +45,6 @@ fun HomeScreen(
     innerPadding: PaddingValues,
     viewModel: HomeViewModel,
     maintenanceViewModel: MaintenanceViewModel,
-    onOpenMyVehicles: () -> Unit,
     onOpenTrends: () -> Unit,
     onOpenMaintenance: () -> Unit
 ) {
@@ -65,9 +62,6 @@ fun HomeScreen(
 
     val vehicle by viewModel
         .vehicle
-        .collectAsStateWithLifecycle()
-    val configuredVehicleCategories by viewModel
-        .configuredVehicleCategories
         .collectAsStateWithLifecycle()
     val homeTrendInsight by viewModel
         .homeTrendInsight
@@ -91,24 +85,6 @@ fun HomeScreen(
             .padding(innerPadding)
             .padding(16.dp)
     ) {
-
-        // Título
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-
-            Text(
-                text = "Inicio",
-                style = MaterialTheme.typography.headlineSmall
-            )
-
-            IconButton(onClick = onOpenMyVehicles) {
-                VehicleCollectionIcon(configuredVehicleCategories)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),

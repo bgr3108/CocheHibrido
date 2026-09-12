@@ -12,7 +12,7 @@ class AdBannerSlotTest {
 
     @Test
     fun mainRoutes_useTheReservedBannerSlot() {
-        listOf("home", "consumption", "stats", "stats/trends", "maintenance").forEach { route ->
+        listOf("home", "consumption", "stats", "stats/trends", "maintenance", "stations").forEach { route ->
             assertTrue(routeUsesAdBannerSlot(route))
         }
     }
@@ -35,6 +35,8 @@ class AdBannerSlotTest {
         assertFalse(shouldReserveBannerSpace(readyState, AdBannerLoadState.LOADING))
         assertTrue(shouldReserveBannerSpace(readyState, AdBannerLoadState.LOADED))
         assertFalse(shouldReserveBannerSpace(readyState, AdBannerLoadState.FAILED))
+        assertTrue(shouldApplyBannerNavigationInsets(readyState, AdBannerLoadState.LOADED))
+        assertFalse(shouldApplyBannerNavigationInsets(readyState, AdBannerLoadState.LOADING))
     }
 
     @Test

@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidView
@@ -31,13 +32,20 @@ internal fun routeUsesAdBannerSlot(route: String?): Boolean = route in setOf(
     "consumption",
     "stats",
     "stats/trends",
-    "maintenance"
+    "maintenance",
+    "stations"
 )
+
+/** System navigation space belongs to a visible banner, never to a collapsed slot. */
+internal fun shouldApplyBannerNavigationInsets(
+    adsUiState: AdsUiState,
+    loadState: AdBannerLoadState
+): Boolean = shouldReserveBannerSpace(adsUiState, loadState)
 
 /**
  * Displays an anchored adaptive test banner only after UMP authorizes ad requests.
  *
- * It is a sibling of the bottom navigation in the app scaffold, so visible banner height is
+ * It is the fixed bottom element of the app scaffold, so visible banner height is
  * included in the content insets instead of overlaying scrollable content or floating actions.
  * A failed or unavailable request collapses to zero height without user-facing errors.
  */
@@ -86,6 +94,7 @@ internal fun AdBannerSlot(
             }
 
             if (loadState != AdBannerLoadState.FAILED) {
+                val reserveBannerSpace = shouldApplyBannerNavigationInsets(adsUiState, loadState)
                 AndroidView(
                     factory = { adView },
                     modifier = Modifier
@@ -93,12 +102,13 @@ internal fun AdBannerSlot(
                         // While loading, retain only an imperceptible attachment point. The
                         // full adaptive height is reserved exclusively after an ad is visible.
                         .height(
-                            if (shouldReserveBannerSpace(adsUiState, loadState)) {
+                            if (reserveBannerSpace) {
                                 visibleHeight
                             } else {
                                 androidx.compose.ui.unit.Dp.Hairline
                             }
                         )
+                        .then(if (reserveBannerSpace) Modifier.navigationBarsPadding() else Modifier)
                 )
             }
         }

@@ -5,8 +5,6 @@
     <string name="whats_new_message">Kilonom 1.3 mejora el seguimiento de mantenimiento para adaptarse mejor a los intervalos reales de cada vehículo.\n\n• Configura mantenimientos recurrentes por kilometraje, tiempo o ambos.\n\n• Define casos como “cada 30.000 km o 2 años, lo que ocurra antes”.\n\n• Elige cuánto antes quieres que Kilonom marque un mantenimiento como próximo por kilometraje o fecha.\n\n• Al registrar un mantenimiento, Kilonom puede calcular automáticamente el siguiente vencimiento.\n\n• También puedes configurar el próximo mantenimiento manualmente o dejarlo sin aviso.\n\n• Los mantenimientos con fecha pueden abrirse en tu calendario para crear un evento.\n\n• Mejoras de accesibilidad, presentación y estabilidad.</string>
     <string name="whats_new_confirm">Entendido</string>
     <string name="whats_new_instagram">Instagram de Kilonom</string>
-    <string name="usage_guide_title">Guía de uso</string>
-    <string name="usage_guide_back">Volver</string>
     <string name="usage_guide_introduction">Consulta cómo registrar tus vehículos, consumos, estadísticas y mantenimientos en Kilonom.</string>
     <string name="usage_guide_expanded">Expandida</string>
     <string name="usage_guide_collapsed">Contraída</string>

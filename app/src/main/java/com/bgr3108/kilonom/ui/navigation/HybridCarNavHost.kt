@@ -32,6 +32,7 @@ import com.bgr3108.kilonom.ui.screens.MyVehiclesScreen
 import com.bgr3108.kilonom.ui.screens.AddVehicleScreen
 import com.bgr3108.kilonom.ui.screens.VehicleEditorScreen
 import com.bgr3108.kilonom.ui.screens.UsageGuideScreen
+import com.bgr3108.kilonom.ui.screens.StationsScreen
 import com.bgr3108.kilonom.viewmodel.FuelEntryViewModel
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 import com.bgr3108.kilonom.viewmodel.PeriodSummaryViewModel
@@ -41,6 +42,7 @@ import com.bgr3108.kilonom.ui.screens.MaintenanceScreen
 import com.bgr3108.kilonom.ui.screens.MaintenanceDetailScreen
 import com.bgr3108.kilonom.ui.screens.MaintenanceFormScreen
 import com.bgr3108.kilonom.ui.screens.MaintenanceFormMode
+import com.bgr3108.kilonom.viewmodel.StationsViewModel
 
 @Composable
 fun HybridCarNavHost(
@@ -51,8 +53,8 @@ fun HybridCarNavHost(
     periodSummaryViewModel: PeriodSummaryViewModel,
     myVehiclesViewModel: MyVehiclesViewModel,
     maintenanceViewModel: MaintenanceViewModel,
-    showAdPrivacyOptions: Boolean,
-    onOpenAdPrivacyOptions: () -> Unit
+    stationsViewModel: StationsViewModel,
+    onNavigateTopLevel: (String) -> Unit
 ){
 
     NavHost(
@@ -65,20 +67,11 @@ fun HybridCarNavHost(
                 innerPadding = innerPadding,
                 viewModel = homeViewModel,
                 maintenanceViewModel = maintenanceViewModel,
-                onOpenMyVehicles = {
-                    navController.navigate("my_vehicles")
-                },
                 onOpenTrends = {
-                    navController.navigate("stats/trends")
+                    onNavigateTopLevel("stats/trends")
                 },
                 onOpenMaintenance = {
-                    navController.navigate("maintenance") {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    onNavigateTopLevel("maintenance")
                 }
             )
         }
@@ -143,25 +136,23 @@ fun HybridCarNavHost(
             MyVehiclesScreen(
                 innerPadding = innerPadding,
                 viewModel = myVehiclesViewModel,
-                homeViewModel = homeViewModel,
-                onBack = { navController.popBackStack() },
                 onAdd = { navController.navigate("add_vehicle") },
                 onEdit = { id -> navController.navigate("edit_vehicle/$id") },
-                onOpenUsageGuide = { navController.navigate("usage_guide") },
-                onOpenPrivacy = { navController.navigate("privacy") },
-                showAdPrivacyOptions = showAdPrivacyOptions,
-                onOpenAdPrivacyOptions = onOpenAdPrivacyOptions,
                 onActiveVehicleDeleted = {
-                    navController.navigate("home") {
-                        popUpTo("home") { inclusive = false }
-                        launchSingleTop = true
-                    }
+                    onNavigateTopLevel("home")
                 }
             )
         }
 
+        composable("stations") {
+            StationsScreen(
+                innerPadding = innerPadding,
+                viewModel = stationsViewModel
+            )
+        }
+
         composable("usage_guide") {
-            UsageGuideScreen(onBack = { navController.popBackStack() })
+            UsageGuideScreen(innerPadding = innerPadding)
         }
 
         composable("add_vehicle") {
@@ -315,9 +306,7 @@ fun HybridCarNavHost(
         }
         composable("privacy") {
             PrivacyScreen(
-                onBack = {
-                    navController.popBackStack()
-                }
+                innerPadding = innerPadding
             )
         }
     }

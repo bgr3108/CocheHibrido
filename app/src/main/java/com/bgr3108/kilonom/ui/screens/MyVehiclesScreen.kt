@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Info
@@ -34,13 +33,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.data.VehicleCategory
@@ -51,47 +48,23 @@ import com.bgr3108.kilonom.ui.theme.CardBlueDark
 import com.bgr3108.kilonom.ui.theme.CardBlueLight
 import com.bgr3108.kilonom.util.toKilometersDisplay
 import com.bgr3108.kilonom.util.toSpanishDecimal
-import com.bgr3108.kilonom.util.ExternalLinks
-import com.bgr3108.kilonom.util.openExternalUrl
-import com.bgr3108.kilonom.viewmodel.HomeViewModel
 import com.bgr3108.kilonom.viewmodel.MyVehiclesViewModel
-import com.bgr3108.kilonom.viewmodel.ResetState
 
 @Composable
 fun MyVehiclesScreen(
     innerPadding: PaddingValues,
     viewModel: MyVehiclesViewModel,
-    homeViewModel: HomeViewModel,
-    onBack: () -> Unit,
     onAdd: () -> Unit,
     onEdit: (Long) -> Unit,
-    onOpenUsageGuide: () -> Unit,
-    onOpenPrivacy: () -> Unit,
-    showAdPrivacyOptions: Boolean,
-    onOpenAdPrivacyOptions: () -> Unit,
     onActiveVehicleDeleted: () -> Unit
 ) {
-    val context = LocalContext.current
     val summaries by viewModel.vehicleSummaries.collectAsStateWithLifecycle()
     val activeVehicleId by viewModel.activeVehicleId.collectAsStateWithLifecycle()
     val isWorking by viewModel.isWorking.collectAsStateWithLifecycle()
     val switchingVehicleId by viewModel.switchingVehicleId.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
-    val resetState by homeViewModel.resetState.collectAsStateWithLifecycle()
     val pendingDeletion = remember { mutableStateOf<VehicleSummary?>(null) }
     val detailsSummary = remember { mutableStateOf<VehicleSummary?>(null) }
-    val globalMenuExpanded = remember { mutableStateOf(false) }
-    val showResetDialog = remember { mutableStateOf(false) }
-    val resetRequested = remember { mutableStateOf(false) }
-    val instagramOpenError = remember { mutableStateOf(false) }
-
-    LaunchedEffect(resetRequested.value, resetState) {
-        if (resetRequested.value && resetState == ResetState.IDLE) {
-            showResetDialog.value = false
-            resetRequested.value = false
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -100,68 +73,6 @@ fun MyVehiclesScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
-            }
-            Text(
-                "Mis vehículos",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.weight(1f)
-            )
-            IconButton(onClick = { globalMenuExpanded.value = true }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "Acciones globales")
-            }
-            DropdownMenu(
-                expanded = globalMenuExpanded.value,
-                onDismissRequest = { globalMenuExpanded.value = false }
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Guía de uso") },
-                    leadingIcon = { Icon(Icons.Default.Info, contentDescription = null) },
-                    onClick = {
-                        globalMenuExpanded.value = false
-                        onOpenUsageGuide()
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Instagram de Kilonom") },
-                    onClick = {
-                        globalMenuExpanded.value = false
-                        instagramOpenError.value = !context.openExternalUrl(
-                            ExternalLinks.INSTAGRAM_PROFILE_URL
-                        )
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Privacidad") },
-                    onClick = {
-                        globalMenuExpanded.value = false
-                        onOpenPrivacy()
-                    }
-                )
-                if (showAdPrivacyOptions) {
-                    DropdownMenuItem(
-                        text = { Text("Preferencias de publicidad") },
-                        onClick = {
-                            globalMenuExpanded.value = false
-                            onOpenAdPrivacyOptions()
-                        }
-                    )
-                }
-                DropdownMenuItem(
-                    text = { Text("Borrar todos los datos") },
-                    onClick = {
-                        globalMenuExpanded.value = false
-                        showResetDialog.value = true
-                    }
-                )
-            }
-        }
-
         summaries.forEach { summary ->
             VehicleSummaryCard(
                 summary = summary,
@@ -180,12 +91,6 @@ fun MyVehiclesScreen(
             )
         }
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        if (instagramOpenError.value) {
-            Text(
-                "No se pudo abrir Instagram. Inténtalo de nuevo cuando tengas un navegador disponible.",
-                color = MaterialTheme.colorScheme.error
-            )
-        }
         ExtendedFloatingActionButton(
             onClick = onAdd,
             icon = { Icon(Icons.Default.Add, contentDescription = null) },
@@ -225,51 +130,6 @@ fun MyVehiclesScreen(
         )
     }
 
-    if (showResetDialog.value) {
-        AlertDialog(
-            onDismissRequest = {
-                if (resetState != ResetState.LOADING) {
-                    homeViewModel.dismissResetError()
-                    showResetDialog.value = false
-                }
-            },
-            title = { Text("Borrar todos los datos") },
-            text = {
-                if (resetState == ResetState.ERROR) {
-                    Text("No se pudieron borrar todos los datos. Inténtalo de nuevo.")
-                } else {
-                    Text("Se eliminarán todos los vehículos y consumos guardados en Kilonom. Esta acción no se puede deshacer.")
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    enabled = resetState != ResetState.LOADING,
-                    onClick = {
-                        resetRequested.value = true
-                        homeViewModel.resetApplication()
-                    }
-                ) {
-                    if (resetState == ResetState.LOADING) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Text("Borrar todos")
-                    }
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    enabled = resetState != ResetState.LOADING,
-                    onClick = {
-                        homeViewModel.dismissResetError()
-                        showResetDialog.value = false
-                    }
-                ) { Text("Cancelar") }
-            }
-        )
-    }
 }
 
 @Composable

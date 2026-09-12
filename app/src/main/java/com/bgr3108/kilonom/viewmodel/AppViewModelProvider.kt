@@ -48,5 +48,9 @@ object AppViewModelProvider {
             )
         }
 
+        initializer {
+            StationsViewModel(hybridCarApplication().container.stationRepository)
+        }
+
     }
 }

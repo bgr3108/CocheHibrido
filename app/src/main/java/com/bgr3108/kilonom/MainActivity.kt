@@ -5,47 +5,54 @@ package com.bgr3108.kilonom
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.LocalGasStation
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -55,7 +62,14 @@ import com.bgr3108.kilonom.data.Vehicle
 import com.bgr3108.kilonom.ads.AdsManager
 import com.bgr3108.kilonom.ui.components.AdBannerSlot
 import com.bgr3108.kilonom.ui.components.routeUsesAdBannerSlot
+import com.bgr3108.kilonom.ui.navigation.DrawerAction
 import com.bgr3108.kilonom.ui.navigation.HybridCarNavHost
+import com.bgr3108.kilonom.ui.navigation.KilonomNavigationDrawerContent
+import com.bgr3108.kilonom.ui.navigation.drawerRouteTitle
+import com.bgr3108.kilonom.ui.navigation.isDrawerTopLevelRoute
+import com.bgr3108.kilonom.ui.navigation.shouldCloseDrawerOnBack
+import com.bgr3108.kilonom.ui.navigation.shouldNavigateToDrawerRoute
+import com.bgr3108.kilonom.ui.navigation.showsVehicleTopOverflow
 import com.bgr3108.kilonom.ui.screens.SetupScreen
 import com.bgr3108.kilonom.ui.theme.CocheHibridoTheme
 import com.bgr3108.kilonom.util.ExternalLinks
@@ -66,7 +80,9 @@ import com.bgr3108.kilonom.viewmodel.HomeViewModel
 import com.bgr3108.kilonom.viewmodel.PeriodSummaryViewModel
 import com.bgr3108.kilonom.viewmodel.MyVehiclesViewModel
 import com.bgr3108.kilonom.viewmodel.MaintenanceViewModel
+import com.bgr3108.kilonom.viewmodel.StationsViewModel
 import com.bgr3108.kilonom.viewmodel.ResetState
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -90,6 +106,10 @@ class MainActivity : ComponentActivity() {
         AppViewModelProvider.Factory
     }
 
+    private val stationsViewModel: StationsViewModel by viewModels {
+        AppViewModelProvider.Factory
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -105,6 +125,7 @@ class MainActivity : ComponentActivity() {
                         periodSummaryViewModel = periodSummaryViewModel,
                         myVehiclesViewModel = myVehiclesViewModel,
                         maintenanceViewModel = maintenanceViewModel,
+                        stationsViewModel = stationsViewModel,
                         adsManager = (application as HybridCarApplication).adsManager
                     )
                 }
@@ -114,12 +135,14 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 internal fun AppContent(
     fuelViewModel: FuelEntryViewModel,
     homeViewModel: HomeViewModel,
     periodSummaryViewModel: PeriodSummaryViewModel,
     myVehiclesViewModel: MyVehiclesViewModel,
     maintenanceViewModel: MaintenanceViewModel,
+    stationsViewModel: StationsViewModel,
     adsManager: AdsManager
 ) {
     val navController = rememberNavController()
@@ -154,135 +177,139 @@ internal fun AppContent(
         val navBackStackEntry by navController.currentBackStackEntryAsState()
 
         val currentRoute = navBackStackEntry?.destination?.route
-
-        val showBottomBar = routeUsesAdBannerSlot(currentRoute)
-        val showAllBottomNavigationLabels = shouldShowAllBottomNavigationLabels(
-            LocalDensity.current.fontScale
-        )
-        val navigateToTopLevel: (String) -> Unit = { route ->
-            navController.navigate(route) {
-                popUpTo(navController.graph.findStartDestination().id) {
-                    saveState = true
-                }
-                launchSingleTop = true
-                restoreState = true
+        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+        val scope = androidx.compose.runtime.rememberCoroutineScope()
+        val context = LocalContext.current
+        val snackbarHostState = remember { SnackbarHostState() }
+        val showVehicleOverflow = remember { mutableStateOf(false) }
+        val showResetDialog = remember { mutableStateOf(false) }
+        val resetRequested = remember { mutableStateOf(false) }
+        val stationsUiState by stationsViewModel.uiState.collectAsStateWithLifecycle()
+        LaunchedEffect(resetRequested.value, resetState) {
+            if (resetRequested.value && resetState == ResetState.IDLE) {
+                showResetDialog.value = false
+                resetRequested.value = false
             }
         }
-        Scaffold(
-            bottomBar = {
-                if (showBottomBar) {
-                    Column {
-                        AdBannerSlot(adsUiState = adsUiState)
-                        NavigationBar(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        ) {
-                            NavigationBarItem(
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = MaterialTheme.colorScheme.primary,
-                                selectedTextColor = MaterialTheme.colorScheme.primary,
-                                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                            ),
-                            selected = currentRoute == "home",
-                            onClick = { navigateToTopLevel("home") },
-                            icon = { Icon(Icons.Default.Home, contentDescription = null) },
-                            alwaysShowLabel = showAllBottomNavigationLabels,
-                            label = {
-                                Text(
-                                    text = "Inicio",
-                                    maxLines = 1,
-                                    softWrap = false,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        )
-
-                        NavigationBarItem(
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = MaterialTheme.colorScheme.primary,
-                                selectedTextColor = MaterialTheme.colorScheme.primary,
-                                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                            ),
-                            selected = currentRoute == "consumption",
-                            onClick = { navigateToTopLevel("consumption") },
-                            icon = {
-                                Icon(
-                                    Icons.Default.LocalGasStation,
-                                    contentDescription = null
-                                )
-                            },
-                            alwaysShowLabel = showAllBottomNavigationLabels,
-                            label = {
-                                Text(
-                                    text = "Consumos",
-                                    maxLines = 1,
-                                    softWrap = false,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        )
-                        NavigationBarItem(
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = MaterialTheme.colorScheme.primary,
-                                selectedTextColor = MaterialTheme.colorScheme.primary,
-                                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                            ),
-                            selected = currentRoute == "stats" || currentRoute == "stats/trends",
-                            onClick = { navigateToTopLevel("stats") },
-                            icon = { Icon(Icons.Default.BarChart, contentDescription = null) },
-                            alwaysShowLabel = showAllBottomNavigationLabels,
-                            label = {
-                                Text(
-                                    text = "Estadísticas",
-                                    maxLines = 1,
-                                    softWrap = false,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        )
-                        NavigationBarItem(
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = MaterialTheme.colorScheme.primary,
-                                selectedTextColor = MaterialTheme.colorScheme.primary,
-                                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                            ),
-                            selected = currentRoute == "maintenance",
-                            onClick = { navigateToTopLevel("maintenance") },
-                            icon = { Icon(Icons.Default.Build, contentDescription = null) },
-                            alwaysShowLabel = showAllBottomNavigationLabels,
-                            label = {
-                                Text(
-                                    text = "Mantenimiento",
-                                    maxLines = 1,
-                                    softWrap = false,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        )
-                        }
+        val navigateToTopLevel: (String) -> Unit = { route ->
+            if (shouldNavigateToDrawerRoute(currentRoute, route)) {
+                navController.navigate(route) {
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        saveState = true
                     }
+                    launchSingleTop = true
+                    restoreState = true
                 }
             }
-        ) { innerPadding ->
+        }
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            gesturesEnabled = isDrawerTopLevelRoute(currentRoute),
+            drawerContent = {
+                KilonomNavigationDrawerContent(
+                    currentRoute = currentRoute,
+                    showAdPrivacyOptions = adsUiState.privacyOptionsRequired,
+                    onItemSelected = { item ->
+                        scope.launch {
+                            drawerState.close()
+                            when (item.action) {
+                                DrawerAction.NAVIGATE -> item.route?.let(navigateToTopLevel)
+                                DrawerAction.AD_PRIVACY_OPTIONS -> activity?.let(adsManager::showPrivacyOptions)
+                                DrawerAction.INSTAGRAM -> {
+                                    if (!context.openExternalUrl(ExternalLinks.INSTAGRAM_PROFILE_URL)) {
+                                        snackbarHostState.showSnackbar(
+                                            "No se pudo abrir Instagram. Inténtalo de nuevo cuando tengas un navegador disponible."
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+        ) {
+            Scaffold(
+                topBar = {
+                    drawerRouteTitle(currentRoute)?.let { title ->
+                        TopAppBar(
+                            title = { Text(title) },
+                            navigationIcon = {
+                                IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                    Icon(Icons.Default.Menu, contentDescription = "Abrir menú de navegación")
+                                }
+                            },
+                            actions = {
+                                if (showsVehicleTopOverflow(currentRoute)) {
+                                    Box {
+                                        IconButton(onClick = { showVehicleOverflow.value = true }) {
+                                            Icon(Icons.Default.MoreVert, contentDescription = "Acciones de datos")
+                                        }
+                                        DropdownMenu(
+                                            expanded = showVehicleOverflow.value,
+                                            onDismissRequest = { showVehicleOverflow.value = false }
+                                        ) {
+                                            DropdownMenuItem(
+                                                text = { Text("Borrar todos los datos") },
+                                                onClick = {
+                                                    showVehicleOverflow.value = false
+                                                    showResetDialog.value = true
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                                if (currentRoute == "stations") {
+                                    IconButton(
+                                        onClick = stationsViewModel::refresh,
+                                        enabled = !stationsUiState.isRefreshing
+                                    ) {
+                                        if (stationsUiState.isRefreshing) {
+                                            CircularProgressIndicator(modifier = Modifier.height(24.dp), strokeWidth = 2.dp)
+                                        } else {
+                                            Icon(Icons.Default.Refresh, contentDescription = "Actualizar estaciones")
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    }
+                },
+                bottomBar = {
+                    if (routeUsesAdBannerSlot(currentRoute)) {
+                        AdBannerSlot(adsUiState = adsUiState)
+                    }
+                },
+                snackbarHost = { SnackbarHost(snackbarHostState) }
+            ) { innerPadding ->
+                HybridCarNavHost(
+                    navController = navController,
+                    innerPadding = innerPadding,
+                    fuelViewModel = fuelViewModel,
+                    homeViewModel = homeViewModel,
+                    periodSummaryViewModel = periodSummaryViewModel,
+                    myVehiclesViewModel = myVehiclesViewModel,
+                    maintenanceViewModel = maintenanceViewModel,
+                    stationsViewModel = stationsViewModel,
+                    onNavigateTopLevel = navigateToTopLevel
+                )
+                // Scaffold content is subcomposed. Register after the NavHost in that same
+                // composition so an open drawer consumes Back before navigation can change route.
+                BackHandler(enabled = shouldCloseDrawerOnBack(drawerState.isOpen)) {
+                    scope.launch { drawerState.close() }
+                }
+            }
+        }
 
-            HybridCarNavHost(
-                navController = navController,
-                innerPadding = innerPadding,
-                fuelViewModel = fuelViewModel,
-                homeViewModel = homeViewModel,
-                periodSummaryViewModel = periodSummaryViewModel,
-                myVehiclesViewModel = myVehiclesViewModel,
-                maintenanceViewModel = maintenanceViewModel,
-                showAdPrivacyOptions = adsUiState.privacyOptionsRequired,
-                onOpenAdPrivacyOptions = {
-                    activity?.let(adsManager::showPrivacyOptions)
+        if (showResetDialog.value) {
+            ResetAllDataDialog(
+                resetState = resetState,
+                onReset = {
+                    resetRequested.value = true
+                    homeViewModel.resetApplication()
+                },
+                onDismiss = {
+                    homeViewModel.dismissResetError()
+                    showResetDialog.value = false
                 }
             )
         }
@@ -297,8 +324,38 @@ internal fun AppContent(
 internal fun shouldShowSetup(vehicle: Vehicle, resetState: ResetState): Boolean =
     vehicle.type == null && resetState == ResetState.IDLE
 
-/** Keeps every tab label visible at normal scale and lets Material show only the selected one above it. */
-internal fun shouldShowAllBottomNavigationLabels(fontScale: Float): Boolean = fontScale <= 1.15f
+@Composable
+private fun ResetAllDataDialog(
+    resetState: ResetState,
+    onReset: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { if (resetState != ResetState.LOADING) onDismiss() },
+        title = { Text("Borrar todos los datos") },
+        text = {
+            if (resetState == ResetState.ERROR) {
+                Text("No se pudieron borrar todos los datos. Inténtalo de nuevo.")
+            } else {
+                Text("Se eliminarán todos los vehículos y consumos guardados en Kilonom. Esta acción no se puede deshacer.")
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = resetState != ResetState.LOADING, onClick = onReset) {
+                if (resetState == ResetState.LOADING) {
+                    CircularProgressIndicator(modifier = Modifier.height(18.dp), strokeWidth = 2.dp)
+                } else {
+                    Text("Borrar todos")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(enabled = resetState != ResetState.LOADING, onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
+}
 
 @Composable
 private fun ReleaseNotesDialog(onDismiss: () -> Unit) {

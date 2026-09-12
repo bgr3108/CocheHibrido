@@ -2,10 +2,13 @@ package com.bgr3108.kilonom.data
 
 import android.content.Context
 import com.bgr3108.kilonom.database.HybridCarDatabase
+import com.bgr3108.kilonom.stations.StationCacheDatabase
+import com.bgr3108.kilonom.stations.StationRepository
 
 class AppContainer(context: Context) {
 
     private val database = HybridCarDatabase.getDatabase(context)
+    private val stationCacheDatabase = StationCacheDatabase.getDatabase(context)
 
     val carRepository: CarRepository by lazy {
         CarRepository(database.carDao())
@@ -30,6 +33,10 @@ class AppContainer(context: Context) {
             maintenanceDao = database.maintenanceDao(),
             vehicleRepository = vehicleRepository
         )
+    }
+
+    val stationRepository: StationRepository by lazy {
+        StationRepository(stationCacheDatabase, stationCacheDatabase.stationCacheDao())
     }
 
 }
