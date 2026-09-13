@@ -5,6 +5,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import androidx.compose.ui.unit.dp
+import com.bgr3108.kilonom.stations.StationsViewMode
 
 class KilonomNavigationDrawerTest {
     @Test
@@ -63,6 +64,13 @@ class KilonomNavigationDrawerTest {
     @Test
     fun closedDrawer_defersBackToTheExistingNavigationBehavior() {
         assertFalse(shouldCloseDrawerOnBack(false))
+    }
+
+    @Test
+    fun mapDisablesOnlyTheDrawerEdgeGestureWhileTheMenuButtonRemainsAvailable() {
+        assertFalse(drawerGesturesEnabled("stations", StationsViewMode.MAP))
+        assertTrue(drawerGesturesEnabled("stations", StationsViewMode.LIST))
+        assertTrue(drawerGesturesEnabled("maintenance", StationsViewMode.MAP))
     }
 
     @Test

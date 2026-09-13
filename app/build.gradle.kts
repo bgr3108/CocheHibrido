@@ -96,6 +96,11 @@ dependencies {
     implementation(libs.google.mobile.ads)
     implementation(libs.google.ump)
 
+    // The map is rendered from the local station cache. It does not require a map API key.
+    implementation(libs.maplibre.compose)
+    runtimeOnly(libs.maplibre.compose.runtime.vulkan.android)
+    implementation(libs.kotlinx.serialization.json)
+
     // ROOM
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

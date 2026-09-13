@@ -112,6 +112,8 @@ class MitecoStationMapperTest {
         address = "",
         municipality = "",
         province = "",
+        latitude = null,
+        longitude = null,
         schedule = null,
         sourceUpdatedAtMillis = null,
         productCode = productCode,

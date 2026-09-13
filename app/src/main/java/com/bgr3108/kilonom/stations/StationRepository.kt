@@ -15,12 +15,21 @@ class StationRepository(
     fun observeProvinces(): Flow<List<String>> = dao.observeProvinces()
     fun observeMunicipalities(province: String?): Flow<List<String>> = dao.observeMunicipalities(province)
 
-    fun observeStations(filter: StationFilter): Flow<List<StationListItem>> =
+    fun observeStations(
+        filter: StationFilter,
+        currentLocation: StationCoordinates? = null
+    ): Flow<List<StationListItem>> =
         dao.observeStationsForProducts(
             productCodes = filter.fuelType.productCodesByPriority,
             province = filter.province,
             municipality = filter.municipality
-        ).map { rows -> mapStationRowsForFuelType(rows, filter.fuelType) }
+        ).map { rows ->
+            withDistancesAndSort(
+                stations = mapStationRowsForFuelType(rows, filter.fuelType),
+                origin = currentLocation,
+                sortOrder = filter.sortOrder
+            )
+        }
 
     suspend fun refresh(): Result<Int> = withContext(Dispatchers.IO) {
         runCatching {

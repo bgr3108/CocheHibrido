@@ -26,9 +26,9 @@ interface StationCacheDao {
     fun observeMunicipalities(province: String?): Flow<List<String>>
 
     @Query("""
-        SELECT s.externalId, s.name, s.address, s.municipality, s.province, s.schedule,
+        SELECT s.externalId, s.name, s.address, s.municipality, s.province, s.latitude, s.longitude, s.schedule,
                s.sourceUpdatedAtMillis, p.productCode, p.price, p.productName,
-               1 AS hasSelectedFuel
+               1 AS hasSelectedFuel, NULL AS distanceMeters
         FROM fuel_stations s
         INNER JOIN fuel_station_prices p ON p.stationId = s.externalId
         WHERE p.productCode IN (:productCodes)

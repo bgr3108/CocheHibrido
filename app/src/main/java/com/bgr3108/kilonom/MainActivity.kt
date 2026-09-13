@@ -65,8 +65,8 @@ import com.bgr3108.kilonom.ui.components.routeUsesAdBannerSlot
 import com.bgr3108.kilonom.ui.navigation.DrawerAction
 import com.bgr3108.kilonom.ui.navigation.HybridCarNavHost
 import com.bgr3108.kilonom.ui.navigation.KilonomNavigationDrawerContent
+import com.bgr3108.kilonom.ui.navigation.drawerGesturesEnabled
 import com.bgr3108.kilonom.ui.navigation.drawerRouteTitle
-import com.bgr3108.kilonom.ui.navigation.isDrawerTopLevelRoute
 import com.bgr3108.kilonom.ui.navigation.shouldCloseDrawerOnBack
 import com.bgr3108.kilonom.ui.navigation.shouldNavigateToDrawerRoute
 import com.bgr3108.kilonom.ui.navigation.showsVehicleTopOverflow
@@ -204,7 +204,7 @@ internal fun AppContent(
         }
         ModalNavigationDrawer(
             drawerState = drawerState,
-            gesturesEnabled = isDrawerTopLevelRoute(currentRoute),
+            gesturesEnabled = drawerGesturesEnabled(currentRoute, stationsUiState.viewMode),
             drawerContent = {
                 KilonomNavigationDrawerContent(
                     currentRoute = currentRoute,

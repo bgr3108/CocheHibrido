@@ -88,7 +88,7 @@ fun PrivacyScreen(
 
                     PrivacySection(
                         title = "Estaciones de servicio",
-                        description = "La sección Estaciones puede descargar datos públicos de MITECO mediante conexión segura y guardarlos localmente como caché. Kilonom no envía a MITECO tus vehículos, consumos ni mantenimientos, no utiliza servidores propios para esta función y no usa tu ubicación en esta fase."
+                        description = "La sección Estaciones puede descargar datos públicos de MITECO mediante conexión segura y guardarlos localmente como caché. Si eliges usar tu ubicación, Kilonom la usa solo durante la consulta para calcular distancias y mostrar estaciones cercanas: no la guarda como historial ni la envía a MITECO o a servidores propios. El mapa puede solicitar teselas a OpenFreeMap; ese proveedor y su infraestructura de red reciben la petición necesaria para mostrar el mapa."
                     )
 
                     HorizontalDivider()

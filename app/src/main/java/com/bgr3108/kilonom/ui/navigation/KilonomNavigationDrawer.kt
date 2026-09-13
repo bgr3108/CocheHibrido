@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
+import com.bgr3108.kilonom.stations.StationsViewMode
 
 internal enum class DrawerSection(val title: String) {
     PRIMARY("Principal"),
@@ -69,6 +70,10 @@ internal fun drawerNavigationItems(showAdPrivacyOptions: Boolean): List<DrawerIt
 internal fun isDrawerTopLevelRoute(route: String?): Boolean = route in setOf(
     "home", "consumption", "stats", "stats/trends", "maintenance", "stations", "my_vehicles", "usage_guide", "privacy"
 )
+
+/** MapLibre owns horizontal pans while the map is visible; the menu still opens from its button. */
+internal fun drawerGesturesEnabled(route: String?, stationsViewMode: StationsViewMode): Boolean =
+    isDrawerTopLevelRoute(route) && !(route == "stations" && stationsViewMode == StationsViewMode.MAP)
 
 internal fun drawerRouteTitle(route: String?): String? = when (route) {
     "home" -> "Inicio"
