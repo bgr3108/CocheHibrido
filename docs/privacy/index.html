@@ -186,7 +186,7 @@
     <div>
       <p class="brand">Kilonom</p>
       <h1>Política de privacidad</h1>
-      <p class="updated">Última actualización: 13 de septiembre de 2026</p>
+      <p class="updated">Última actualización: 22 de septiembre de 2026</p>
     </div>
   </header>
 
@@ -228,6 +228,12 @@
         <p>
           Los avisos de mantenimiento se muestran dentro de la aplicación según las fechas o
           kilometrajes que configures. Kilonom no envía notificaciones push ni avisos externos.
+        </p>
+        <p>
+          Estaciones también conserva localmente cachés separadas de datos públicos. Para no repetir
+          la explicación de ubicación ni una solicitud de permiso, puede guardar estados de interfaz,
+          como que ya se mostró esa explicación o que el permiso ya se solicitó. No guarda las
+          coordenadas de ubicación en esos estados.
         </p>
       </section>
 
@@ -277,24 +283,29 @@
       <section>
         <h2>6. Estaciones de servicio</h2>
         <p>
-          La sección Estaciones puede consultar por HTTPS datos públicos de instalaciones de suministro
-          y precios publicados por el Ministerio para la Transición Ecológica y el Reto Demográfico (MITECO).
-          Kilonom descarga esos datos directamente desde la fuente pública y los guarda localmente como caché.
+          La sección Estaciones consulta por HTTPS datos públicos de MITECO sobre instalaciones y precios de
+          carburantes, y datos públicos de MITECO / RIPREE sobre puntos de recarga. Kilonom los descarga directamente
+          desde esas fuentes y los guarda localmente en cachés independientes para poder mostrarlos con mayor rapidez.
+          Si una actualización falla, conserva los últimos datos públicos disponibles.
         </p>
         <p>
-          Kilonom no envía a MITECO tus vehículos, consumos, mantenimientos ni otros datos introducidos por ti.
-          Esta función no usa un servidor propio.
+          Kilonom no envía a MITECO tus vehículos, consumos, mantenimientos ni otros datos introducidos por ti. Tampoco
+          envía tu ubicación personal a MITECO para descargar las bases públicas. Esta función no usa un servidor propio.
+          La información de recarga no representa necesariamente disponibilidad, tarifas ni inicio de carga en tiempo
+          real; para ello debes consultar la aplicación o web del operador.
         </p>
         <p>
-          Puedes elegir voluntariamente usar la ubicación de tu dispositivo para calcular distancias aproximadas
-          y ordenar estaciones cercanas. Kilonom utiliza esa posición solo durante la consulta: no la almacena como
-          historial, no la asocia a vehículos o consumos y no la envía a MITECO ni a servidores propios.
+          La ubicación es opcional. Puedes buscar por provincia y, de forma opcional, municipio sin concederla. Si eliges
+          usarla, Kilonom acepta ubicación aproximada o precisa para mostrar estaciones cercanas y calcular distancias.
+          La posición se procesa localmente durante el uso de Estaciones: no se utiliza en segundo plano, no se conserva
+          como historial, no se asocia a vehículos o consumos y no se guarda en Room, DataStore ni archivos.
         </p>
         <p>
-          El mapa utiliza OpenFreeMap para solicitar teselas cartográficas. Al mostrar zonas nuevas, OpenFreeMap y
-          su infraestructura de red reciben la petición técnica necesaria para entregar esas teselas; puedes consultar
-          su <a href="https://openfreemap.org/privacy/">política de privacidad</a>. Los marcadores de estaciones
-          proceden de la caché local de Kilonom.
+          MapLibre es la librería que muestra el mapa dentro de Kilonom. Para cargar zonas nuevas, el mapa solicita
+          teselas a OpenFreeMap; la cartografía y atribución pueden incluir OpenMapTiles y OpenStreetMap. OpenFreeMap y
+          su infraestructura de red reciben la petición técnica necesaria, incluida la dirección IP y otros datos
+          habituales de conexión, conforme a su <a href="https://openfreemap.org/privacy/">política de privacidad</a>.
+          Los marcadores de estaciones proceden de la caché local de Kilonom.
         </p>
       </section>
 
@@ -314,19 +325,20 @@
       <section>
         <h2>8. Permisos</h2>
         <p>
-          Kilonom utiliza el permiso INTERNET para cargar publicidad cuando esté disponible y consultar
-          voluntariamente los datos públicos de Estaciones. La aplicación puede solicitar ubicación aproximada o precisa
-          solo si eliges la función para calcular distancias y mostrar estaciones cercanas. No solicita ubicación en segundo
-          plano ni permisos de contactos, cámara, micrófono, archivos personales o teléfono.
+          Kilonom utiliza el permiso INTERNET para actualizar datos públicos de Estaciones, cargar zonas nuevas del mapa,
+          abrir enlaces externos y cargar publicidad cuando esté disponible. La aplicación puede solicitar ubicación
+          aproximada o precisa solo si eliges la función para calcular distancias y mostrar estaciones cercanas. No solicita
+          ubicación en segundo plano ni permisos de contactos, cámara, micrófono, archivos personales o teléfono.
         </p>
       </section>
 
       <section>
         <h2>9. Conservación de los datos</h2>
         <p>
-          Los datos permanecen almacenados localmente hasta que los modifiques, utilices la opción
-          <strong>«Borrar todos los datos»</strong>, elimines los datos de la aplicación desde Android
-          o desinstales Kilonom.
+          Tus vehículos, consumos, mantenimiento y demás datos personales permanecen almacenados localmente hasta que
+          los modifiques, utilices la opción <strong>«Borrar todos los datos»</strong>, elimines los datos de la aplicación
+          desde Android o desinstales Kilonom. Las cachés públicas de Estaciones son independientes y se pueden borrar
+          desde esa sección.
         </p>
         <p>
           Las posibles copias de seguridad gestionadas por Android o Google dependen de la configuración
@@ -343,9 +355,10 @@
         </p>
         <p>
           Esta opción elimina los registros de consumos, la configuración del vehículo, los datos de
-          mantenimiento y sus recordatorios, así como los demás datos históricos locales que Kilonom
-          conserva. Las posibles copias de seguridad gestionadas por Android o Google se rigen por la
-          configuración y las políticas de esos servicios.
+          mantenimiento y sus recordatorios, así como los demás datos históricos personales que Kilonom
+          conserva. No equivale a borrar las cachés públicas de Estaciones, que se gestionan por separado.
+          Las posibles copias de seguridad gestionadas por Android o Google se rigen por la configuración
+          y las políticas de esos servicios.
         </p>
       </section>
 
@@ -355,6 +368,11 @@
           Kilonom puede abrir la aplicación de calendario instalada en el dispositivo para que el usuario
           revise y cree voluntariamente un evento de mantenimiento. Kilonom no lee, escribe ni gestiona
           el contenido del calendario y no solicita permisos de calendario.
+        </p>
+        <p>
+          Al elegir <strong>«Cómo llegar»</strong>, Kilonom abre mediante un enlace <em>geo</em> una aplicación de
+          navegación compatible instalada en el dispositivo. Kilonom no ofrece navegación paso a paso propia;
+          la aplicación externa elegida se rige por su propia política de privacidad.
         </p>
         <p>
           La otra integración externa relevante es el sistema de copias de seguridad y transferencia entre
@@ -380,7 +398,7 @@
       </section>
 
       <section>
-        <h2>13. Contacto</h2>
+        <h2>14. Contacto</h2>
         <p>
           Para consultas relacionadas con privacidad:
           <a href="mailto:kilonom.app@gmail.com">kilonom.app@gmail.com</a>

@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.paging.PagingSource
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -40,6 +41,81 @@ interface StationCacheDao {
         productCodes: List<String>,
         province: String?,
         municipality: String?
+    ): Flow<List<StationListItem>>
+
+    @Query("""
+        WITH preferred_price AS (
+            SELECT stationId, MIN(visibleFuelPriority) AS priority
+            FROM fuel_station_prices
+            WHERE visibleFuelType = :fuelType
+            GROUP BY stationId
+        )
+        SELECT s.externalId, s.name, s.address, s.municipality, s.province, s.latitude, s.longitude, s.schedule,
+               s.sourceUpdatedAtMillis, p.productCode, p.price, p.productName,
+               1 AS hasSelectedFuel, NULL AS distanceMeters
+        FROM preferred_price best
+        INNER JOIN fuel_station_prices p ON p.stationId = best.stationId
+            AND p.visibleFuelType = :fuelType AND p.visibleFuelPriority = best.priority
+        INNER JOIN fuel_stations s ON s.externalId = p.stationId
+        WHERE (:province IS NULL OR s.province = :province)
+          AND (:municipality IS NULL OR s.municipality = :municipality)
+        ORDER BY p.price ASC, s.name COLLATE NOCASE
+    """)
+    fun pagingStationsForFuel(
+        fuelType: String,
+        province: String?,
+        municipality: String?
+    ): PagingSource<Int, StationListItem>
+
+    @Query("""
+        WITH preferred_price AS (
+            SELECT stationId, MIN(visibleFuelPriority) AS priority
+            FROM fuel_station_prices
+            WHERE visibleFuelType = :fuelType
+            GROUP BY stationId
+        )
+        SELECT s.externalId, s.name, s.address, s.municipality, s.province, s.latitude, s.longitude, s.schedule,
+               s.sourceUpdatedAtMillis, p.productCode, p.price, p.productName,
+               1 AS hasSelectedFuel, NULL AS distanceMeters
+        FROM preferred_price best
+        INNER JOIN fuel_station_prices p ON p.stationId = best.stationId
+            AND p.visibleFuelType = :fuelType AND p.visibleFuelPriority = best.priority
+        INNER JOIN fuel_stations s ON s.externalId = p.stationId
+        WHERE (:province IS NULL OR s.province = :province)
+          AND (:municipality IS NULL OR s.municipality = :municipality)
+        ORDER BY p.price ASC, s.name COLLATE NOCASE
+    """)
+    fun observeStationsForMap(
+        fuelType: String,
+        province: String?,
+        municipality: String?
+    ): Flow<List<StationListItem>>
+
+    /** Local candidates only. The repository chooses an adaptive radius and applies Haversine. */
+    @Query("""
+        WITH preferred_price AS (
+            SELECT stationId, MIN(visibleFuelPriority) AS priority
+            FROM fuel_station_prices
+            WHERE visibleFuelType = :fuelType
+            GROUP BY stationId
+        )
+        SELECT s.externalId, s.name, s.address, s.municipality, s.province, s.latitude, s.longitude, s.schedule,
+               s.sourceUpdatedAtMillis, p.productCode, p.price, p.productName,
+               1 AS hasSelectedFuel, NULL AS distanceMeters
+        FROM preferred_price best
+        INNER JOIN fuel_station_prices p ON p.stationId = best.stationId
+            AND p.visibleFuelType = :fuelType AND p.visibleFuelPriority = best.priority
+        INNER JOIN fuel_stations s ON s.externalId = p.stationId
+        WHERE s.latitude BETWEEN :minLatitude AND :maxLatitude
+          AND s.longitude BETWEEN :minLongitude AND :maxLongitude
+        ORDER BY p.price ASC, s.name COLLATE NOCASE
+    """)
+    fun observeStationsInBounds(
+        fuelType: String,
+        minLatitude: Double,
+        maxLatitude: Double,
+        minLongitude: Double,
+        maxLongitude: Double
     ): Flow<List<StationListItem>>
 
     @Query("DELETE FROM fuel_station_prices")

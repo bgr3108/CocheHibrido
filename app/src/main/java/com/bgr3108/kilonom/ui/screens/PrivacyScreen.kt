@@ -88,14 +88,14 @@ fun PrivacyScreen(
 
                     PrivacySection(
                         title = "Estaciones de servicio",
-                        description = "La sección Estaciones puede descargar datos públicos de MITECO mediante conexión segura y guardarlos localmente como caché. Si eliges usar tu ubicación, Kilonom la usa solo durante la consulta para calcular distancias y mostrar estaciones cercanas: no la guarda como historial ni la envía a MITECO o a servidores propios. El mapa puede solicitar teselas a OpenFreeMap; ese proveedor y su infraestructura de red reciben la petición necesaria para mostrar el mapa."
+                        description = "Estaciones descarga por conexión segura datos públicos de MITECO para gasolineras y de MITECO / RIPREE para cargadores, y los guarda en cachés independientes. La ubicación es opcional: puedes buscar por provincia y municipio. Si eliges usar ubicación aproximada o precisa, Kilonom la procesa solo mientras usas Estaciones para mostrar resultados cercanos y calcular distancias; no guarda coordenadas, historial ni las envía a MITECO o a servidores propios. DataStore solo puede conservar estados de interfaz, como que ya se mostró la explicación de ubicación o que ya se solicitó el permiso. Kilonom no envía a MITECO tus vehículos, consumos o mantenimientos, ni muestra disponibilidad o tarifas de recarga en tiempo real. MapLibre es la librería de mapa; OpenFreeMap solicita las teselas y su infraestructura recibe la petición técnica necesaria, incluida la información de red habitual."
                     )
 
                     HorizontalDivider()
 
                     PrivacySection(
                         title = "Aplicaciones externas",
-                        description = "Si eliges añadir un aviso de mantenimiento al calendario, Kilonom abre tu aplicación de calendario para que revises y guardes el evento. Kilonom no lee ni gestiona el contenido de tu calendario."
+                        description = "Si eliges añadir un aviso de mantenimiento al calendario, Kilonom abre tu aplicación de calendario para que revises y guardes el evento. Kilonom no lee ni gestiona su contenido. Al elegir Cómo llegar desde Estaciones, abre una aplicación de navegación compatible mediante un enlace geo; esa aplicación externa gestiona su propia conexión y privacidad."
                     )
 
                     HorizontalDivider()
@@ -109,7 +109,7 @@ fun PrivacyScreen(
 
                     PrivacySection(
                         title = "Eliminar datos",
-                        description = "Puedes eliminar los datos almacenados por Kilonom utilizando la opción «Borrar todos los datos» disponible en la aplicación."
+                        description = "Puedes eliminar tus vehículos, consumos, mantenimientos y demás datos personales locales con «Borrar todos los datos». Las cachés públicas de Estaciones se borran por separado desde Estaciones y no contienen esos datos personales."
                     )
 
                     HorizontalDivider()

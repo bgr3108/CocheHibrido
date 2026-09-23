@@ -22,6 +22,7 @@ class UsageGuideContentTest {
                 R.string.usage_guide_reminders_title,
                 R.string.usage_guide_current_km_title,
                 R.string.usage_guide_phev_title,
+                R.string.usage_guide_stations_title,
                 R.string.usage_guide_privacy_title
             ),
             usageGuideSections.map(UsageGuideSection::titleRes)

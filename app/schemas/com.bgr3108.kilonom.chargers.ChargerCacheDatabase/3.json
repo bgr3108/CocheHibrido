@@ -1,0 +1,311 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "8dc947b6dcfe55b22237d80e414bbf85",
+    "entities": [
+      {
+        "tableName": "charger_installations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`externalId` TEXT NOT NULL, `name` TEXT NOT NULL, `operatorName` TEXT, `operatorCode` TEXT, `address` TEXT NOT NULL, `municipality` TEXT NOT NULL, `province` TEXT NOT NULL, `postalCode` TEXT, `locality` TEXT, `schedule` TEXT, `scheduleType` TEXT, `latitude` REAL, `longitude` REAL, `sourceUpdatedAtMillis` INTEGER, `maxPowerKw` REAL, `connectorTypesEncoded` TEXT NOT NULL, PRIMARY KEY(`externalId`))",
+        "fields": [
+          {
+            "fieldPath": "externalId",
+            "columnName": "externalId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "operatorName",
+            "columnName": "operatorName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "operatorCode",
+            "columnName": "operatorCode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "municipality",
+            "columnName": "municipality",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "province",
+            "columnName": "province",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "postalCode",
+            "columnName": "postalCode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "locality",
+            "columnName": "locality",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "schedule",
+            "columnName": "schedule",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "scheduleType",
+            "columnName": "scheduleType",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "sourceUpdatedAtMillis",
+            "columnName": "sourceUpdatedAtMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "maxPowerKw",
+            "columnName": "maxPowerKw",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "connectorTypesEncoded",
+            "columnName": "connectorTypesEncoded",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "externalId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_charger_installations_province",
+            "unique": false,
+            "columnNames": [
+              "province"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_charger_installations_province` ON `${TABLE_NAME}` (`province`)"
+          },
+          {
+            "name": "index_charger_installations_municipality",
+            "unique": false,
+            "columnNames": [
+              "municipality"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_charger_installations_municipality` ON `${TABLE_NAME}` (`municipality`)"
+          },
+          {
+            "name": "index_charger_installations_operatorName",
+            "unique": false,
+            "columnNames": [
+              "operatorName"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_charger_installations_operatorName` ON `${TABLE_NAME}` (`operatorName`)"
+          },
+          {
+            "name": "index_charger_installations_maxPowerKw",
+            "unique": false,
+            "columnNames": [
+              "maxPowerKw"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_charger_installations_maxPowerKw` ON `${TABLE_NAME}` (`maxPowerKw`)"
+          },
+          {
+            "name": "index_charger_installations_province_municipality",
+            "unique": false,
+            "columnNames": [
+              "province",
+              "municipality"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_charger_installations_province_municipality` ON `${TABLE_NAME}` (`province`, `municipality`)"
+          },
+          {
+            "name": "index_charger_installations_latitude_longitude",
+            "unique": false,
+            "columnNames": [
+              "latitude",
+              "longitude"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_charger_installations_latitude_longitude` ON `${TABLE_NAME}` (`latitude`, `longitude`)"
+          }
+        ]
+      },
+      {
+        "tableName": "charger_connectors",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`externalId` TEXT NOT NULL, `installationId` TEXT NOT NULL, `pointId` TEXT, `pointCode` TEXT, `connectorType` TEXT, `chargeType` TEXT, `connectorFormat` TEXT, `maxPowerKw` REAL, `voltage` REAL, `amperage` REAL, PRIMARY KEY(`externalId`), FOREIGN KEY(`installationId`) REFERENCES `charger_installations`(`externalId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "externalId",
+            "columnName": "externalId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "installationId",
+            "columnName": "installationId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pointId",
+            "columnName": "pointId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "pointCode",
+            "columnName": "pointCode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "connectorType",
+            "columnName": "connectorType",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "chargeType",
+            "columnName": "chargeType",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "connectorFormat",
+            "columnName": "connectorFormat",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "maxPowerKw",
+            "columnName": "maxPowerKw",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "voltage",
+            "columnName": "voltage",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "amperage",
+            "columnName": "amperage",
+            "affinity": "REAL"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "externalId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_charger_connectors_installationId",
+            "unique": false,
+            "columnNames": [
+              "installationId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_charger_connectors_installationId` ON `${TABLE_NAME}` (`installationId`)"
+          },
+          {
+            "name": "index_charger_connectors_connectorType",
+            "unique": false,
+            "columnNames": [
+              "connectorType"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_charger_connectors_connectorType` ON `${TABLE_NAME}` (`connectorType`)"
+          },
+          {
+            "name": "index_charger_connectors_installationId_connectorType",
+            "unique": false,
+            "columnNames": [
+              "installationId",
+              "connectorType"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_charger_connectors_installationId_connectorType` ON `${TABLE_NAME}` (`installationId`, `connectorType`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "charger_installations",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "installationId"
+            ],
+            "referencedColumns": [
+              "externalId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "charger_cache_metadata",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `downloadedAtMillis` INTEGER NOT NULL, `sourceUpdatedAtMillis` INTEGER, `sourceUrl` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "downloadedAtMillis",
+            "columnName": "downloadedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceUpdatedAtMillis",
+            "columnName": "sourceUpdatedAtMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "sourceUrl",
+            "columnName": "sourceUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8dc947b6dcfe55b22237d80e414bbf85')"
+    ]
+  }
+}

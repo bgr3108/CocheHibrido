@@ -49,7 +49,11 @@ object AppViewModelProvider {
         }
 
         initializer {
-            StationsViewModel(hybridCarApplication().container.stationRepository)
+            StationsViewModel(
+                hybridCarApplication().container.stationRepository,
+                hybridCarApplication().container.chargerRepository,
+                hybridCarApplication().container.stationPreferences
+            )
         }
 
     }

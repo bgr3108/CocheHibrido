@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
 /** A public-data cache intentionally kept outside Kilonom's personal-data database. */
 @Database(
     entities = [FuelStationEntity::class, FuelStationPriceEntity::class, StationCacheMetadataEntity::class],
-    version = 1,
+    version = 3,
     exportSchema = true
 )
 abstract class StationCacheDatabase : RoomDatabase() {
@@ -22,7 +22,12 @@ abstract class StationCacheDatabase : RoomDatabase() {
                 context.applicationContext,
                 StationCacheDatabase::class.java,
                 "station_cache"
-            ).build().also { instance = it }
+            )
+                // This database stores only downloadable MITECO public data. Rebuilding it is
+                // deliberate when its query-oriented cache schema changes; personal Room data is separate.
+                .fallbackToDestructiveMigration(dropAllTables = true)
+                .build()
+                .also { instance = it }
         }
     }
 }

@@ -185,6 +185,7 @@ internal fun AppContent(
         val showResetDialog = remember { mutableStateOf(false) }
         val resetRequested = remember { mutableStateOf(false) }
         val stationsUiState by stationsViewModel.uiState.collectAsStateWithLifecycle()
+        val stationsRefreshing by stationsViewModel.activeContentRefreshing.collectAsStateWithLifecycle()
         LaunchedEffect(resetRequested.value, resetState) {
             if (resetRequested.value && resetState == ResetState.IDLE) {
                 showResetDialog.value = false
@@ -260,10 +261,10 @@ internal fun AppContent(
                                 }
                                 if (currentRoute == "stations") {
                                     IconButton(
-                                        onClick = stationsViewModel::refresh,
-                                        enabled = !stationsUiState.isRefreshing
+                                        onClick = stationsViewModel::refreshActiveContent,
+                                        enabled = !stationsRefreshing
                                     ) {
-                                        if (stationsUiState.isRefreshing) {
+                                        if (stationsRefreshing) {
                                             CircularProgressIndicator(modifier = Modifier.height(24.dp), strokeWidth = 2.dp)
                                         } else {
                                             Icon(Icons.Default.Refresh, contentDescription = "Actualizar estaciones")

@@ -24,6 +24,7 @@ googleMobileAds = "25.4.0"
 ump = "4.0.0"
 mapLibreCompose = "0.16.0"
 kotlinxSerializationJson = "1.11.0"
+paging = "3.5.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -56,12 +57,15 @@ androidx-test-runner = { group = "androidx.test", name = "runner", version.ref =
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
 
 google-mobile-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "googleMobileAds" }
 google-ump = { group = "com.google.android.ump", name = "user-messaging-platform", version.ref = "ump" }
 maplibre-compose = { group = "org.maplibre.compose", name = "maplibre-compose", version.ref = "mapLibreCompose" }
 maplibre-compose-runtime-vulkan-android = { group = "org.maplibre.compose", name = "maplibre-compose-runtime-vulkan-android", version.ref = "mapLibreCompose" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
+androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

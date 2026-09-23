@@ -2,6 +2,8 @@ package com.bgr3108.kilonom.stations
 
 import android.content.Intent
 import androidx.core.net.toUri
+import com.bgr3108.kilonom.chargers.ChargerListItem
+import com.bgr3108.kilonom.chargers.coordinatesOrNull
 import java.net.URLEncoder
 
 fun createStationNavigationIntent(station: StationListItem): Intent? {
@@ -9,6 +11,16 @@ fun createStationNavigationIntent(station: StationListItem): Intent? {
         Intent(request.action, request.uri.toUri())
     }
 }
+
+/** Charger locations use the exact same standard geo intent as fuel stations. */
+fun createChargerNavigationIntent(charger: ChargerListItem): Intent? =
+    charger.coordinatesOrNull()?.let { coordinates ->
+        val query = URLEncoder.encode(
+            "${coordinates.latitude},${coordinates.longitude}(${charger.name})",
+            "UTF-8"
+        ).replace("+", "%20")
+        Intent(Intent.ACTION_VIEW, "geo:${coordinates.latitude},${coordinates.longitude}?q=$query".toUri())
+    }
 
 /**
  * Navigation is deliberately an ordinary Android VIEW request: no target package and no task flags.

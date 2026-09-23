@@ -86,11 +86,15 @@ internal object MitecoStationMapper {
             .filter { (key, _) -> key.startsWith("Precio ") }
             .mapNotNull { (key, value) ->
                 value?.toSpanishDouble()?.takeIf { it >= 0.0 }?.let { price ->
+                    val productCode = key.toProductCode()
+                    val visibleCategory = StationFuelType.forProductCode(productCode)
                     FuelStationPriceEntity(
                         stationId = externalId,
-                        productCode = key.toProductCode(),
+                        productCode = productCode,
                         productName = key.removePrefix("Precio "),
-                        price = price
+                        price = price,
+                        visibleFuelType = visibleCategory?.first?.name,
+                        visibleFuelPriority = visibleCategory?.second
                     )
                 }
             }

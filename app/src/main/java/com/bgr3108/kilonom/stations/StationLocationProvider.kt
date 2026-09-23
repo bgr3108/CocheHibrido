@@ -1,10 +1,16 @@
 package com.bgr3108.kilonom.stations
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.net.Uri
 import android.os.CancellationSignal
+import android.provider.Settings
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
 import kotlinx.coroutines.withTimeoutOrNull
@@ -16,6 +22,22 @@ object StationLocationProvider {
     fun hasPermission(context: Context): Boolean =
         ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+    /**
+     * Android does not expose a dedicated permanent-denial result. Once a request has been made,
+     * the absence of both rationale prompts means the user must change it in system settings.
+     */
+    fun isPermissionPermanentlyDenied(context: Context, wasRequested: Boolean): Boolean {
+        val activity = context.findActivity() ?: return false
+        return wasRequested && !hasPermission(context) &&
+            !ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_COARSE_LOCATION) &&
+            !ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_FINE_LOCATION)
+    }
+
+    fun createAppLocationSettingsIntent(context: Context): Intent = Intent(
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        Uri.fromParts("package", context.packageName, null)
+    )
 
     /**
      * Requests one current position only after an explicit user action. The result is intentionally
@@ -113,3 +135,9 @@ internal fun locationProviderOrder(
 internal fun locationPermissionGranted(permissions: Map<String, Boolean>): Boolean =
     permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true ||
         permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}

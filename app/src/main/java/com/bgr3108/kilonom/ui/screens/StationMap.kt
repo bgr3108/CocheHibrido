@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bgr3108.kilonom.stations.StationCoordinates
 import com.bgr3108.kilonom.stations.StationListItem
+import com.bgr3108.kilonom.stations.coordinatesOrNull
 import com.bgr3108.kilonom.stations.stationsForMap
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonObject
@@ -204,12 +205,14 @@ fun StationMap(
         StyleLoadState.Ready -> StationMapLoadState.READY
         else -> StationMapLoadState.LOADING
     }
-    LaunchedEffect(currentLocation) {
+    LaunchedEffect(stations, currentLocation) {
         currentLocation?.takeIf(StationCoordinates::isValid)?.let { location ->
             mapState.animateCameraPosition(
                 userLocationCamera(location),
                 duration = USER_LOCATION_ANIMATION_DURATION
             )
+        } ?: stationsCamera(stations)?.let { camera ->
+            mapState.animateCameraPosition(camera, duration = USER_LOCATION_ANIMATION_DURATION)
         }
     }
 
@@ -294,6 +297,26 @@ internal fun userLocationCamera(location: StationCoordinates) =
         target = Position(longitude = location.longitude, latitude = location.latitude),
         zoom = USER_LOCATION_ZOOM
     )
+
+/** A manual province/municipality search frames its own results instead of returning to Spain. */
+internal fun stationsCamera(stations: List<StationListItem>): org.maplibre.compose.camera.CameraPosition? {
+    val points = stations.mapNotNull(StationListItem::coordinatesOrNull)
+    if (points.isEmpty()) return null
+    val latitude = points.map(StationCoordinates::latitude).average()
+    val longitude = points.map(StationCoordinates::longitude).average()
+    val span = maxOf(
+        points.maxOf(StationCoordinates::latitude) - points.minOf(StationCoordinates::latitude),
+        points.maxOf(StationCoordinates::longitude) - points.minOf(StationCoordinates::longitude)
+    )
+    val zoom = when {
+        span <= 0.02 -> 13.0
+        span <= 0.08 -> 11.0
+        span <= 0.30 -> 9.0
+        span <= 1.2 -> 7.0
+        else -> 5.5
+    }
+    return org.maplibre.compose.camera.CameraPosition(target = Position(longitude = longitude, latitude = latitude), zoom = zoom)
+}
 
 private fun StationCoordinates?.toLocationGeoJson(): String = when {
     this?.isValid() == true ->

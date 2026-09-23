@@ -13,12 +13,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -53,12 +58,14 @@ import com.bgr3108.kilonom.stations.StationFuelType
 import com.bgr3108.kilonom.stations.StationListItem
 import com.bgr3108.kilonom.stations.StationLocationProvider
 import com.bgr3108.kilonom.stations.StationSortOrder
+import com.bgr3108.kilonom.stations.StationSearchScope
 import com.bgr3108.kilonom.stations.StationsViewMode
 import com.bgr3108.kilonom.stations.canSortStationsByDistance
 import com.bgr3108.kilonom.stations.createStationNavigationIntent
 import com.bgr3108.kilonom.stations.isDefault
 import com.bgr3108.kilonom.stations.locationPermissionGranted
 import com.bgr3108.kilonom.stations.summary
+import com.bgr3108.kilonom.chargers.StationsContentType
 import com.bgr3108.kilonom.util.ExternalLinks
 import com.bgr3108.kilonom.util.openExternalUrl
 import com.bgr3108.kilonom.viewmodel.StationsViewModel
@@ -70,17 +77,33 @@ import kotlinx.coroutines.launch
 @Composable
 fun StationsScreen(innerPadding: PaddingValues, viewModel: StationsViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { viewModel.onStationsOpened() }
+    when (state.contentType) {
+        StationsContentType.FUEL -> FuelStationsContent(innerPadding, viewModel)
+        StationsContentType.CHARGERS -> ChargersContent(innerPadding, viewModel)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: StationsViewModel) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val provinces by viewModel.provinces.collectAsStateWithLifecycle()
-    val stations by viewModel.stations.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var showFilters by remember { mutableStateOf(false) }
     var selectedStation by remember { mutableStateOf<StationListItem?>(null) }
     var isLocating by remember { mutableStateOf(false) }
+    var useLocationAsSearchScope by remember { mutableStateOf(false) }
 
-    LaunchedEffect(stations) {
-        selectedStation = selectedStationAfterFiltering(selectedStation, stations)
+    val mapStations by viewModel.stations.collectAsStateWithLifecycle()
+    val locationPermissionPermanentlyDenied = StationLocationProvider.isPermissionPermanentlyDenied(
+        context, state.locationPermissionRequested
+    )
+
+    LaunchedEffect(mapStations) {
+        selectedStation = selectedStationAfterFiltering(selectedStation, mapStations)
     }
 
     fun obtainLocation() {
@@ -90,6 +113,7 @@ fun StationsScreen(innerPadding: PaddingValues, viewModel: StationsViewModel) {
             try {
                 val location = StationLocationProvider.requestCurrentLocation(context)
                 viewModel.updateCurrentLocation(location)
+                if (location != null && useLocationAsSearchScope) viewModel.useNearbyStations()
                 if (location == null) snackbarHostState.showSnackbar("No se ha podido obtener tu ubicación.")
             } finally {
                 isLocating = false
@@ -103,10 +127,12 @@ fun StationsScreen(innerPadding: PaddingValues, viewModel: StationsViewModel) {
             obtainLocation()
         }
     }
-    fun requestLocation() {
+    fun requestLocation(useNearby: Boolean = false) {
+        useLocationAsSearchScope = useNearby
         if (StationLocationProvider.hasPermission(context)) {
             obtainLocation()
         } else {
+            viewModel.markLocationPermissionRequested()
             locationPermissionLauncher.launch(
                 arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
             )
@@ -117,6 +143,10 @@ fun StationsScreen(innerPadding: PaddingValues, viewModel: StationsViewModel) {
         modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        StationsContentSelector(
+            selected = state.contentType,
+            onSelected = viewModel::selectContentType
+        )
         CacheStatus(
             hasCache = state.hasCache,
             isStale = state.isStale,
@@ -125,28 +155,35 @@ fun StationsScreen(innerPadding: PaddingValues, viewModel: StationsViewModel) {
             downloadedAtMillis = state.metadata?.downloadedAtMillis
         )
 
-        if (state.hasCache) {
+        if (state.hasCache && state.searchScope !is StationSearchScope.None) {
             StationToolbar(
                 viewMode = state.viewMode,
                 hasActiveFilters = !state.filter.isDefault(),
-                filterSummary = state.filter.summary(),
+                filterSummary = if (state.searchScope is StationSearchScope.Nearby) {
+                    "Cerca de mí · ${state.filter.fuelType.displayName}"
+                } else state.filter.summary(),
                 onViewModeSelected = viewModel::setViewMode,
                 onFiltersClick = { showFilters = true }
             )
             when {
-                stations.isEmpty() -> Text(
-                    "No hay estaciones que coincidan con los filtros seleccionados.",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(vertical = 24.dp)
-                )
-                state.viewMode == StationsViewMode.LIST -> StationList(
-                    stations,
-                    modifier = Modifier.weight(1f)
-                )
+                state.viewMode == StationsViewMode.LIST && state.filter.sortOrder == StationSortOrder.PRICE -> {
+                    val pagedStations = viewModel.stationPaging.collectAsLazyPagingItems()
+                    when {
+                        pagedStations.loadState.refresh is LoadState.Loading -> CircularProgressIndicator(
+                            modifier = Modifier.padding(vertical = 24.dp).align(Alignment.CenterHorizontally)
+                        )
+                        pagedStations.itemCount == 0 -> EmptyStationsMessage()
+                        else -> PagedStationList(pagedStations, Modifier.weight(1f))
+                    }
+                }
+                state.viewMode == StationsViewMode.LIST -> {
+                    if (mapStations.isEmpty()) EmptyStationsMessage() else StationList(mapStations, Modifier.weight(1f))
+                }
+                mapStations.isEmpty() -> EmptyStationsMessage()
                 else -> Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     StationMap(
-                        stations = stations,
-                        currentLocation = state.currentLocation,
+                        stations = mapStations,
+                        currentLocation = state.currentLocation.takeIf { state.searchScope is StationSearchScope.Nearby },
                         onStationSelected = { selectedStation = it },
                         modifier = Modifier.fillMaxSize()
                     )
@@ -167,6 +204,15 @@ fun StationsScreen(innerPadding: PaddingValues, viewModel: StationsViewModel) {
                     }
                 }
             }
+        } else if (state.hasCache) {
+            SearchStartPanel(
+                onRequestLocation = { requestLocation(useNearby = true) },
+                onChooseZone = { showFilters = true },
+                locationPermissionPermanentlyDenied = locationPermissionPermanentlyDenied,
+                onOpenLocationSettings = {
+                    context.startActivity(StationLocationProvider.createAppLocationSettingsIntent(context))
+                }
+            )
         } else if (!state.isRefreshing) {
             Text(
                 "Necesitas conexión para cargar las estaciones por primera vez.",
@@ -178,7 +224,7 @@ fun StationsScreen(innerPadding: PaddingValues, viewModel: StationsViewModel) {
     }
 
     if (showFilters) {
-        StationFiltersSheet(
+            StationFiltersSheet(
             filter = state.filter,
             provinces = provinces,
             viewModel = viewModel,
@@ -191,9 +237,22 @@ fun StationsScreen(innerPadding: PaddingValues, viewModel: StationsViewModel) {
                 viewModel.resetFilters()
                 showFilters = false
             },
-            onRequestLocation = ::requestLocation,
+            onRequestLocation = { requestLocation(useNearby = true) },
+            onUseNearby = viewModel::useNearbyStations,
             onClearCache = viewModel::clearCache,
             onDismiss = { showFilters = false }
+        )
+    }
+
+    if (state.showLocationIntro) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissLocationIntro,
+            title = { Text("Encuentra estaciones cerca de ti") },
+            text = { Text("Kilonom puede usar tu ubicación para mostrar gasolineras y puntos de recarga cercanos. La ubicación se utiliza solo mientras usas Estaciones y no se guarda.") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.dismissLocationIntro(); requestLocation(useNearby = true) }) { Text("Continuar") }
+            },
+            dismissButton = { TextButton(onClick = viewModel::dismissLocationIntro) { Text("Ahora no") } }
         )
     }
 
@@ -213,6 +272,61 @@ fun StationsScreen(innerPadding: PaddingValues, viewModel: StationsViewModel) {
                 }
             )
         }
+    }
+}
+
+@Composable
+internal fun SearchStartPanel(
+    onRequestLocation: () -> Unit,
+    onChooseZone: () -> Unit,
+    locationPermissionPermanentlyDenied: Boolean = false,
+    onOpenLocationSettings: () -> Unit = {}
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                if (locationPermissionPermanentlyDenied) "La ubicación está desactivada para Kilonom." else "Encuentra estaciones",
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                if (locationPermissionPermanentlyDenied) {
+                    "Puedes elegir una zona o activarla desde los ajustes de Android."
+                } else {
+                    "Activa tu ubicación para ver estaciones cercanas o elige una provincia o municipio para empezar a buscar."
+                },
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (locationPermissionPermanentlyDenied) {
+                    Button(onClick = onChooseZone, modifier = Modifier.weight(1f)) { Text("Elegir zona") }
+                    OutlinedButton(onClick = onOpenLocationSettings, modifier = Modifier.weight(1f)) { Text("Abrir ajustes") }
+                } else {
+                    Button(onClick = onRequestLocation, modifier = Modifier.weight(1f)) { Text("Usar mi ubicación") }
+                    OutlinedButton(onClick = onChooseZone, modifier = Modifier.weight(1f)) { Text("Elegir zona") }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun StationsContentSelector(
+    selected: StationsContentType,
+    onSelected: (StationsContentType) -> Unit
+) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        val fuelSelected = selected == StationsContentType.FUEL
+        if (fuelSelected) Button(onClick = { onSelected(StationsContentType.FUEL) }, modifier = Modifier.weight(1f)) { Text("Gasolineras") }
+        else OutlinedButton(onClick = { onSelected(StationsContentType.FUEL) }, modifier = Modifier.weight(1f)) { Text("Gasolineras") }
+        val chargersSelected = selected == StationsContentType.CHARGERS
+        if (chargersSelected) Button(onClick = { onSelected(StationsContentType.CHARGERS) }, modifier = Modifier.weight(1f)) { Text("Cargadores") }
+        else OutlinedButton(onClick = { onSelected(StationsContentType.CHARGERS) }, modifier = Modifier.weight(1f)) { Text("Cargadores") }
     }
 }
 
@@ -316,6 +430,7 @@ private fun StationFiltersSheet(
     onApply: (StationFilter) -> Unit,
     onReset: () -> Unit,
     onRequestLocation: () -> Unit,
+    onUseNearby: () -> Unit,
     onClearCache: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -323,6 +438,7 @@ private fun StationFiltersSheet(
     var selectedProvince by remember(filter) { mutableStateOf(filter.province) }
     var selectedMunicipality by remember(filter) { mutableStateOf(filter.municipality) }
     var selectedSort by remember(filter) { mutableStateOf(filter.sortOrder) }
+    var zoneError by remember { mutableStateOf(false) }
     val municipalities by remember(selectedProvince) { viewModel.observeMunicipalities(selectedProvince) }
         .collectAsStateWithLifecycle(initialValue = emptyList())
 
@@ -343,6 +459,11 @@ private fun StationFiltersSheet(
                 selectedLabel = selectedProvince ?: "Todas las provincias",
                 options = listOf("Todas las provincias" to "") + provinces.map { it to it },
                 onSelected = { selectedProvince = it.ifBlank { null }; selectedMunicipality = null }
+            )
+            if (zoneError) Text(
+                "Elige una provincia o usa tu ubicación para empezar a buscar.",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
             )
             FilterSelectionMenu(
                 label = "Municipio",
@@ -365,11 +486,20 @@ private fun StationFiltersSheet(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            } else {
+                TextButton(onClick = { onUseNearby(); onDismiss() }) {
+                    Icon(Icons.Default.MyLocation, contentDescription = null)
+                    Text("Usar mi ubicación", modifier = Modifier.padding(start = 8.dp))
+                }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 OutlinedButton(onClick = onReset, modifier = Modifier.weight(1f)) { Text("Restablecer") }
                 Button(
                     onClick = {
+                        if (selectedProvince == null && !canSortByDistance) {
+                            zoneError = true
+                            return@Button
+                        }
                         onApply(
                             StationFilter(
                                 fuelType = selectedFuel,
@@ -460,6 +590,51 @@ private fun StationList(stations: List<StationListItem>, modifier: Modifier = Mo
                 TextButton(onClick = { context.openExternalUrl(ExternalLinks.MITECO_STATIONS_URL) }) {
                     Text("Ver fuente de datos")
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PagedStationList(stations: LazyPagingItems<StationListItem>, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        contentPadding = PaddingValues(bottom = 24.dp),
+        modifier = modifier
+    ) {
+        items(
+            count = stations.itemCount,
+            key = stations.itemKey { it.externalId }
+        ) { index -> stations[index]?.let { StationCard(it) } }
+        stationSourceFooter(context)
+    }
+}
+
+@Composable
+private fun EmptyStationsMessage() {
+    Text(
+        "No hay estaciones que coincidan con los filtros seleccionados.",
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(vertical = 24.dp)
+    )
+}
+
+private fun androidx.compose.foundation.lazy.LazyListScope.stationSourceFooter(context: android.content.Context) {
+    item {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            HorizontalDivider()
+            Text(
+                "Datos: Ministerio para la Transición Ecológica y el Reto Demográfico (MITECO)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 12.dp)
+            )
+            TextButton(onClick = { context.openExternalUrl(ExternalLinks.MITECO_STATIONS_URL) }) {
+                Text("Ver fuente de datos")
             }
         }
     }
