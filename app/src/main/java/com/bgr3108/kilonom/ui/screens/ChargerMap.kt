@@ -2,7 +2,7 @@ package com.bgr3108.kilonom.ui.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +37,7 @@ import org.maplibre.compose.expressions.dsl.Feature
 import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.convertToString
 import org.maplibre.compose.expressions.dsl.not
+import org.maplibre.compose.camera.CameraAnimation
 import org.maplibre.compose.interaction.ClickEvent
 import org.maplibre.compose.interaction.ClickResult
 import org.maplibre.compose.interaction.MapInteractions
@@ -130,7 +131,7 @@ private fun ChargerMapContent(
                 val target = (cluster.geometry as? Point)?.coordinates ?: return@launch
                 map.animateCameraPosition(
                     org.maplibre.compose.camera.CameraPosition(target = target, zoom = clusterTargetZoom(map.cameraPosition.zoom)),
-                    duration = 350.milliseconds
+                    animation = CameraAnimation.Ease(350.milliseconds)
                 )
             } else {
                 features.firstNotNullOfOrNull { chargerIdFromFeature(it.properties, it.id) }
@@ -148,23 +149,28 @@ private fun ChargerMapContent(
     }
     LaunchedEffect(preparation.chargersById, currentLocation) {
         currentLocation?.takeIf(StationCoordinates::isValid)?.let {
-            mapState.animateCameraPosition(userLocationCamera(it), duration = 500.milliseconds)
+            mapState.animateCameraPosition(
+                userLocationCamera(it),
+                animation = CameraAnimation.Ease(500.milliseconds)
+            )
         } ?: chargerStationsCamera(preparation.chargersById.values.toList())?.let { camera ->
-            mapState.animateCameraPosition(camera, duration = 500.milliseconds)
+            mapState.animateCameraPosition(
+                camera,
+                animation = CameraAnimation.Ease(500.milliseconds)
+            )
         }
     }
     Box(modifier) {
         MaplibreMap(
             state = mapState, interactions = interactions, modifier = Modifier.fillMaxSize(),
-            contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            cameraPadding = PaddingValues(),
             overlay = mapOverlay@{
-                val overlayScope = this
                 Row(
                     modifier = Modifier.align(Alignment.BottomStart).padding(start = 4.dp, bottom = 2.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     MaplibreLogo()
-                    overlayScope.ExpandingAttributionButton(
+                    ExpandingAttributionButton(
                         contentAlignment = Alignment.BottomStart,
                         expandedContent = { attributions, textStyle ->
                             AttributionLinks(attributions = attributions, textStyle = textStyle.copy(fontSize = 11.sp))

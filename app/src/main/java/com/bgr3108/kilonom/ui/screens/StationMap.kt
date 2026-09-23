@@ -3,7 +3,7 @@ package com.bgr3108.kilonom.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +35,7 @@ import org.maplibre.compose.expressions.dsl.Feature
 import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.convertToString
 import org.maplibre.compose.expressions.dsl.not
+import org.maplibre.compose.camera.CameraAnimation
 import org.maplibre.compose.interaction.ClickEvent
 import org.maplibre.compose.interaction.ClickResult
 import org.maplibre.compose.interaction.MapInteractions
@@ -179,7 +180,7 @@ fun StationMap(
                         // clustering level without coupling the screen to a source handle.
                         zoom = clusterTargetZoom(map.cameraPosition.zoom)
                     ),
-                    duration = CLUSTER_ZOOM_ANIMATION_DURATION
+                    animation = CameraAnimation.Ease(CLUSTER_ZOOM_ANIMATION_DURATION)
                 )
             } else {
                 features.firstNotNullOfOrNull { feature ->
@@ -209,10 +210,13 @@ fun StationMap(
         currentLocation?.takeIf(StationCoordinates::isValid)?.let { location ->
             mapState.animateCameraPosition(
                 userLocationCamera(location),
-                duration = USER_LOCATION_ANIMATION_DURATION
+                animation = CameraAnimation.Ease(USER_LOCATION_ANIMATION_DURATION)
             )
         } ?: stationsCamera(stations)?.let { camera ->
-            mapState.animateCameraPosition(camera, duration = USER_LOCATION_ANIMATION_DURATION)
+            mapState.animateCameraPosition(
+                camera,
+                animation = CameraAnimation.Ease(USER_LOCATION_ANIMATION_DURATION)
+            )
         }
     }
 
@@ -223,11 +227,10 @@ fun StationMap(
             modifier = Modifier.fillMaxSize(),
             // The Scaffold already keeps this map above the banner and system bars. Avoid
             // applying safeDrawing again inside MapLibre's overlay coordinate space.
-            contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            cameraPadding = PaddingValues(),
             // Replacing the default overlay keeps the required logo and source
             // attribution inside the map, clear of the location action at the other edge.
             overlay = mapOverlay@{
-                val mapOverlayScope = this
                 Row(
                     modifier = Modifier
                         .align(STATION_MAP_ATTRIBUTION_ALIGNMENT)
@@ -235,7 +238,7 @@ fun StationMap(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     MaplibreLogo()
-                    mapOverlayScope.ExpandingAttributionButton(
+                    ExpandingAttributionButton(
                         contentAlignment = STATION_MAP_ATTRIBUTION_ALIGNMENT,
                         expandedContent = { attributions, textStyle ->
                             AttributionLinks(
