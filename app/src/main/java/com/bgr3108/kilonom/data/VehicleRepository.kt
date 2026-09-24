@@ -22,6 +22,12 @@ import kotlinx.coroutines.sync.withLock
 
 internal const val RELEASE_NOTES_VERSION = "1.4.0"
 
+internal fun shouldShowReleaseNotes(
+    hasExistingInstallation: Boolean,
+    lastSeenReleaseNotesVersion: String?,
+    currentReleaseNotesVersion: String
+): Boolean = hasExistingInstallation && lastSeenReleaseNotesVersion != currentReleaseNotesVersion
+
 /**
  * Resolves a single Room-backed active vehicle. Consumers must derive all vehicle-scoped data
  * from [activeVehicle] so a vehicle and its entries never originate from different contexts.
@@ -95,6 +101,7 @@ class VehicleRepository(
 
     init {
         repositoryScope.launch {
+            val hasExistingInstallation = hasExistingInstallation()
             try {
                 bootstrapLegacyVehicle()
             } catch (error: Throwable) {
@@ -103,12 +110,27 @@ class VehicleRepository(
                 _loadError.value = error
             } finally {
                 _showReleaseNotes.value = runCatching {
-                    !vehiclePreferences.hasSeenReleaseNotes(RELEASE_NOTES_VERSION)
+                    val lastSeenVersion = vehiclePreferences.lastSeenReleaseNotesVersion()
+                    if (hasExistingInstallation) {
+                        shouldShowReleaseNotes(
+                            hasExistingInstallation = true,
+                            lastSeenReleaseNotesVersion = lastSeenVersion,
+                            currentReleaseNotesVersion = RELEASE_NOTES_VERSION
+                        )
+                    } else {
+                        vehiclePreferences.markReleaseNotesAsSeen(RELEASE_NOTES_VERSION)
+                        false
+                    }
                 }.getOrDefault(false)
                 _isLoading.value = false
             }
         }
     }
+
+    /** Captured before legacy bootstrap so a clean installation is never mistaken for an update. */
+    private suspend fun hasExistingInstallation(): Boolean =
+        runCatching { vehiclePreferences.hasStoredAppState() }.getOrDefault(false) ||
+            runCatching { vehicleDao.getFirstVehicle() != null }.getOrDefault(false)
 
     /**
      * Reconciles the legacy DataStore snapshot with Room. Re-running it updates the recovery

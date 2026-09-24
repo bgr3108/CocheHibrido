@@ -376,14 +376,27 @@ class VehicleRepositoryTest {
     }
 
     @Test
-    fun unseenReleaseNotes_areShownAndPersistedWhenDismissed() = runBlocking {
+    fun freshInstallation_baselinesCurrentReleaseNotesWithoutShowingThem() = runBlocking {
         val preferences = FakeVehiclePreferences()
         val repository = repository(preferences)
 
         repository.isLoading.first { !it }
 
+        assertFalse(repository.showReleaseNotes.value)
+        assertEquals(RELEASE_NOTES_VERSION, preferences.releaseNotesVersion)
+    }
+
+    @Test
+    fun existingOnePointThreeUser_showsCurrentReleaseNotesOnce() = runBlocking {
+        val preferences = FakeVehiclePreferences(
+            hasStoredAppState = true,
+            releaseNotesVersion = "1.3.0"
+        )
+        val repository = repository(preferences)
+
+        repository.isLoading.first { !it }
+
         assertTrue(repository.showReleaseNotes.value)
-        assertNull(preferences.releaseNotesVersion)
 
         repository.dismissReleaseNotes()
 
@@ -392,17 +405,8 @@ class VehicleRepositoryTest {
     }
 
     @Test
-    fun releaseNotesForCurrentVersion_areShownAfterOnePointOneWasSeen() = runBlocking {
-        val repository = repository(FakeVehiclePreferences(releaseNotesVersion = "1.1.0"))
-
-        repository.isLoading.first { !it }
-
-        assertTrue(repository.showReleaseNotes.value)
-    }
-
-    @Test
     fun dismissedReleaseNotes_areNotShownAgainForTheSameVersion() = runBlocking {
-        val preferences = FakeVehiclePreferences()
+        val preferences = FakeVehiclePreferences(hasStoredAppState = true)
         val firstRepository = repository(preferences)
         firstRepository.isLoading.first { !it }
         firstRepository.dismissReleaseNotes()
@@ -411,6 +415,37 @@ class VehicleRepositoryTest {
         recreatedRepository.isLoading.first { !it }
 
         assertFalse(recreatedRepository.showReleaseNotes.value)
+    }
+
+    @Test
+    fun existingInstallation_withoutReleaseNotesMarker_stillShowsTheCurrentNotes() = runBlocking {
+        val repository = repository(FakeVehiclePreferences(hasStoredAppState = true))
+
+        repository.isLoading.first { !it }
+
+        assertTrue(repository.showReleaseNotes.value)
+    }
+
+    @Test
+    fun futureReleaseNotes_areShownForAnExistingInstallation() {
+        assertTrue(
+            shouldShowReleaseNotes(
+                hasExistingInstallation = true,
+                lastSeenReleaseNotesVersion = "1.4.0",
+                currentReleaseNotesVersion = "1.5.0"
+            )
+        )
+    }
+
+    @Test
+    fun cleanReinstallation_baselinesCurrentReleaseNotesWithoutShowingThem() = runBlocking {
+        val preferences = FakeVehiclePreferences()
+        val repository = repository(preferences)
+
+        repository.isLoading.first { !it }
+
+        assertFalse(repository.showReleaseNotes.value)
+        assertEquals(RELEASE_NOTES_VERSION, preferences.releaseNotesVersion)
     }
 
     @Test
@@ -643,6 +678,7 @@ class VehicleRepositoryTest {
         var activeVehicleId: Long? = null,
         private val activeVehicleIdLoadError: Exception? = null,
         private val activeVehicleIdSaveError: Exception? = null,
+        private val hasStoredAppState: Boolean = false,
         var releaseNotesVersion: String? = null
     ) : VehiclePreferencesStore {
         override suspend fun saveVehicle(vehicle: Vehicle) {
@@ -668,8 +704,10 @@ class VehicleRepositoryTest {
             activeVehicleId = vehicleId
         }
 
-        override suspend fun hasSeenReleaseNotes(versionName: String): Boolean =
-            releaseNotesVersion == versionName
+        override suspend fun hasStoredAppState(): Boolean =
+            hasStoredAppState || releaseNotesVersion != null || activeVehicleId != null || vehicle != Vehicle()
+
+        override suspend fun lastSeenReleaseNotesVersion(): String? = releaseNotesVersion
 
         override suspend fun markReleaseNotesAsSeen(versionName: String) {
             releaseNotesVersion = versionName

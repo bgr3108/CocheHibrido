@@ -20,7 +20,8 @@ interface VehiclePreferencesStore {
     suspend fun loadActiveVehicleId(): Long? = null
     suspend fun saveActiveVehicleId(vehicleId: Long) = Unit
     suspend fun clearActiveVehicleId() = Unit
-    suspend fun hasSeenReleaseNotes(versionName: String): Boolean = false
+    suspend fun hasStoredAppState(): Boolean = false
+    suspend fun lastSeenReleaseNotesVersion(): String? = null
     suspend fun markReleaseNotesAsSeen(versionName: String) = Unit
 }
 
@@ -132,6 +133,10 @@ class VehiclePreferences(
             preferences.remove(Keys.ACTIVE_VEHICLE_ID)
         }
     }
+
+    override suspend fun hasStoredAppState(): Boolean =
+        context.dataStore.data.first().asMap().isNotEmpty()
+
     override suspend fun clearVehicle() {
 
         context.dataStore.edit {
@@ -140,8 +145,8 @@ class VehiclePreferences(
         }
     }
 
-    override suspend fun hasSeenReleaseNotes(versionName: String): Boolean =
-        context.dataStore.data.first()[Keys.LAST_SEEN_RELEASE_NOTES_VERSION] == versionName
+    override suspend fun lastSeenReleaseNotesVersion(): String? =
+        context.dataStore.data.first()[Keys.LAST_SEEN_RELEASE_NOTES_VERSION]
 
     override suspend fun markReleaseNotesAsSeen(versionName: String) {
         context.dataStore.edit { preferences ->
