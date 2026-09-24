@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
     <!-- This partial debug manifest is merged into the main application manifest. -->
     <application tools:ignore="MissingApplicationIcon">
-        <!-- Supplied by a debug-only Gradle property; defaults to Google's sample App ID. -->
+        <!-- Debug always uses Google's official sample App ID. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="${admobAppId}" />

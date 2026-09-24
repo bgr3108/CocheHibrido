@@ -17,14 +17,12 @@ import kotlinx.coroutines.flow.update
 
 /**
  * Coordinates UMP and Mobile Ads without retaining an Activity or storing consent locally.
- * Advertising is deliberately disabled outside the debug build until production identifiers
- * are supplied in a future release.
+ * Ad requests only begin after UMP resolves consent and the current build enables advertising.
  */
 internal class AdsManager(context: Context) {
 
     private val applicationContext = context.applicationContext
-    // In release builds ads are disabled until production identifiers are deliberately supplied.
-    // Keeping this lazy also avoids touching UMP unless the consent flow is actually started.
+    // Keeping this lazy avoids touching UMP until the consent flow is actually started.
     private val consentInformation by lazy {
         UserMessagingPlatform.getConsentInformation(applicationContext)
     }

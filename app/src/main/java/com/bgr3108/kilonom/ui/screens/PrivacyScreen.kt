@@ -74,7 +74,7 @@ fun PrivacyScreen(
 
                     PrivacySection(
                         title = "Publicidad y consentimiento",
-                        description = "Kilonom puede mostrar publicidad mediante Google AdMob cuando hay conexión. UMP gestiona tus opciones de consentimiento y, si aceptas, la publicidad puede personalizarse. Google y sus socios pueden procesar identificadores y datos técnicos necesarios para la publicidad según tus preferencias; puedes revisar esas opciones cuando estén disponibles."
+                        description = "Kilonom puede mostrar publicidad mediante Google AdMob cuando hay conexión. UMP gestiona tus opciones de consentimiento y, si aceptas, la publicidad puede personalizarse. Google y sus socios pueden procesar dirección IP, interacciones con el producto, información de diagnóstico e identificadores de dispositivo o cuenta para publicidad, analítica y prevención del fraude, conforme a tus preferencias; puedes revisar esas opciones cuando estén disponibles."
                     )
 
                     HorizontalDivider()

@@ -43,7 +43,7 @@ internal fun shouldApplyBannerNavigationInsets(
 ): Boolean = shouldReserveBannerSpace(adsUiState, loadState)
 
 /**
- * Displays an anchored adaptive test banner only after UMP authorizes ad requests.
+ * Displays an anchored adaptive banner only after UMP authorizes ad requests.
  *
  * It is the fixed bottom element of the app scaffold, so visible banner height is
  * included in the content insets instead of overlaying scrollable content or floating actions.
@@ -77,12 +77,12 @@ internal fun AdBannerSlot(
                     adListener = object : AdListener() {
                         override fun onAdLoaded() {
                             loadState = AdBannerLoadState.LOADED
-                            Log.d(TAG, "Test banner loaded")
+                            Log.d(TAG, "Banner loaded")
                         }
 
                         override fun onAdFailedToLoad(error: com.google.android.gms.ads.LoadAdError) {
                             loadState = AdBannerLoadState.FAILED
-                            Log.d(TAG, "Test banner unavailable: ${error.code}")
+                            Log.d(TAG, "Banner unavailable: ${error.code}")
                         }
                     }
                     loadAd(AdRequest.Builder().build())

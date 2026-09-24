@@ -5,9 +5,14 @@ plugins {
 }
 
 val umpTestDeviceHashedId = providers.gradleProperty("umpTestDeviceHashedId").orNull.orEmpty()
-val debugAdmobAppId = providers.gradleProperty("admobAppId")
-    .orElse("ca-app-pub-3940256099942544~3347511713")
-    .get()
+val googleTestAdmobAppId = "ca-app-pub-3940256099942544~3347511713"
+val googleTestBannerAdUnitId = "ca-app-pub-3940256099942544/9214589741"
+val releaseAdmobAppIdProvider = providers.gradleProperty("kilonomReleaseAdmobAppId")
+val releaseAdmobBannerAdUnitIdProvider = providers.gradleProperty("kilonomReleaseAdmobBannerAdUnitId")
+// Keep these values empty during configuration so debug builds remain self-contained. The
+// release verification task below rejects empty, malformed, or Google test identifiers.
+val releaseAdmobAppId = releaseAdmobAppIdProvider.orElse("").get()
+val releaseAdmobBannerAdUnitId = releaseAdmobBannerAdUnitIdProvider.orElse("").get()
 val resetUmpConsentForDebug = providers.gradleProperty("resetUmpConsentForDebug")
     .orNull
     .equals("true", ignoreCase = true)
@@ -20,8 +25,8 @@ android {
         applicationId = "com.bgr3108.kilonom"
         minSdk = 26
         targetSdk = 37
-        versionCode = 9
-        versionName = "1.3.0"
+        versionCode = 10
+        versionName = "1.4.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("boolean", "ADS_ENABLED", "false")
         buildConfigField("String", "ADMOB_BANNER_AD_UNIT_ID", "\"\"")
@@ -39,7 +44,7 @@ android {
 
     buildTypes {
         debug {
-            manifestPlaceholders["admobAppId"] = debugAdmobAppId
+            manifestPlaceholders["admobAppId"] = googleTestAdmobAppId
             buildConfigField("boolean", "ADS_ENABLED", "true")
             buildConfigField(
                 "boolean",
@@ -50,10 +55,17 @@ android {
             buildConfigField(
                 "String",
                 "ADMOB_BANNER_AD_UNIT_ID",
-                "\"ca-app-pub-3940256099942544/9214589741\""
+                "\"$googleTestBannerAdUnitId\""
             )
         }
         release {
+            manifestPlaceholders["releaseAdmobAppId"] = releaseAdmobAppId
+            buildConfigField("boolean", "ADS_ENABLED", "true")
+            buildConfigField(
+                "String",
+                "ADMOB_BANNER_AD_UNIT_ID",
+                "\"$releaseAdmobBannerAdUnitId\""
+            )
             buildConfigField("boolean", "RESET_UMP_CONSENT_FOR_DEBUG", "false")
             buildConfigField("String", "UMP_TEST_DEVICE_HASHED_ID", "\"\"")
             isMinifyEnabled = true
@@ -67,6 +79,40 @@ android {
             )
         }
     }
+}
+
+val verifyReleaseAdMobConfiguration = tasks.register("verifyReleaseAdMobConfiguration") {
+    group = "verification"
+    description = "Verifies that release advertising uses local production AdMob identifiers."
+
+    doLast {
+        fun requireProductionIdentifier(name: String, value: String, pattern: Regex) {
+            check(value.isNotBlank()) {
+                "Missing $name. Supply it through an untracked Gradle property; release builds never fall back to test IDs."
+            }
+            check(value.matches(pattern)) {
+                "$name has an invalid AdMob identifier format."
+            }
+            check(!value.contains("3940256099942544")) {
+                "$name must not use Google's official test identifier in release."
+            }
+        }
+
+        requireProductionIdentifier(
+            name = "kilonomReleaseAdmobAppId",
+            value = releaseAdmobAppIdProvider.orNull.orEmpty(),
+            pattern = Regex("ca-app-pub-\\d+~\\d+")
+        )
+        requireProductionIdentifier(
+            name = "kilonomReleaseAdmobBannerAdUnitId",
+            value = releaseAdmobBannerAdUnitIdProvider.orNull.orEmpty(),
+            pattern = Regex("ca-app-pub-\\d+/\\d+")
+        )
+    }
+}
+
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+    dependsOn(verifyReleaseAdMobConfiguration)
 }
 
 ksp {
@@ -94,7 +140,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.appcompat)
 
-    // Advertising is enabled only in debug with Google's official test identifiers.
+    // Debug uses Google's official test identifiers; release identifiers are supplied locally.
     implementation(libs.google.mobile.ads)
     implementation(libs.google.ump)
 
