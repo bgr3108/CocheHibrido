@@ -43,6 +43,7 @@ import com.bgr3108.kilonom.data.fuelLevelAfterPercentageText
 import com.bgr3108.kilonom.data.initialFuelLevelAfter
 import com.bgr3108.kilonom.data.isFullTankLevel
 import com.bgr3108.kilonom.data.isSupportedFuelLevelAfter
+import com.bgr3108.kilonom.data.toPercentageInputText
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
@@ -124,11 +125,11 @@ fun AddConsumptionScreen(
         mutableStateOf(entry?.cantidad?.toString()?.replace(".", ",") ?: "")
     }
     var porcentajeInicio by rememberSaveable(entry?.id) {
-        mutableStateOf("")
+        mutableStateOf(entry?.electricChargeStartPercentage.toPercentageInputText())
     }
 
     var porcentajeFin by rememberSaveable(entry?.id) {
-        mutableStateOf("")
+        mutableStateOf(entry?.electricChargeEndPercentage.toPercentageInputText())
     }
 
     var precio by rememberSaveable(entry?.id) {
@@ -494,7 +495,7 @@ fun AddConsumptionScreen(
                                         porcentajeFin.isNotBlank()
                                 )
 
-                val cantidadCalculada = if (usarPorcentajes) {
+                val electricChargePercentages = if (usarPorcentajes) {
                     val inicio = porcentajeInicio.toFiniteDoubleOrNull()
                     val fin = porcentajeFin.toFiniteDoubleOrNull()
 
@@ -518,9 +519,13 @@ fun AddConsumptionScreen(
                         return@Button
                     }
 
-                    (currentVehicle.batteryCapacity * (fin - inicio)) / 100.0
+                    inicio to fin
                 } else {
                     null
+                }
+
+                val cantidadCalculada = electricChargePercentages?.let { (inicio, fin) ->
+                    (currentVehicle.batteryCapacity * (fin - inicio)) / 100.0
                 }
 
                 val cantidadFinal =
@@ -630,6 +635,8 @@ fun AddConsumptionScreen(
                         fullTank
                     },
                     fuelLevelAfter = if (tipoSeleccionado == FuelType.GASOLINA) fuelLevelAfter else null,
+                    electricChargeStartPercentage = electricChargePercentages?.first,
+                    electricChargeEndPercentage = electricChargePercentages?.second,
                     originalVehicleId = entry?.vehicleId
                 )
 

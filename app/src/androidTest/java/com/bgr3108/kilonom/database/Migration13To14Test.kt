@@ -4,6 +4,9 @@ import android.database.sqlite.SQLiteDatabase
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.bgr3108.kilonom.data.FuelEntry
+import com.bgr3108.kilonom.data.FuelType
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -11,7 +14,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class Migration12To13Test {
+class Migration13To14Test {
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
@@ -21,56 +24,63 @@ class Migration12To13Test {
     }
 
     @Test
-    fun migrate12To13_preservesMaintenanceHistoryAndAppliesCompatibleDefaults() {
+    fun migrate13To14_preservesExistingEntriesAndAddsNullableChargePercentages() {
         SQLiteDatabase.openOrCreateDatabase(context.getDatabasePath(TEST_DATABASE), null).apply {
             execSQL("CREATE TABLE `car` (`id` INTEGER NOT NULL, `marca` TEXT NOT NULL, `modelo` TEXT NOT NULL, `matricula` TEXT NOT NULL, `kmActuales` INTEGER NOT NULL, PRIMARY KEY(`id`))")
             execSQL("CREATE TABLE `vehicles` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `category` TEXT NOT NULL, `brand` TEXT NOT NULL, `model` TEXT NOT NULL, `year` INTEGER, `type` TEXT, `fuelTankCapacity` REAL NOT NULL, `batteryCapacity` REAL NOT NULL, `initialKm` REAL NOT NULL, `createdAt` INTEGER NOT NULL)")
             execSQL("CREATE TABLE `fuel_entries` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `fecha` INTEGER NOT NULL, `cantidad` REAL NOT NULL, `precio` REAL NOT NULL, `tipo` TEXT NOT NULL, `km` REAL NOT NULL, `fullTank` INTEGER NOT NULL, `fuelLevelAfter` REAL, `vehicleId` INTEGER NOT NULL, FOREIGN KEY(`vehicleId`) REFERENCES `vehicles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)")
             execSQL("CREATE INDEX `index_fuel_entries_vehicleId_fecha` ON `fuel_entries` (`vehicleId`, `fecha`)")
-            execSQL("CREATE TABLE `maintenance_items` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `vehicleId` INTEGER NOT NULL, `type` TEXT NOT NULL, `tyrePosition` TEXT, `customName` TEXT, `trackingKey` TEXT NOT NULL, `nextDueKm` INTEGER, `nextDueDate` INTEGER, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, FOREIGN KEY(`vehicleId`) REFERENCES `vehicles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)")
+            execSQL("CREATE TABLE `maintenance_items` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `vehicleId` INTEGER NOT NULL, `type` TEXT NOT NULL, `tyrePosition` TEXT, `customName` TEXT, `trackingKey` TEXT NOT NULL, `nextDueKm` INTEGER, `nextDueDate` INTEGER, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `intervalKm` INTEGER, `intervalTimeValue` INTEGER, `intervalTimeUnit` TEXT, `reminderLeadKm` INTEGER NOT NULL DEFAULT 1000, `reminderLeadDays` INTEGER NOT NULL DEFAULT 30, FOREIGN KEY(`vehicleId`) REFERENCES `vehicles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)")
             execSQL("CREATE INDEX `index_maintenance_items_vehicleId` ON `maintenance_items` (`vehicleId`)")
             execSQL("CREATE UNIQUE INDEX `index_maintenance_items_vehicleId_trackingKey` ON `maintenance_items` (`vehicleId`, `trackingKey`)")
             execSQL("CREATE TABLE `maintenance_records` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `itemId` INTEGER NOT NULL, `performedDate` INTEGER, `odometerKm` INTEGER, `cost` REAL, `notes` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, FOREIGN KEY(`itemId`) REFERENCES `maintenance_items`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)")
             execSQL("CREATE INDEX `index_maintenance_records_itemId_performedDate` ON `maintenance_records` (`itemId`, `performedDate`)")
             execSQL("CREATE TABLE room_master_table (id INTEGER PRIMARY KEY, identity_hash TEXT)")
-            execSQL("INSERT INTO room_master_table (id, identity_hash) VALUES(42, '9e1fd037b66fcb7858c34a0fc2cba2d6')")
-            execSQL("INSERT INTO vehicles VALUES(1, 'COCHE', 'SEAT', 'León', 2026, 'GASOLINA', 40.0, 0.0, 1000.0, 10)")
-            execSQL("INSERT INTO maintenance_items VALUES(10, 1, 'OIL_AND_FILTER', NULL, NULL, 'OIL_AND_FILTER', 50000, 1900000000000, 10, 10)")
-            execSQL("INSERT INTO maintenance_records VALUES(20, 10, 1800000000000, 20000, 95.0, 'Cambio previo', 10, 10)")
-            setVersion(12)
+            execSQL("INSERT INTO room_master_table (id, identity_hash) VALUES(42, 'b9fde2a09f3bd8bf8635beded7ba24ff')")
+            execSQL("INSERT INTO vehicles VALUES(1, 'COCHE', 'Tesla', 'Model 3', 2026, 'ELECTRICO', 0.0, 60.0, 2000.0, 10)")
+            execSQL("INSERT INTO fuel_entries VALUES(7, 1000, 36.0, 8.5, 'ELECTRICO', 2500.0, 1, NULL, 1)")
+            setVersion(13)
             close()
         }
 
         val database = Room.databaseBuilder(context, HybridCarDatabase::class.java, TEST_DATABASE)
-            .addMigrations(HybridCarDatabase.MIGRATION_12_13, HybridCarDatabase.MIGRATION_13_14)
+            .addMigrations(HybridCarDatabase.MIGRATION_13_14)
             .allowMainThreadQueries()
             .build()
         val migrated = database.openHelper.writableDatabase
 
         migrated.query(
-            "SELECT nextDueKm, nextDueDate, intervalKm, intervalTimeValue, intervalTimeUnit, reminderLeadKm, reminderLeadDays FROM maintenance_items WHERE id = 10"
+            "SELECT cantidad, precio, electricChargeStartPercentage, electricChargeEndPercentage FROM fuel_entries WHERE id = 7"
         ).use { cursor ->
             assertTrue(cursor.moveToFirst())
-            assertEquals(50_000L, cursor.getLong(0))
-            assertEquals(1_900_000_000_000L, cursor.getLong(1))
+            assertEquals(36.0, cursor.getDouble(0), 0.0)
+            assertEquals(8.5, cursor.getDouble(1), 0.0)
             assertTrue(cursor.isNull(2))
             assertTrue(cursor.isNull(3))
-            assertTrue(cursor.isNull(4))
-            assertEquals(1_000L, cursor.getLong(5))
-            assertEquals(30L, cursor.getLong(6))
         }
-        migrated.query("SELECT itemId, performedDate, odometerKm, cost, notes FROM maintenance_records WHERE id = 20").use { cursor ->
-            assertTrue(cursor.moveToFirst())
-            assertEquals(10L, cursor.getLong(0))
-            assertEquals(1_800_000_000_000L, cursor.getLong(1))
-            assertEquals(20_000L, cursor.getLong(2))
-            assertEquals(95.0, cursor.getDouble(3), 0.0)
-            assertEquals("Cambio previo", cursor.getString(4))
+
+        runBlocking {
+            database.fuelEntryDao().updateEntry(
+                FuelEntry(
+                    id = 7,
+                    fecha = 1000,
+                    cantidad = 36.0,
+                    precio = 8.5,
+                    tipo = FuelType.ELECTRICO,
+                    km = 2500.0,
+                    vehicleId = 1,
+                    electricChargeStartPercentage = 20.0,
+                    electricChargeEndPercentage = 80.0
+                )
+            )
+            val updated = database.fuelEntryDao().getEntryForVehicle(7, 1)
+            assertEquals(20.0, requireNotNull(updated?.electricChargeStartPercentage), 0.0)
+            assertEquals(80.0, requireNotNull(updated.electricChargeEndPercentage), 0.0)
         }
         database.close()
     }
 
     private companion object {
-        const val TEST_DATABASE = "migration-12-13-test"
+        const val TEST_DATABASE = "migration-13-14-test"
     }
 }

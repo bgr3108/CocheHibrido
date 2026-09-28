@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import java.math.BigDecimal
 
 enum class FuelType {
     GASOLINA,
@@ -40,5 +41,30 @@ data class FuelEntry(
     /** Fraction of the tank estimated after a fuel entry, or null for historical/unknown data. */
     val fuelLevelAfter: Double? = null,
 
+    /** Battery percentages recorded for an electric charge, or null for historical/unknown data. */
+    val electricChargeStartPercentage: Double? = null,
+    val electricChargeEndPercentage: Double? = null,
+
     val vehicleId: Long
 )
+
+fun electricChargePercentageRangeText(
+    startPercentage: Double?,
+    endPercentage: Double?
+): String? = if (
+    startPercentage != null &&
+    endPercentage != null &&
+    startPercentage.isFinite() &&
+    endPercentage.isFinite() &&
+    startPercentage in 0.0..100.0 &&
+    endPercentage in startPercentage..100.0
+) {
+    "${startPercentage.toPercentageInputText()} % → ${endPercentage.toPercentageInputText()} %"
+} else {
+    null
+}
+
+fun Double?.toPercentageInputText(): String = this
+    ?.takeIf(Double::isFinite)
+    ?.let { BigDecimal.valueOf(it).stripTrailingZeros().toPlainString().replace('.', ',') }
+    .orEmpty()

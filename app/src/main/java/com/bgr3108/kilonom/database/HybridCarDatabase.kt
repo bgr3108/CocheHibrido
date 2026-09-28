@@ -16,7 +16,7 @@ import com.bgr3108.kilonom.data.VehicleEntity
 
 @Database(
     entities = [Car::class, FuelEntry::class, VehicleEntity::class, MaintenanceItemEntity::class, MaintenanceRecordEntity::class],
-    version = 13,
+    version = 14,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -42,7 +42,13 @@ abstract class HybridCarDatabase : RoomDatabase() {
                         dropAllTables = false,
                         1, 2, 3, 4, 5, 6, 7, 8
                     )
-                    .addMigrations(MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13)
+                    .addMigrations(
+                        MIGRATION_9_10,
+                        MIGRATION_10_11,
+                        MIGRATION_11_12,
+                        MIGRATION_12_13,
+                        MIGRATION_13_14
+                    )
                     .build()
                     .also { Instance = it }
             }
@@ -183,6 +189,14 @@ abstract class HybridCarDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE `maintenance_items` ADD COLUMN `intervalTimeUnit` TEXT")
                 db.execSQL("ALTER TABLE `maintenance_items` ADD COLUMN `reminderLeadKm` INTEGER NOT NULL DEFAULT 1000")
                 db.execSQL("ALTER TABLE `maintenance_items` ADD COLUMN `reminderLeadDays` INTEGER NOT NULL DEFAULT 30")
+            }
+        }
+
+        /** Adds optional charge percentages without changing historical electrical entries. */
+        val MIGRATION_13_14 = object : Migration(13, 14) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `fuel_entries` ADD COLUMN `electricChargeStartPercentage` REAL")
+                db.execSQL("ALTER TABLE `fuel_entries` ADD COLUMN `electricChargeEndPercentage` REAL")
             }
         }
     }

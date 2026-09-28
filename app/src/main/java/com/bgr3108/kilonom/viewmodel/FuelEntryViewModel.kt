@@ -27,6 +27,8 @@ data class FuelEntryDraft(
     val km: Double,
     val fullTank: Boolean,
     val fuelLevelAfter: Double?,
+    val electricChargeStartPercentage: Double?,
+    val electricChargeEndPercentage: Double?,
     val originalVehicleId: Long?
 )
 
@@ -112,6 +114,8 @@ class FuelEntryViewModel(
                     km = draft.km,
                     fullTank = draft.fullTank,
                     fuelLevelAfter = draft.fuelLevelAfter,
+                    electricChargeStartPercentage = draft.electricChargeStartPercentage,
+                    electricChargeEndPercentage = draft.electricChargeEndPercentage,
                     vehicleId = if (draft.id == 0) activeVehicleId else {
                         require(draft.originalVehicleId == activeVehicleId) {
                             "La entrada ya no pertenece al vehículo activo"

@@ -30,6 +30,7 @@ import com.bgr3108.kilonom.ui.theme.CardBlueDark
 import com.bgr3108.kilonom.data.FuelEntry
 import com.bgr3108.kilonom.data.FuelType
 import com.bgr3108.kilonom.data.fuelLevelAfterPercentageText
+import com.bgr3108.kilonom.data.electricChargePercentageRangeText
 import com.bgr3108.kilonom.data.isSupportedFuelLevelAfter
 import com.bgr3108.kilonom.data.supportsElectricEntries
 import com.bgr3108.kilonom.data.supportsFuelEntries
@@ -306,6 +307,15 @@ fun ConsumptionListScreen(
                                 else
                                     "Eléctrico • ${entry.cantidad.toSpanishDecimal()} kWh"
                             )
+                        }
+
+                        if (entry.tipo == FuelType.ELECTRICO) {
+                            electricChargePercentageRangeText(
+                                entry.electricChargeStartPercentage,
+                                entry.electricChargeEndPercentage
+                            )?.let { range ->
+                                Text(range, style = MaterialTheme.typography.bodySmall)
+                            }
                         }
 
 
