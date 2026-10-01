@@ -31,10 +31,10 @@ class FuelLevelAfterTest {
     }
 
     @Test
-    fun historicalFullEntryUsesTheSafelyEquivalentFullLevel() {
+    fun historicalFullEntryKeepsItsMissingLevel() {
         val entry = sampleHistoricalEntry(fullTank = true)
 
-        assertEquals(1.0, requireNotNull(initialFuelLevelAfter(entry)), 0.0)
+        assertNull(initialFuelLevelAfter(entry))
     }
 
     @Test

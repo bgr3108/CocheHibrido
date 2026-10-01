@@ -17,6 +17,8 @@ import androidx.compose.ui.platform.LocalDensity
 
 import com.bgr3108.kilonom.data.FuelEntry
 import com.bgr3108.kilonom.data.FuelType
+import com.bgr3108.kilonom.data.ElectricChargeAmountOrigin
+import com.bgr3108.kilonom.data.resolveElectricChargeAmount
 import com.bgr3108.kilonom.viewmodel.FuelEntryViewModel
 import com.bgr3108.kilonom.viewmodel.FuelEntryDraft
 import java.util.Calendar
@@ -132,6 +134,13 @@ fun AddConsumptionScreen(
         mutableStateOf(entry?.electricChargeEndPercentage.toPercentageInputText())
     }
 
+    val electricAmountOriginName = rememberSaveable(entry?.id) {
+        mutableStateOf(ElectricChargeAmountOrigin.STORED.name)
+    }
+    val electricAmountOrigin = ElectricChargeAmountOrigin.entries
+        .firstOrNull { it.name == electricAmountOriginName.value }
+        ?: ElectricChargeAmountOrigin.STORED
+
     var precio by rememberSaveable(entry?.id) {
         mutableStateOf(entry?.precio?.toString()?.replace(".", ",") ?: "")
     }
@@ -225,6 +234,7 @@ fun AddConsumptionScreen(
                     value = porcentajeInicio,
                     onValueChange = {
                         porcentajeInicio = it
+                        electricAmountOriginName.value = ElectricChargeAmountOrigin.PERCENTAGES.name
                     },
                     label = {
                         Text("% inicio")
@@ -241,20 +251,20 @@ fun AddConsumptionScreen(
                     singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
-                if (
-                    cantidad.isBlank() &&
-                    porcentajeInicio.isNotBlank() &&
-                    porcentajeFin.isNotBlank()
-                ) {
+                if (electricAmountOrigin == ElectricChargeAmountOrigin.PERCENTAGES) {
 
                     val inicio = porcentajeInicio.toFiniteDoubleOrNull()
                     val fin = porcentajeFin.toFiniteDoubleOrNull()
 
-                    if (inicio != null && fin != null) {
-                        val porcentajeCargado = fin - inicio
+                    val kwhEstimados = resolveElectricChargeAmount(
+                        amount = null,
+                        origin = ElectricChargeAmountOrigin.PERCENTAGES,
+                        batteryCapacity = currentVehicle.batteryCapacity,
+                        startPercentage = inicio,
+                        endPercentage = fin
+                    )
 
-                        val kwhEstimados =
-                            (currentVehicle.batteryCapacity * porcentajeCargado) / 100.0
+                    if (kwhEstimados != null) {
 
                         Text(
                             text = "≈ ${
@@ -273,6 +283,7 @@ fun AddConsumptionScreen(
                     value = porcentajeFin,
                     onValueChange = {
                         porcentajeFin = it
+                        electricAmountOriginName.value = ElectricChargeAmountOrigin.PERCENTAGES.name
                     },
                     label = {
                         Text("% fin")
@@ -300,7 +311,12 @@ fun AddConsumptionScreen(
 
         OutlinedTextField(
             value = cantidad,
-            onValueChange = { cantidad = it },
+            onValueChange = {
+                cantidad = it
+                if (tipoSeleccionado == FuelType.ELECTRICO) {
+                    electricAmountOriginName.value = ElectricChargeAmountOrigin.MANUAL.name
+                }
+            },
 
             label = {
                 Text(textoCantidad)
@@ -524,16 +540,18 @@ fun AddConsumptionScreen(
                     null
                 }
 
-                val cantidadCalculada = electricChargePercentages?.let { (inicio, fin) ->
-                    (currentVehicle.batteryCapacity * (fin - inicio)) / 100.0
+                val cantidadIntroducida = cantidad.toFiniteDoubleOrNull()
+                val cantidadFinal = if (tipoSeleccionado == FuelType.ELECTRICO) {
+                    resolveElectricChargeAmount(
+                        amount = cantidadIntroducida,
+                        origin = electricAmountOrigin,
+                        batteryCapacity = currentVehicle.batteryCapacity,
+                        startPercentage = electricChargePercentages?.first,
+                        endPercentage = electricChargePercentages?.second
+                    )
+                } else {
+                    cantidadIntroducida
                 }
-
-                val cantidadFinal =
-                    if (cantidad.isNotBlank()) {
-                        cantidad.toFiniteDoubleOrNull()
-                    } else {
-                        cantidadCalculada
-                    }
 
                 if (
                     cantidadFinal == null ||

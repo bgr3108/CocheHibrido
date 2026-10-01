@@ -17,6 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -30,7 +32,7 @@ import com.bgr3108.kilonom.ui.theme.CardBlueDark
 import com.bgr3108.kilonom.data.FuelEntry
 import com.bgr3108.kilonom.data.FuelType
 import com.bgr3108.kilonom.data.fuelLevelAfterPercentageText
-import com.bgr3108.kilonom.data.electricChargePercentageRangeText
+import com.bgr3108.kilonom.data.electricChargePercentageSummaryText
 import com.bgr3108.kilonom.data.isSupportedFuelLevelAfter
 import com.bgr3108.kilonom.data.supportsElectricEntries
 import com.bgr3108.kilonom.data.supportsFuelEntries
@@ -262,114 +264,12 @@ fun ConsumptionListScreen(
             ) {
                 items(filteredEntries, key = { it.id }) { entry ->
 
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (isDark) CardBlueDark else CardBlueLight
-                        ),
-                        elevation = CardDefaults.cardElevation(4.dp)
-                    ) {
-                        Column(Modifier.padding(16.dp)) {
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    entry.fecha.toDateTimeString(),
-                                    style = MaterialTheme.typography.labelMedium
-                                )
-
-                                Text(
-                                    "${entry.km.toKilometersDisplay()} km",
-                                    style = MaterialTheme.typography.labelMedium
-                                )
-                            }
-
-
-                            Spacer(modifier = Modifier.height(6.dp))
-
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = if (entry.tipo == FuelType.GASOLINA) {
-                                    Icons.Outlined.LocalGasStation
-                                } else {
-                                    Icons.Outlined.Bolt
-                                },
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = if (entry.tipo == FuelType.GASOLINA)
-                                    "Combustible • ${entry.cantidad.toSpanishDecimal()} L"
-                                else
-                                    "Eléctrico • ${entry.cantidad.toSpanishDecimal()} kWh"
-                            )
-                        }
-
-                        if (entry.tipo == FuelType.ELECTRICO) {
-                            electricChargePercentageRangeText(
-                                entry.electricChargeStartPercentage,
-                                entry.electricChargeEndPercentage
-                            )?.let { range ->
-                                Text(range, style = MaterialTheme.typography.bodySmall)
-                            }
-                        }
-
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        // 💰 Precio unitario
-                        val precioUnitario = calculateUnitPrice(entry) ?: 0.0
-
-                        val unidad = if (entry.tipo == FuelType.GASOLINA) "€/L" else "€/kWh"
-
-                        Text("Precio: ${precioUnitario.toSpanishDecimal()} $unidad")
-
-                        // 💶 Total
-                        Text("Total: ${entry.precio.toSpanishDecimal()} €")
-
-                            if (entry.tipo == FuelType.GASOLINA) {
-
-                                Text(
-                                    if (entry.fullTank)
-                                        "☑ Lleno"
-                                    else {
-                                        val levelText = entry.fuelLevelAfter
-                                            ?.takeIf(::isSupportedFuelLevelAfter)
-                                            ?.let { " · Nivel ${fuelLevelAfterPercentageText(it)}" }
-                                            .orEmpty()
-                                        "◻ Parcial$levelText"
-                                    }
-                                )
-                            }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Botones
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Button(
-                                onClick = {
-                                    navController.navigate("edit_refuel/${entry.id}")
-                                },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("Editar")
-                            }
-
-                            OutlinedButton(
-                                onClick = { entryToDelete.value = entry },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("Eliminar")
-                            }
-                        }
-                    }
-                }
+                    ConsumptionEntryCard(
+                        entry = entry,
+                        isDark = isDark,
+                        onEdit = { navController.navigate("edit_refuel/${entry.id}") },
+                        onDelete = { entryToDelete.value = entry }
+                    )
             }
         }
         }
@@ -418,4 +318,142 @@ private fun DateFilter.label(): String = when (this) {
     DateFilter.THIS_MONTH -> "Este mes"
     DateFilter.LAST_MONTH -> "Mes anterior"
     DateFilter.THIS_YEAR -> "Este año"
+}
+
+@Composable
+private fun ConsumptionEntryCard(
+    entry: FuelEntry,
+    isDark: Boolean,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val isElectric = entry.tipo == FuelType.ELECTRICO
+    val quantityUnit = if (isElectric) "kWh" else "L"
+    val unitPriceUnit = if (isElectric) "€/kWh" else "€/L"
+    val unitPrice = calculateUnitPrice(entry)
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isDark) CardBlueDark else CardBlueLight
+        ),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = entry.fecha.toDateTimeString(),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = "${entry.km.toKilometersDisplay()} km",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (isElectric) Icons.Outlined.Bolt else Icons.Outlined.LocalGasStation,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(22.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = if (isElectric) "Carga eléctrica" else "Combustible",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "${entry.cantidad.toSpanishDecimal()} $quantityUnit",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = "Coste total",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "${entry.precio.toSpanishDecimal()} €",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1
+                    )
+                }
+            }
+
+            electricChargePercentageSummaryText(
+                entry.electricChargeStartPercentage,
+                entry.electricChargeEndPercentage
+            )?.let { summary ->
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = summary,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            unitPrice?.let {
+                Text(
+                    text = "Precio unitario: ${it.toSpanishDecimal()} $unitPriceUnit",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            if (!isElectric) {
+                val fuelState = if (entry.fullTank) {
+                    "☑ Lleno"
+                } else {
+                    val levelText = entry.fuelLevelAfter
+                        ?.takeIf(::isSupportedFuelLevelAfter)
+                        ?.let { " · Nivel ${fuelLevelAfterPercentageText(it)}" }
+                        .orEmpty()
+                    "◻ Parcial$levelText"
+                }
+                Text(
+                    text = fuelState,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Button(onClick = onEdit, modifier = Modifier.weight(1f)) {
+                    Text("Editar")
+                }
+                OutlinedButton(onClick = onDelete, modifier = Modifier.weight(1f)) {
+                    Text("Eliminar")
+                }
+            }
+        }
+    }
 }

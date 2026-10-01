@@ -32,6 +32,31 @@ data class FuelEntryDraft(
     val originalVehicleId: Long?
 )
 
+internal fun FuelEntryDraft.toFuelEntry(activeVehicleId: Long): FuelEntry {
+    val vehicleId = if (id == 0) {
+        activeVehicleId
+    } else {
+        require(originalVehicleId == activeVehicleId) {
+            "La entrada ya no pertenece al vehículo activo"
+        }
+        activeVehicleId
+    }
+
+    return FuelEntry(
+        id = id,
+        fecha = fecha,
+        cantidad = cantidad,
+        precio = precio,
+        tipo = tipo,
+        km = km,
+        fullTank = fullTank,
+        fuelLevelAfter = fuelLevelAfter,
+        electricChargeStartPercentage = electricChargeStartPercentage,
+        electricChargeEndPercentage = electricChargeEndPercentage,
+        vehicleId = vehicleId
+    )
+}
+
 class FuelEntryViewModel(
     private val repository: FuelRepository,
     private val vehicleRepository: VehicleRepository
@@ -105,24 +130,7 @@ class FuelEntryViewModel(
             try {
                 val activeVehicleId = vehicleRepository.activeVehicleId.value
                     ?: error("No hay un vehículo activo")
-                val entry = FuelEntry(
-                    id = draft.id,
-                    fecha = draft.fecha,
-                    cantidad = draft.cantidad,
-                    precio = draft.precio,
-                    tipo = draft.tipo,
-                    km = draft.km,
-                    fullTank = draft.fullTank,
-                    fuelLevelAfter = draft.fuelLevelAfter,
-                    electricChargeStartPercentage = draft.electricChargeStartPercentage,
-                    electricChargeEndPercentage = draft.electricChargeEndPercentage,
-                    vehicleId = if (draft.id == 0) activeVehicleId else {
-                        require(draft.originalVehicleId == activeVehicleId) {
-                            "La entrada ya no pertenece al vehículo activo"
-                        }
-                        activeVehicleId
-                    }
-                )
+                val entry = draft.toFuelEntry(activeVehicleId)
                 if (draft.id == 0) {
                     repository.addEntryForVehicle(entry, activeVehicleId)
                 } else {

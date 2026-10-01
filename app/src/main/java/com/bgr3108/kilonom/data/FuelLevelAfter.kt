@@ -21,7 +21,8 @@ fun initialFuelLevelAfter(entry: FuelEntry?): Double? = when {
     // user explicitly selects a lower level.
     entry == null -> 1.0
     entry.fuelLevelAfter != null && isSupportedFuelLevelAfter(entry.fuelLevelAfter) -> entry.fuelLevelAfter
-    entry.fullTank -> 1.0
+    // A legacy entry may only have the boolean flag. Do not synthesize a new percentage
+    // while editing it: opening and saving without changes must preserve the stored record.
     else -> null
 }
 

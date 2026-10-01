@@ -64,6 +64,54 @@ fun electricChargePercentageRangeText(
     null
 }
 
+/**
+ * Compact secondary text for an electric charge when both stored battery percentages are valid.
+ * Historical entries without complete percentages deliberately have no presentation.
+ */
+fun electricChargePercentageSummaryText(
+    startPercentage: Double?,
+    endPercentage: Double?
+): String? {
+    val range = electricChargePercentageRangeText(startPercentage, endPercentage) ?: return null
+    val variation = requireNotNull(endPercentage) - requireNotNull(startPercentage)
+    return "$range (+${variation.toPercentageInputText()} %)"
+}
+
+/** Identifies which input last defined the amount of an electric charge in the form. */
+enum class ElectricChargeAmountOrigin {
+    STORED,
+    MANUAL,
+    PERCENTAGES
+}
+
+/**
+ * Resolves the amount without ever recalculating a value merely because an existing entry was
+ * opened. Percentages only take precedence after the user has edited one of them.
+ */
+fun resolveElectricChargeAmount(
+    amount: Double?,
+    origin: ElectricChargeAmountOrigin,
+    batteryCapacity: Double,
+    startPercentage: Double?,
+    endPercentage: Double?
+): Double? = when (origin) {
+    ElectricChargeAmountOrigin.PERCENTAGES -> {
+        if (
+            batteryCapacity.isFinite() && batteryCapacity > 0.0 &&
+            startPercentage != null && endPercentage != null &&
+            startPercentage.isFinite() && endPercentage.isFinite() &&
+            startPercentage in 0.0..100.0 && endPercentage in startPercentage..100.0
+        ) {
+            batteryCapacity * (endPercentage - startPercentage) / 100.0
+        } else {
+            null
+        }
+    }
+
+    ElectricChargeAmountOrigin.STORED,
+    ElectricChargeAmountOrigin.MANUAL -> amount
+}
+
 fun Double?.toPercentageInputText(): String = this
     ?.takeIf(Double::isFinite)
     ?.let { BigDecimal.valueOf(it).stripTrailingZeros().toPlainString().replace('.', ',') }
