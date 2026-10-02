@@ -49,6 +49,7 @@ data class PeriodSummary(
     val electric: EnergyPeriodSummary,
     val distanceKilometers: Double?,
     val costPerKilometer: Double?,
+    val costPerHundredKilometers: Double?,
     val monthlyExpenses: List<MonthlyExpensePoint>
 ) {
     val hasRecords: Boolean

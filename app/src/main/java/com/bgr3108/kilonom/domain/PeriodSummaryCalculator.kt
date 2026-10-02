@@ -2,19 +2,18 @@ package com.bgr3108.kilonom.domain
 
 import com.bgr3108.kilonom.data.FuelEntry
 import com.bgr3108.kilonom.data.FuelType
-import com.bgr3108.kilonom.data.Vehicle
 import java.util.Calendar
 import java.util.TimeZone
 
 fun calculatePeriodSummary(
     entries: List<FuelEntry>,
-    vehicle: Vehicle,
     period: StatisticsPeriod,
     timeZone: TimeZone = TimeZone.getDefault()
 ): PeriodSummary {
+    val range = periodRange(period, timeZone)
     val entriesInPeriod = entries.filter { entry ->
-        periodRange(period, timeZone)?.let { range ->
-            entry.fecha in range.startInclusive until range.endExclusive
+        range?.let { periodRange ->
+            entry.fecha in periodRange.startInclusive until periodRange.endExclusive
         } ?: true
     }
     val validEntries = validEconomicEntries(entriesInPeriod)
@@ -25,10 +24,17 @@ fun calculatePeriodSummary(
     val electricCost = validElectricEntries.sumFinite { it.precio }
     val fuelQuantity = validFuelEntries.sumFinite { it.cantidad }
     val electricQuantity = validElectricEntries.sumFinite { it.cantidad }
-    val distance = when (period) {
-        StatisticsPeriod.All -> calculateTravelledKilometers(entries, vehicle.initialKm)
-            .takeIf { it > 0.0 }
-        else -> calculateDistanceBetweenRecords(entriesInPeriod)
+    val distance = if (range == null) {
+        calculateAllPeriodEconomicDistance(validEntries)
+    } else {
+        calculateReliablePeriodDistance(
+            allEntries = entries,
+            entriesInPeriod = entriesInPeriod,
+            periodRange = range
+        )
+    }
+    val costPerKilometer = distance?.let { kilometers ->
+        calculateCostPerKilometer(totalCost, kilometers).takeIf { it.isFinite() }
     }
 
     return PeriodSummary(
@@ -51,22 +57,20 @@ fun calculatePeriodSummary(
             }
         ),
         distanceKilometers = distance,
-        costPerKilometer = distance?.let { kilometers ->
-            calculateCostPerKilometer(totalCost, kilometers).takeIf { it.isFinite() }
-        },
+        costPerKilometer = costPerKilometer,
+        costPerHundredKilometers = calculateCostPerHundredKilometers(costPerKilometer),
         monthlyExpenses = calculateMonthlyExpenses(entriesInPeriod, timeZone)
     )
 }
 
 fun calculatePeriodComparison(
     entries: List<FuelEntry>,
-    vehicle: Vehicle,
     period: StatisticsPeriod,
     timeZone: TimeZone = TimeZone.getDefault()
 ): PeriodComparison? {
     val previousPeriod = previousPeriod(period) ?: return null
-    val current = calculatePeriodSummary(entries, vehicle, period, timeZone)
-    val previous = calculatePeriodSummary(entries, vehicle, previousPeriod, timeZone)
+    val current = calculatePeriodSummary(entries, period, timeZone)
+    val previous = calculatePeriodSummary(entries, previousPeriod, timeZone)
 
     return PeriodComparison(
         totalCost = compareMetric(
@@ -147,13 +151,50 @@ fun currentPeriod(
     }
 }
 
-private fun calculateDistanceBetweenRecords(entries: List<FuelEntry>): Double? {
-    val validKilometers = entries.map { it.km }
+/**
+ * Measures one odometer range instead of adding pairwise deltas, so mixed fuel/electric records
+ * cannot count the same kilometres twice. A limited period needs an actual prior reading: without
+ * it, its first in-period consumption cannot be tied to a distance without inventing kilometres.
+ */
+private fun calculateReliablePeriodDistance(
+    allEntries: List<FuelEntry>,
+    entriesInPeriod: List<FuelEntry>,
+    periodRange: PeriodRange?
+): Double? {
+    val endingKilometers = entriesInPeriod
+        .asSequence()
+        .map { it.km }
         .filter { it.isFinite() && it >= 0.0 }
+        .maxOrNull()
+        ?: return null
 
-    if (validKilometers.size < 2) return null
+    val startingKilometers = allEntries
+        .asSequence()
+        .filter { it.fecha < requireNotNull(periodRange).startInclusive }
+        .filter { it.km.isFinite() && it.km >= 0.0 }
+        .sortedWith(compareBy<FuelEntry> { it.fecha }.thenBy { it.id })
+        .lastOrNull()
+        ?.km
+        ?: return null
 
-    return (validKilometers.max() - validKilometers.min())
+    return (endingKilometers - startingKilometers)
+        .takeIf { it.isFinite() && it > 0.0 }
+}
+
+/**
+ * For the complete history, cost and distance must cover the same economic interval. The vehicle
+ * creation odometer is not an economic reference because no registered cost is tied to it.
+ */
+private fun calculateAllPeriodEconomicDistance(validEconomicEntries: List<FuelEntry>): Double? {
+    val odometers = validEconomicEntries
+        .asSequence()
+        .map { it.km }
+        .filter { it.isFinite() && it >= 0.0 }
+        .toList()
+
+    if (odometers.size < 2) return null
+
+    return (requireNotNull(odometers.maxOrNull()) - requireNotNull(odometers.minOrNull()))
         .takeIf { it.isFinite() && it > 0.0 }
 }
 

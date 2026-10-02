@@ -2,8 +2,6 @@ package com.bgr3108.kilonom.domain
 
 import com.bgr3108.kilonom.data.FuelEntry
 import com.bgr3108.kilonom.data.FuelType
-import com.bgr3108.kilonom.data.Vehicle
-import com.bgr3108.kilonom.data.VehicleType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -15,7 +13,6 @@ import java.util.TimeZone
 class PeriodSummaryCalculatorTest {
 
     private val timeZone = TimeZone.getTimeZone("UTC")
-    private val vehicle = Vehicle(type = VehicleType.HIBRIDO_ENCHUFABLE, initialKm = 1_000.0)
 
     @Test
     fun monthWithFuel_calculatesWeightedFuelMetrics() {
@@ -29,6 +26,18 @@ class PeriodSummaryCalculatorTest {
         assertEquals(110.0, summary.fuel.totalCost, 0.0)
         assertEquals(60.0, summary.fuel.quantity, 0.0)
         assertEquals(110.0 / 60.0, summary.fuel.averagePrice ?: 0.0, 0.0)
+    }
+
+    @Test
+    fun thermalVehicleCostPerHundredKm_usesOnlyItsPeriodFuelCost() {
+        val summary = summary(
+            entries = listOf(
+                entry(Calendar.JULY, FuelType.GASOLINA, 10.0, 10.0, 1_000.0),
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 25.0, 1_100.0)
+            )
+        )
+
+        assertEquals(25.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
     }
 
     @Test
@@ -46,9 +55,22 @@ class PeriodSummaryCalculatorTest {
     }
 
     @Test
+    fun electricVehicleCostPerHundredKm_usesRegisteredChargeCosts() {
+        val summary = summary(
+            entries = listOf(
+                entry(Calendar.JULY, FuelType.ELECTRICO, 5.0, 0.0, 1_000.0),
+                entry(Calendar.AUGUST, FuelType.ELECTRICO, 10.0, 6.0, 1_200.0)
+            )
+        )
+
+        assertEquals(3.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
+    }
+
+    @Test
     fun phevCombinesFuelAndElectricCosts() {
         val summary = summary(
             entries = listOf(
+                entry(Calendar.JULY, FuelType.GASOLINA, 10.0, 10.0, 1_000.0),
                 entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 20.0, 1_100.0),
                 entry(Calendar.AUGUST, FuelType.ELECTRICO, 5.0, 2.0, 1_200.0)
             )
@@ -56,8 +78,8 @@ class PeriodSummaryCalculatorTest {
 
         assertEquals(22.0, summary.totalCost, 0.0)
         assertEquals(
-            22.0,
-            requireNotNull(calculateCostPerHundredKilometers(summary.costPerKilometer)),
+            11.0,
+            requireNotNull(summary.costPerHundredKilometers),
             0.0
         )
     }
@@ -80,33 +102,73 @@ class PeriodSummaryCalculatorTest {
     }
 
     @Test
-    fun twoValidMileages_calculateDistanceBetweenRecords() {
+    fun periodWithoutAPriorOdometerReference_doesNotInventDistance() {
         val summary = summary(
             entries = listOf(
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 20.0, 1_100.0),
+                entry(Calendar.AUGUST, FuelType.ELECTRICO, 10.0, 10.0, 1_300.0)
+            )
+        )
+
+        assertNull(summary.distanceKilometers)
+        assertNull(summary.costPerHundredKilometers)
+    }
+
+    @Test
+    fun interleavedFuelAndElectricEntries_useOneCombinedOdometerRange() {
+        val summary = summary(
+            entries = listOf(
+                entry(Calendar.JULY, FuelType.GASOLINA, 10.0, 10.0, 1_000.0),
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 20.0, 1_100.0),
+                entry(Calendar.AUGUST, FuelType.ELECTRICO, 8.0, 4.0, 1_200.0),
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 30.0, 1_300.0)
+            )
+        )
+
+        assertEquals(300.0, summary.distanceKilometers ?: 0.0, 0.0)
+        assertEquals(18.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
+    }
+
+    @Test
+    fun invalidEconomicCost_isExcludedRatherThanTurnedIntoAFakeCost() {
+        val summary = summary(
+            entries = listOf(
+                entry(Calendar.JULY, FuelType.GASOLINA, 10.0, 10.0, 1_000.0),
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, Double.NaN, 1_100.0),
+                entry(Calendar.AUGUST, FuelType.ELECTRICO, 5.0, 5.0, 1_200.0)
+            )
+        )
+
+        assertEquals(5.0, summary.totalCost, 0.0)
+        assertEquals(2.5, requireNotNull(summary.costPerHundredKilometers), 0.0)
+    }
+
+    @Test
+    fun periodUsesTheLastValidOdometerBeforeItsStartAsTheDistanceReference() {
+        val summary = summary(
+            entries = listOf(
+                entry(Calendar.JULY, FuelType.GASOLINA, 10.0, 10.0, 1_000.0),
                 entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 20.0, 1_100.0),
                 entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 30.0, 1_350.0)
             )
         )
 
-        assertEquals(250.0, summary.distanceKilometers ?: 0.0, 0.0)
-        assertEquals(0.2, summary.costPerKilometer ?: 0.0, 0.0)
+        assertEquals(350.0, summary.distanceKilometers ?: 0.0, 0.0)
+        assertEquals(50.0 / 350.0, summary.costPerKilometer ?: 0.0, 0.0)
     }
 
     @Test
     fun monthlyCostPerHundredKilometers_derivesFromTheExistingCostPerKilometer() {
         val summary = summary(
             entries = listOf(
+                entry(Calendar.JULY, FuelType.GASOLINA, 10.0, 10.0, 1_000.0),
                 entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 12.0, 1_100.0),
                 entry(Calendar.AUGUST, FuelType.ELECTRICO, 10.0, 15.0, 1_300.0)
             )
         )
 
-        assertEquals(0.135, summary.costPerKilometer ?: 0.0, 0.0)
-        assertEquals(
-            13.5,
-            requireNotNull(calculateCostPerHundredKilometers(summary.costPerKilometer)),
-            0.0
-        )
+        assertEquals(0.09, summary.costPerKilometer ?: 0.0, 0.0)
+        assertEquals(9.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
     }
 
     @Test
@@ -122,41 +184,98 @@ class PeriodSummaryCalculatorTest {
     }
 
     @Test
-    fun allPeriod_usesVehicleInitialMileageAndLastValidMileage() {
+    fun allPeriod_alignsEconomicCostsWithItsEconomicOdometerRange() {
         val summary = calculatePeriodSummary(
             entries = listOf(
-                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 20.0, 1_360.0),
-                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 20.0, Double.NaN)
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 20.0, 30.0, 50_400.0),
+                entry(Calendar.SEPTEMBER, FuelType.ELECTRICO, 20.0, 60.0, 51_000.0)
             ),
-            vehicle = vehicle,
             period = StatisticsPeriod.All,
             timeZone = timeZone
         )
 
-        assertEquals(360.0, summary.distanceKilometers ?: 0.0, 0.0)
-        assertEquals(
-            100.0 / 9.0,
-            requireNotNull(calculateCostPerHundredKilometers(summary.costPerKilometer)),
-            0.0
-        )
+        assertEquals(600.0, summary.distanceKilometers ?: 0.0, 0.0)
+        assertEquals(15.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
     }
 
     @Test
-    fun yearlyPeriod_keepsDistanceBetweenItsRecords() {
+    fun allPeriod_requiresTwoEconomicOdometerReferences() {
         val summary = calculatePeriodSummary(
             entries = listOf(
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 20.0, 30.0, 50_400.0),
+                entry(Calendar.SEPTEMBER, FuelType.ELECTRICO, 20.0, 60.0, Double.NaN)
+            ),
+            period = StatisticsPeriod.All,
+            timeZone = timeZone
+        )
+
+        assertNull(summary.distanceKilometers)
+        assertNull(summary.costPerHundredKilometers)
+    }
+
+    @Test
+    fun allPeriod_requiresAPositiveEconomicOdometerRange() {
+        val summary = calculatePeriodSummary(
+            entries = listOf(
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 20.0, 30.0, 50_400.0),
+                entry(Calendar.SEPTEMBER, FuelType.ELECTRICO, 20.0, 60.0, 50_400.0)
+            ),
+            period = StatisticsPeriod.All,
+            timeZone = timeZone
+        )
+
+        assertNull(summary.distanceKilometers)
+        assertNull(summary.costPerHundredKilometers)
+    }
+
+    @Test
+    fun allPeriod_ignoresInvalidEconomicRecordsForItsOdometerRange() {
+        val summary = calculatePeriodSummary(
+            entries = listOf(
+                entry(Calendar.JULY, FuelType.GASOLINA, 20.0, Double.NaN, 50_000.0),
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 20.0, 30.0, 50_400.0),
+                entry(Calendar.SEPTEMBER, FuelType.ELECTRICO, 20.0, 60.0, 51_000.0)
+            ),
+            period = StatisticsPeriod.All,
+            timeZone = timeZone
+        )
+
+        assertEquals(90.0, summary.totalCost, 0.0)
+        assertEquals(600.0, summary.distanceKilometers ?: 0.0, 0.0)
+        assertEquals(15.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
+    }
+
+    @Test
+    fun allPeriod_keepsFreeChargesAsEconomicOdometerReferences() {
+        val summary = calculatePeriodSummary(
+            entries = listOf(
+                entry(Calendar.AUGUST, FuelType.ELECTRICO, 20.0, 0.0, 50_400.0),
+                entry(Calendar.SEPTEMBER, FuelType.ELECTRICO, 20.0, 6.0, 51_000.0)
+            ),
+            period = StatisticsPeriod.All,
+            timeZone = timeZone
+        )
+
+        assertEquals(600.0, summary.distanceKilometers ?: 0.0, 0.0)
+        assertEquals(1.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
+    }
+
+    @Test
+    fun yearlyPeriodUsesThePreviousOdometerReference() {
+        val summary = calculatePeriodSummary(
+            entries = listOf(
+                entry(Calendar.DECEMBER, FuelType.GASOLINA, 10.0, 10.0, 1_000.0, year = 2025),
                 entry(Calendar.JANUARY, FuelType.GASOLINA, 10.0, 20.0, 1_100.0),
                 entry(Calendar.DECEMBER, FuelType.ELECTRICO, 10.0, 40.0, 1_500.0)
             ),
-            vehicle = vehicle,
             period = StatisticsPeriod.Year(2026),
             timeZone = timeZone
         )
 
-        assertEquals(400.0, summary.distanceKilometers ?: 0.0, 0.0)
+        assertEquals(500.0, summary.distanceKilometers ?: 0.0, 0.0)
         assertEquals(
-            15.0,
-            requireNotNull(calculateCostPerHundredKilometers(summary.costPerKilometer)),
+            12.0,
+            requireNotNull(summary.costPerHundredKilometers),
             0.0
         )
     }
@@ -167,7 +286,6 @@ class PeriodSummaryCalculatorTest {
         val january = entry(Calendar.JANUARY, FuelType.GASOLINA, 10.0, 30.0, 1_200.0, year = 2027)
         val summary = calculatePeriodSummary(
             entries = listOf(december, january),
-            vehicle = vehicle,
             period = StatisticsPeriod.Month(2026, Calendar.DECEMBER),
             timeZone = timeZone
         )
@@ -195,7 +313,6 @@ class PeriodSummaryCalculatorTest {
         val comparison = requireNotNull(
             calculatePeriodComparison(
                 entries,
-                vehicle,
                 StatisticsPeriod.Month(2026, Calendar.AUGUST),
                 timeZone
             )
@@ -210,7 +327,6 @@ class PeriodSummaryCalculatorTest {
         val comparison = requireNotNull(
             calculatePeriodComparison(
                 listOf(entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 80.0, 1_200.0)),
-                vehicle,
                 StatisticsPeriod.Month(2026, Calendar.AUGUST),
                 timeZone
             )
@@ -227,7 +343,6 @@ class PeriodSummaryCalculatorTest {
                     entry(Calendar.JULY, FuelType.ELECTRICO, 10.0, 0.0, 1_100.0),
                     entry(Calendar.AUGUST, FuelType.ELECTRICO, 10.0, 8.0, 1_200.0)
                 ),
-                vehicle,
                 StatisticsPeriod.Month(2026, Calendar.AUGUST),
                 timeZone
             )
@@ -261,7 +376,6 @@ class PeriodSummaryCalculatorTest {
                 entry(Calendar.JULY, FuelType.GASOLINA, 10.0, 20.0, 1_100.0),
                 entry(Calendar.AUGUST, FuelType.ELECTRICO, 10.0, 10.0, 1_200.0)
             ),
-            vehicle = vehicle,
             period = StatisticsPeriod.All,
             timeZone = timeZone
         )
@@ -288,7 +402,7 @@ class PeriodSummaryCalculatorTest {
     }
 
     private fun summary(entries: List<FuelEntry>): PeriodSummary =
-        calculatePeriodSummary(entries, vehicle, StatisticsPeriod.Month(2026, Calendar.AUGUST), timeZone)
+        calculatePeriodSummary(entries, StatisticsPeriod.Month(2026, Calendar.AUGUST), timeZone)
 
     private fun entry(
         month: Int,

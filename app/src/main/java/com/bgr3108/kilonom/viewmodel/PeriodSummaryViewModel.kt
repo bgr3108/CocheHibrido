@@ -57,8 +57,8 @@ class PeriodSummaryViewModel(
         timeRefresh
     ) { context, selectedPeriod, _ ->
         PeriodSummaryUiState(
-            summary = calculatePeriodSummary(context.entries, context.vehicle, selectedPeriod),
-            comparison = calculatePeriodComparison(context.entries, context.vehicle, selectedPeriod),
+            summary = calculatePeriodSummary(context.entries, selectedPeriod),
+            comparison = calculatePeriodComparison(context.entries, selectedPeriod),
             vehicleType = context.vehicle.type
         )
     }.stateIn(
@@ -67,7 +67,6 @@ class PeriodSummaryViewModel(
         initialValue = PeriodSummaryUiState(
             summary = calculatePeriodSummary(
                 entries = emptyList(),
-                vehicle = Vehicle(),
                 period = _period.value
             ),
             comparison = null,
