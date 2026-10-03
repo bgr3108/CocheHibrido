@@ -88,7 +88,7 @@ fun PrivacyScreen(
 
                     PrivacySection(
                         title = "Estaciones de servicio",
-                        description = "Estaciones descarga por conexión segura datos públicos de MITECO para gasolineras y de MITECO / RIPREE para cargadores, y los guarda en cachés independientes. La ubicación es opcional: puedes buscar por provincia y municipio. Si eliges usar ubicación aproximada o precisa, Kilonom la procesa solo mientras usas Estaciones para mostrar resultados cercanos y calcular distancias; no guarda coordenadas, historial ni las envía a MITECO o a servidores propios. DataStore solo puede conservar estados de interfaz, como que ya se mostró la explicación de ubicación o que ya se solicitó el permiso. Kilonom no envía a MITECO tus vehículos, consumos o mantenimientos, ni muestra disponibilidad o tarifas de recarga en tiempo real. MapLibre es la librería de mapa; OpenFreeMap solicita las teselas y su infraestructura recibe la petición técnica necesaria, incluida la información de red habitual."
+                        description = "Estaciones descarga por conexión segura datos públicos de MITECO para gasolineras y de MITECO / RIPREE para cargadores, y los guarda en cachés independientes. La ubicación es opcional: puedes buscar por provincia y municipio. Si eliges usar ubicación aproximada o precisa, Kilonom la procesa solo mientras usas Estaciones para mostrar resultados cercanos y calcular distancias; no guarda coordenadas, historial ni las envía a MITECO o a servidores propios. DataStore solo puede conservar estados de interfaz, como que ya se mostró la explicación de ubicación o que ya se solicitó el permiso. Kilonom no envía a MITECO tus vehículos, consumos o mantenimientos, ni muestra disponibilidad o tarifas de recarga en tiempo real. MapLibre es la librería de mapa. Al visualizarlo, OpenFreeMap recibe las solicitudes de teselas de la zona mostrada y puede inferir aproximadamente el área visualizada; su infraestructura también recibe datos técnicos habituales de conexión, como la dirección IP. Kilonom no le envía las coordenadas del dispositivo como parámetro."
                     )
 
                     HorizontalDivider()
@@ -139,6 +139,11 @@ private fun PrivacyPolicySection(
             text = "Política de privacidad",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = "Última actualización: 3 de octubre de 2026",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         TextButton(
             onClick = onOpenPolicy,
