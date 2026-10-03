@@ -33,11 +33,12 @@ class PeriodSummaryCalculatorTest {
         val summary = summary(
             entries = listOf(
                 entry(Calendar.JULY, FuelType.GASOLINA, 10.0, 10.0, 1_000.0),
-                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 25.0, 1_100.0)
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 20.0, 1_100.0),
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 30.0, 1_200.0)
             )
         )
 
-        assertEquals(25.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
+        assertEquals(50.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
     }
 
     @Test
@@ -59,11 +60,12 @@ class PeriodSummaryCalculatorTest {
         val summary = summary(
             entries = listOf(
                 entry(Calendar.JULY, FuelType.ELECTRICO, 5.0, 0.0, 1_000.0),
+                entry(Calendar.AUGUST, FuelType.ELECTRICO, 10.0, 0.0, 1_100.0),
                 entry(Calendar.AUGUST, FuelType.ELECTRICO, 10.0, 6.0, 1_200.0)
             )
         )
 
-        assertEquals(3.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
+        assertEquals(6.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
     }
 
     @Test
@@ -78,7 +80,7 @@ class PeriodSummaryCalculatorTest {
 
         assertEquals(22.0, summary.totalCost, 0.0)
         assertEquals(
-            11.0,
+            22.0,
             requireNotNull(summary.costPerHundredKilometers),
             0.0
         )
@@ -102,7 +104,7 @@ class PeriodSummaryCalculatorTest {
     }
 
     @Test
-    fun periodWithoutAPriorOdometerReference_doesNotInventDistance() {
+    fun periodUsesItsOwnEconomicOdometerRangeWithoutAPriorReference() {
         val summary = summary(
             entries = listOf(
                 entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 20.0, 1_100.0),
@@ -110,8 +112,8 @@ class PeriodSummaryCalculatorTest {
             )
         )
 
-        assertNull(summary.distanceKilometers)
-        assertNull(summary.costPerHundredKilometers)
+        assertEquals(200.0, summary.distanceKilometers ?: 0.0, 0.0)
+        assertEquals(15.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
     }
 
     @Test
@@ -125,8 +127,8 @@ class PeriodSummaryCalculatorTest {
             )
         )
 
-        assertEquals(300.0, summary.distanceKilometers ?: 0.0, 0.0)
-        assertEquals(18.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
+        assertEquals(200.0, summary.distanceKilometers ?: 0.0, 0.0)
+        assertEquals(27.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
     }
 
     @Test
@@ -134,17 +136,33 @@ class PeriodSummaryCalculatorTest {
         val summary = summary(
             entries = listOf(
                 entry(Calendar.JULY, FuelType.GASOLINA, 10.0, 10.0, 1_000.0),
-                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, Double.NaN, 1_100.0),
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 20.0, 1_100.0),
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, Double.NaN, 1_150.0),
                 entry(Calendar.AUGUST, FuelType.ELECTRICO, 5.0, 5.0, 1_200.0)
             )
         )
 
-        assertEquals(5.0, summary.totalCost, 0.0)
-        assertEquals(2.5, requireNotNull(summary.costPerHundredKilometers), 0.0)
+        assertEquals(25.0, summary.totalCost, 0.0)
+        assertEquals(25.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
     }
 
     @Test
-    fun periodUsesTheLastValidOdometerBeforeItsStartAsTheDistanceReference() {
+    fun economicEntryWithoutOdometer_isExcludedFromTheDerivedMetricOnly() {
+        val summary = summary(
+            entries = listOf(
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 20.0, 1_100.0),
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 30.0, Double.NaN),
+                entry(Calendar.AUGUST, FuelType.ELECTRICO, 10.0, 40.0, 1_300.0)
+            )
+        )
+
+        assertEquals(90.0, summary.totalCost, 0.0)
+        assertEquals(200.0, summary.distanceKilometers ?: 0.0, 0.0)
+        assertEquals(30.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
+    }
+
+    @Test
+    fun periodDoesNotUseAnOdometerFromAnotherPeriodAsItsDistanceReference() {
         val summary = summary(
             entries = listOf(
                 entry(Calendar.JULY, FuelType.GASOLINA, 10.0, 10.0, 1_000.0),
@@ -153,8 +171,8 @@ class PeriodSummaryCalculatorTest {
             )
         )
 
-        assertEquals(350.0, summary.distanceKilometers ?: 0.0, 0.0)
-        assertEquals(50.0 / 350.0, summary.costPerKilometer ?: 0.0, 0.0)
+        assertEquals(250.0, summary.distanceKilometers ?: 0.0, 0.0)
+        assertEquals(50.0 / 250.0, summary.costPerKilometer ?: 0.0, 0.0)
     }
 
     @Test
@@ -167,8 +185,8 @@ class PeriodSummaryCalculatorTest {
             )
         )
 
-        assertEquals(0.09, summary.costPerKilometer ?: 0.0, 0.0)
-        assertEquals(9.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
+        assertEquals(0.135, summary.costPerKilometer ?: 0.0, 0.0)
+        assertEquals(13.5, requireNotNull(summary.costPerHundredKilometers), 0.0)
     }
 
     @Test
@@ -181,6 +199,19 @@ class PeriodSummaryCalculatorTest {
         )
 
         assertNull(summary.distanceKilometers)
+    }
+
+    @Test
+    fun decreasingEconomicOdometer_doesNotProduceADerivedMetric() {
+        val summary = summary(
+            entries = listOf(
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 10.0, 20.0, 1_300.0, day = 10),
+                entry(Calendar.AUGUST, FuelType.ELECTRICO, 10.0, 5.0, 1_200.0, day = 20)
+            )
+        )
+
+        assertNull(summary.distanceKilometers)
+        assertNull(summary.costPerHundredKilometers)
     }
 
     @Test
@@ -229,6 +260,21 @@ class PeriodSummaryCalculatorTest {
     }
 
     @Test
+    fun allPeriod_rejectsDecreasingEconomicOdometers() {
+        val summary = calculatePeriodSummary(
+            entries = listOf(
+                entry(Calendar.AUGUST, FuelType.GASOLINA, 20.0, 30.0, 51_000.0),
+                entry(Calendar.SEPTEMBER, FuelType.ELECTRICO, 20.0, 60.0, 50_400.0)
+            ),
+            period = StatisticsPeriod.All,
+            timeZone = timeZone
+        )
+
+        assertNull(summary.distanceKilometers)
+        assertNull(summary.costPerHundredKilometers)
+    }
+
+    @Test
     fun allPeriod_ignoresInvalidEconomicRecordsForItsOdometerRange() {
         val summary = calculatePeriodSummary(
             entries = listOf(
@@ -261,7 +307,7 @@ class PeriodSummaryCalculatorTest {
     }
 
     @Test
-    fun yearlyPeriodUsesThePreviousOdometerReference() {
+    fun yearlyPeriodUsesOnlyItsEconomicOdometerRange() {
         val summary = calculatePeriodSummary(
             entries = listOf(
                 entry(Calendar.DECEMBER, FuelType.GASOLINA, 10.0, 10.0, 1_000.0, year = 2025),
@@ -272,12 +318,29 @@ class PeriodSummaryCalculatorTest {
             timeZone = timeZone
         )
 
-        assertEquals(500.0, summary.distanceKilometers ?: 0.0, 0.0)
+        assertEquals(400.0, summary.distanceKilometers ?: 0.0, 0.0)
         assertEquals(
-            12.0,
+            15.0,
             requireNotNull(summary.costPerHundredKilometers),
             0.0
         )
+    }
+
+    @Test
+    fun yearlyPeriod_ignoresNonEconomicOdometersBetweenItsEconomicReferences() {
+        val summary = calculatePeriodSummary(
+            entries = listOf(
+                entry(Calendar.DECEMBER, FuelType.GASOLINA, 10.0, 10.0, 1_000.0, year = 2025),
+                entry(Calendar.JANUARY, FuelType.GASOLINA, 10.0, 20.0, 1_100.0),
+                entry(Calendar.JUNE, FuelType.GASOLINA, 10.0, Double.NaN, 1_300.0),
+                entry(Calendar.DECEMBER, FuelType.ELECTRICO, 10.0, 0.0, 1_500.0)
+            ),
+            period = StatisticsPeriod.Year(2026),
+            timeZone = timeZone
+        )
+
+        assertEquals(400.0, summary.distanceKilometers ?: 0.0, 0.0)
+        assertEquals(5.0, requireNotNull(summary.costPerHundredKilometers), 0.0)
     }
 
     @Test

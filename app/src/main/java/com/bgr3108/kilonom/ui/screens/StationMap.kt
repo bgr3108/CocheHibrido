@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -26,7 +27,9 @@ import com.bgr3108.kilonom.stations.StationCoordinates
 import com.bgr3108.kilonom.stations.StationListItem
 import com.bgr3108.kilonom.stations.coordinatesOrNull
 import com.bgr3108.kilonom.stations.stationsForMap
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
@@ -88,18 +91,47 @@ fun StationMap(
     onStationSelected: (StationListItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val stationsById by rememberUpdatedState(stations.associateBy(StationListItem::externalId))
+    val preparation by produceState<StationMapPreparation>(
+        initialValue = StationMapPreparation.Loading,
+        key1 = stations
+    ) {
+        value = StationMapPreparation.Loading
+        value = withContext(Dispatchers.Default) { prepareStationMap(stations) }
+    }
+    when (val currentPreparation = preparation) {
+        // Preparation is normally imperceptible; keep the map's existing visual treatment once ready.
+        StationMapPreparation.Loading -> Box(modifier)
+        StationMapPreparation.Failed -> Box(modifier, contentAlignment = Alignment.Center) {
+            Text("No se ha podido cargar el mapa.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        is StationMapPreparation.Ready -> StationMapContent(
+            preparation = currentPreparation,
+            currentLocation = currentLocation,
+            onStationSelected = onStationSelected,
+            modifier = modifier
+        )
+    }
+}
+
+@UiComposable
+@Composable
+private fun StationMapContent(
+    preparation: StationMapPreparation.Ready,
+    currentLocation: StationCoordinates?,
+    onStationSelected: (StationListItem) -> Unit,
+    modifier: Modifier
+) {
+    val stationsById by rememberUpdatedState(preparation.stationsById)
     val selectStation by rememberUpdatedState(onStationSelected)
     val scope = rememberCoroutineScope()
     var activeMapState by remember { mutableStateOf<org.maplibre.compose.map.MapState?>(null) }
-    val stationsGeoJson = remember(stations) { stations.toStationGeoJson() }
     val locationGeoJson = remember(currentLocation) { currentLocation.toLocationGeoJson() }
     val mapState = rememberMapState(
         baseStyle = BaseStyle.Uri(OPEN_FREE_MAP_STYLE_URL),
         initialCameraPosition = StationMapDefaults.initialCamera
     ) {
         val stationSource = rememberGeoJsonSource(
-            data = GeoJsonData.JsonString(stationsGeoJson),
+            data = GeoJsonData.JsonString(preparation.geoJson),
             options = GeoJsonOptions(cluster = true, clusterRadius = 54, clusterMaxZoom = 14)
         )
         val userLocationSource = rememberGeoJsonSource(
@@ -206,13 +238,13 @@ fun StationMap(
         StyleLoadState.Ready -> StationMapLoadState.READY
         else -> StationMapLoadState.LOADING
     }
-    LaunchedEffect(stations, currentLocation) {
+    LaunchedEffect(preparation.stationsById, currentLocation) {
         currentLocation?.takeIf(StationCoordinates::isValid)?.let { location ->
             mapState.animateCameraPosition(
                 userLocationCamera(location),
                 animation = CameraAnimation.Ease(USER_LOCATION_ANIMATION_DURATION)
             )
-        } ?: stationsCamera(stations)?.let { camera ->
+        } ?: stationsCamera(preparation.stationsById.values.toList())?.let { camera ->
             mapState.animateCameraPosition(
                 camera,
                 animation = CameraAnimation.Ease(USER_LOCATION_ANIMATION_DURATION)
@@ -264,8 +296,33 @@ fun StationMap(
     }
 }
 
+internal sealed interface StationMapPreparation {
+    data object Loading : StationMapPreparation
+    data object Failed : StationMapPreparation
+    data class Ready(
+        val geoJson: String,
+        val stationsById: Map<String, StationListItem>
+    ) : StationMapPreparation
+}
+
+/** Builds minimal station-only map data away from Compose's main-thread recomposition. */
+internal fun prepareStationMap(
+    stations: List<StationListItem>,
+    geoJsonBuilder: (List<StationListItem>) -> String = ::stationGeoJsonForMapStations
+): StationMapPreparation = try {
+    val mapStations = stationsForMap(stations)
+    StationMapPreparation.Ready(
+        geoJson = geoJsonBuilder(mapStations),
+        stationsById = mapStations.associateBy(StationListItem::externalId)
+    )
+} catch (_: Exception) {
+    StationMapPreparation.Failed
+}
+
 /** Keeps station data local while serialising only valid point coordinates for the map source. */
-internal fun List<StationListItem>.toStationGeoJson(): String = stationsForMap(this)
+internal fun List<StationListItem>.toStationGeoJson(): String = stationGeoJsonForMapStations(stationsForMap(this))
+
+private fun stationGeoJsonForMapStations(stations: List<StationListItem>): String = stations
     .joinToString(prefix = "{\"type\":\"FeatureCollection\",\"features\":[", postfix = "]}") { station ->
         val latitude = checkNotNull(station.latitude)
         val longitude = checkNotNull(station.longitude)

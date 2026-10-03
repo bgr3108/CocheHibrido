@@ -85,7 +85,7 @@ class StationRepository(
         }
     }
 
-    suspend fun hasCache(): Boolean = dao.getMetadata() != null
+    suspend fun getMetadata(): StationCacheMetadataEntity? = dao.getMetadata()
 
     suspend fun clearCache() = database.withTransaction { dao.clearCache() }
 

@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
-    <!-- Only persistent user data is backed up on Android 11 and lower. -->
-    <!-- The database directory includes Room's main, WAL, and shared-memory files. -->
+    <!-- Keep only personal Room data on Android 11 and lower. Public station caches are replaceable. -->
     <include domain="database" path="." />
+    <exclude domain="database" path="station_cache" />
+    <exclude domain="database" path="station_cache-wal" />
+    <exclude domain="database" path="station_cache-shm" />
+    <exclude domain="database" path="charger_cache" />
+    <exclude domain="database" path="charger_cache-wal" />
+    <exclude domain="database" path="charger_cache-shm" />
     <include domain="file" path="datastore/vehicle_preferences.preferences_pb" />
+    <include domain="file" path="datastore/station_preferences.preferences_pb" />
 </full-backup-content>

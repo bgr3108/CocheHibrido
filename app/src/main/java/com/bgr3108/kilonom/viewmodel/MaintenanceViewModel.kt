@@ -35,8 +35,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import java.time.Instant
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.Calendar
-import java.util.concurrent.TimeUnit
 import kotlin.math.roundToLong
 
 private data class MaintenanceSourceSnapshot(
@@ -318,4 +320,14 @@ private fun todayAtStartOfDay(): Long = Calendar.getInstance().apply {
 }.timeInMillis
 
 private fun daysBetween(from: Long, to: Long): Long =
-    TimeUnit.MILLISECONDS.toDays(to - from)
+    calendarDaysBetween(from, to)
+
+/** Date-only reminders must not lose or gain a day when the local UTC offset changes. */
+internal fun calendarDaysBetween(
+    from: Long,
+    to: Long,
+    zoneId: ZoneId = ZoneId.systemDefault()
+): Long = ChronoUnit.DAYS.between(
+    Instant.ofEpochMilli(from).atZone(zoneId).toLocalDate(),
+    Instant.ofEpochMilli(to).atZone(zoneId).toLocalDate()
+)

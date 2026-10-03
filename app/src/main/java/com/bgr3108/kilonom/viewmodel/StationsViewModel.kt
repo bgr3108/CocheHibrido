@@ -54,6 +54,10 @@ class StationsViewModel(
     private val locationIntroVisible = MutableStateFlow(false)
     private val locationPermissionRequested = MutableStateFlow(false)
     private var stationEntryHandled = false
+    private val fuelStationsRefreshCoordinator = FuelStationsRefreshCoordinator(
+        metadataProvider = repository::getMetadata,
+        refresh = ::refreshFuelStationsInternal
+    )
 
     private val stationSearchScope = combine(filter, currentLocation) { activeFilter, location ->
         activeFilter.stationSearchScope(location)
@@ -148,14 +152,13 @@ class StationsViewModel(
         if (type == StationsContentType.CHARGERS) chargersRefreshing else fuelRefreshing
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
-    init { viewModelScope.launch { if (!repository.hasCache()) refresh() } }
-
     fun onStationsOpened() {
         if (stationEntryHandled) return
         stationEntryHandled = true
         viewModelScope.launch {
             locationIntroVisible.value = !stationPreferences.hasSeenLocationIntro()
             locationPermissionRequested.value = stationPreferences.hasRequestedLocationPermission()
+            fuelStationsRefreshCoordinator.refreshIfNeededOnStationsOpened()
         }
     }
     fun dismissLocationIntro() {
@@ -168,13 +171,7 @@ class StationsViewModel(
     }
 
     fun refresh() {
-        if (refreshing.value) return
-        viewModelScope.launch {
-            refreshing.value = true
-            refreshError.value = null
-            repository.refresh().onFailure { refreshError.value = it.message }
-            refreshing.value = false
-        }
+        viewModelScope.launch { fuelStationsRefreshCoordinator.refreshManually() }
     }
     fun clearCache() = viewModelScope.launch { repository.clearCache(); refreshError.value = null }
 
@@ -188,6 +185,13 @@ class StationsViewModel(
     }
     fun refreshChargers() = viewModelScope.launch { refreshChargersInternal() }
     fun refreshActiveContent() { if (contentType.value == StationsContentType.CHARGERS) refreshChargers() else refresh() }
+    private suspend fun refreshFuelStationsInternal() {
+        if (refreshing.value) return
+        refreshing.value = true
+        refreshError.value = null
+        repository.refresh().onFailure { refreshError.value = it.message }
+        refreshing.value = false
+    }
     private suspend fun refreshChargersInternal() {
         if (chargerRefreshing.value) return
         chargerRefreshing.value = true
