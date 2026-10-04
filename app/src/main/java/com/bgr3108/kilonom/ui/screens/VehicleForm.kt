@@ -13,6 +13,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,6 +24,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.runtime.Composable
@@ -32,12 +35,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.bgr3108.kilonom.data.Vehicle
 import com.bgr3108.kilonom.data.VehicleCategory
 import com.bgr3108.kilonom.data.VehicleInfo
 import com.bgr3108.kilonom.data.isVehicleSelectionCompatible
+import com.bgr3108.kilonom.util.ExternalLinks
+import com.bgr3108.kilonom.util.openExternalUrl
+import com.bgr3108.kilonom.util.openSupportEmail
 import com.bgr3108.kilonom.util.toKilometersDisplay
 import com.bgr3108.kilonom.util.toKilometersOrNull
 
@@ -57,6 +64,7 @@ fun VehicleForm(
     errorMessage: String?,
     onSubmit: (Vehicle) -> Unit
 ) {
+    val context = LocalContext.current
     val initialId = initialVehicle?.id
     val categoryName = rememberSaveable(initialId) {
         mutableStateOf((initialVehicle?.category ?: selectedCategory).name)
@@ -104,7 +112,8 @@ fun VehicleForm(
             .safeDrawingPadding()
             .imePadding()
             .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+            .padding(24.dp)
+            .padding(bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(title, style = MaterialTheme.typography.headlineSmall)
@@ -206,6 +215,50 @@ fun VehicleForm(
         ) {
             if (isSaving) CircularProgressIndicator(modifier = Modifier.padding(2.dp), color = MaterialTheme.colorScheme.onPrimary)
             else Text("Guardar")
+        }
+        VehicleCatalogHelpCard(
+            onSendEmail = { context.openSupportEmail() },
+            onOpenInstagram = { context.openExternalUrl(ExternalLinks.INSTAGRAM_PROFILE_URL) }
+        )
+    }
+}
+
+@Composable
+private fun VehicleCatalogHelpCard(
+    onSendEmail: () -> Unit,
+    onOpenInstagram: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "¿No encuentras tu coche o moto?",
+                style = MaterialTheme.typography.titleSmall
+            )
+            Text(
+                text = "Escríbenos indicando marca, modelo, año y motorización y lo añadiremos a Kilonom.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(
+                    onClick = onSendEmail,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Enviar correo")
+                }
+                TextButton(
+                    onClick = onOpenInstagram,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Instagram")
+                }
+            }
         }
     }
 }
