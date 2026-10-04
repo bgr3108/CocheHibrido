@@ -3,6 +3,7 @@ package com.bgr3108.kilonom.ui.screens
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -89,7 +90,7 @@ internal fun ChargersContent(innerPadding: PaddingValues, viewModel: StationsVie
     var isLocating by remember { mutableStateOf(false) }
     var useLocationAsSearchScope by remember { mutableStateOf(false) }
     LaunchedEffect(mapChargers) {
-        selectedCharger = selectedCharger?.let { selected -> mapChargers.firstOrNull { it.externalId == selected.externalId } }
+        selectedCharger = selectedChargerAfterFiltering(selectedCharger, mapChargers)
     }
     fun obtainLocation() {
         if (isLocating) return
@@ -145,11 +146,19 @@ internal fun ChargersContent(innerPadding: PaddingValues, viewModel: StationsVie
                             modifier = Modifier.padding(vertical = 24.dp).align(Alignment.CenterHorizontally)
                         )
                         pagedChargers.itemCount == 0 -> EmptyChargersMessage()
-                        else -> PagedChargerList(pagedChargers, Modifier.weight(1f))
+                        else -> PagedChargerList(
+                            chargers = pagedChargers,
+                            onChargerSelected = { selectedCharger = it },
+                            modifier = Modifier.weight(1f)
+                        )
                     }
                 }
                 state.viewMode == StationsViewMode.LIST -> {
-                    if (mapChargers.isEmpty()) EmptyChargersMessage() else ChargerList(mapChargers, Modifier.weight(1f))
+                    if (mapChargers.isEmpty()) EmptyChargersMessage() else ChargerList(
+                        chargers = mapChargers,
+                        onChargerSelected = { selectedCharger = it },
+                        modifier = Modifier.weight(1f)
+                    )
                 }
                 mapChargers.isEmpty() -> EmptyChargersMessage()
                 else -> Box(Modifier.weight(1f).fillMaxWidth()) {
@@ -320,10 +329,14 @@ private fun ChargerSortMenu(sort: ChargerSortOrder, canSortByDistance: Boolean, 
 }
 
 @Composable
-private fun ChargerList(chargers: List<ChargerListItem>, modifier: Modifier) {
+private fun ChargerList(
+    chargers: List<ChargerListItem>,
+    onChargerSelected: (ChargerListItem) -> Unit,
+    modifier: Modifier
+) {
     val context = LocalContext.current
     LazyColumn(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
-        items(chargers, key = { it.externalId }) { ChargerCard(it) }
+        items(chargers, key = { it.externalId }) { ChargerCard(it, onChargerSelected) }
         item {
             Column(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 HorizontalDivider()
@@ -335,11 +348,15 @@ private fun ChargerList(chargers: List<ChargerListItem>, modifier: Modifier) {
 }
 
 @Composable
-private fun PagedChargerList(chargers: LazyPagingItems<ChargerListItem>, modifier: Modifier) {
+private fun PagedChargerList(
+    chargers: LazyPagingItems<ChargerListItem>,
+    onChargerSelected: (ChargerListItem) -> Unit,
+    modifier: Modifier
+) {
     val context = LocalContext.current
     LazyColumn(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
         items(count = chargers.itemCount, key = chargers.itemKey { it.externalId }) { index ->
-            chargers[index]?.let { ChargerCard(it) }
+            chargers[index]?.let { ChargerCard(it, onChargerSelected) }
         }
         chargerSourceFooter(context)
     }
@@ -365,8 +382,11 @@ private fun androidx.compose.foundation.lazy.LazyListScope.chargerSourceFooter(c
 }
 
 @Composable
-private fun ChargerCard(item: ChargerListItem) {
-    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+private fun ChargerCard(item: ChargerListItem, onSelected: (ChargerListItem) -> Unit) {
+    Card(
+        Modifier.fillMaxWidth().clickable { onSelected(item) },
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(item.name, style = MaterialTheme.typography.titleMedium)
             item.operatorName?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
@@ -376,6 +396,14 @@ private fun ChargerCard(item: ChargerListItem) {
             item.distanceMeters?.let { Text("Aprox. ${it.toDisplayDistance()}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         }
     }
+}
+
+/** Selection belongs to the current filtered result and remains ephemeral, like gas stations. */
+internal fun selectedChargerAfterFiltering(
+    selectedCharger: ChargerListItem?,
+    visibleChargers: List<ChargerListItem>
+): ChargerListItem? = selectedCharger?.let { selected ->
+    visibleChargers.firstOrNull { it.externalId == selected.externalId }
 }
 
 @Composable

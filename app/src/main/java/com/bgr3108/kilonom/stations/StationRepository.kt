@@ -66,6 +66,15 @@ class StationRepository(
         }
     }
 
+    /** Loads full supported fuel prices only when the user opens a station detail. */
+    suspend fun getVisibleFuelPrices(stationId: String): List<StationFuelPrice> =
+        withContext(Dispatchers.IO) {
+            dao.getVisibleFuelPrices(stationId).mapNotNull { row ->
+                runCatching { StationFuelType.valueOf(row.fuelType) }.getOrNull()
+                    ?.let { type -> StationFuelPrice(type, row.price) }
+            }
+        }
+
     suspend fun refresh(): Result<Int> = withContext(Dispatchers.IO) {
         runCatching {
             val parsed = remoteDataSource.download()

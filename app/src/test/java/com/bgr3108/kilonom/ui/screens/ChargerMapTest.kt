@@ -3,6 +3,7 @@ package com.bgr3108.kilonom.ui.screens
 import com.bgr3108.kilonom.chargers.ChargerListItem
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -58,6 +59,15 @@ class ChargerMapTest {
         val geoJson = chargers.toChargerGeoJson()
 
         assertEquals(12_500, geoJson.featureCount())
+    }
+
+    @Test
+    fun selectedCharger_isResolvedByStableIdAndClearedWhenTheResultExcludesIt() {
+        val selected = charger("installation-a", latitude = 40.0, longitude = -3.0)
+        val refreshed = selected.copy(distanceMeters = 850.0)
+
+        assertEquals(refreshed, selectedChargerAfterFiltering(selected, listOf(refreshed)))
+        assertNull(selectedChargerAfterFiltering(selected, emptyList()))
     }
 
     private fun charger(id: String, latitude: Double?, longitude: Double?) = ChargerListItem(

@@ -83,6 +83,18 @@ data class StationListItem(
     val distanceMeters: Double? = null
 )
 
+/** A visible Kilonom fuel category and its preferred valid MITECO price for one station. */
+data class StationFuelPrice(
+    val fuelType: StationFuelType,
+    val price: Double
+)
+
+/** Room projection used only when the station detail is opened. */
+data class StationFuelPriceRow(
+    val fuelType: String,
+    val price: Double
+)
+
 /** Curated presentation categories. The cache still retains every MITECO product. */
 enum class StationFuelType(
     val displayName: String,

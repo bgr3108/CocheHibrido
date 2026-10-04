@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -108,15 +109,51 @@ class StationCacheDaoTest {
         assertEquals(listOf("near"), results.map { it.externalId })
     }
 
+    @Test
+    fun detailFuelPrices_returnOnlyPreferredAvailableVisibleFuelsInPresentationOrder() = runBlocking {
+        dao.replaceCache(
+            stations = listOf(station("detail", "Detalle")),
+            prices = listOf(
+                price("detail", 1.50),
+                price("detail", 1.55, "gasolina_95_e10", 1),
+                price("detail", 1.65, "gasolina_98_e5", 0, StationFuelType.GASOLINE_98),
+                price("detail", 1.40, "gasoleo_a", 0, StationFuelType.DIESEL),
+                price("detail", 0.0, "adblue", 0, StationFuelType.ADBLUE),
+                price("detail", 0.90, "gases_licuados_del_petroleo", 0, StationFuelType.GLP)
+            ),
+            metadata = StationCacheMetadataEntity(downloadedAtMillis = 1L, sourceUpdatedAtMillis = null, sourceUrl = "https://miteco.test")
+        )
+
+        val prices = dao.getVisibleFuelPrices("detail")
+
+        assertEquals(
+            listOf(
+                StationFuelType.GASOLINE_95.name,
+                StationFuelType.GASOLINE_98.name,
+                StationFuelType.DIESEL.name,
+                StationFuelType.GLP.name
+            ),
+            prices.map { it.fuelType }
+        )
+        assertEquals(listOf(1.50, 1.65, 1.40, 0.90), prices.map { it.price })
+        assertFalse(prices.any { it.fuelType == StationFuelType.ADBLUE.name })
+    }
+
     private fun station(id: String, name: String, latitude: Double? = null, longitude: Double? = null) = FuelStationEntity(
         externalId = id, name = name, address = "", municipality = name, province = if (name == "Madrid") "MADRID" else "SANTA CRUZ DE TENERIFE",
         postalCode = null, latitude = latitude, longitude = longitude, schedule = null, margin = null,
         saleType = null, submissionType = null, sourceUpdatedAtMillis = null
     )
 
-    private fun price(id: String, value: Double, code: String = "gasolina_95_e5", priority: Int = 0) = FuelStationPriceEntity(
-        stationId = id, productCode = code, productName = "Gasolina 95 E5", price = value,
-        visibleFuelType = StationFuelType.GASOLINE_95.name, visibleFuelPriority = priority
+    private fun price(
+        id: String,
+        value: Double,
+        code: String = "gasolina_95_e5",
+        priority: Int = 0,
+        fuelType: StationFuelType = StationFuelType.GASOLINE_95
+    ) = FuelStationPriceEntity(
+        stationId = id, productCode = code, productName = fuelType.displayName, price = value,
+        visibleFuelType = fuelType.name, visibleFuelPriority = priority
     )
 }
 

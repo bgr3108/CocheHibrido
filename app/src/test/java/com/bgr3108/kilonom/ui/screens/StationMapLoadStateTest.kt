@@ -2,6 +2,8 @@ package com.bgr3108.kilonom.ui.screens
 
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
+import com.bgr3108.kilonom.stations.StationFuelPrice
+import com.bgr3108.kilonom.stations.StationFuelType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -156,7 +158,7 @@ class StationMapLoadStateTest {
 
         assertEquals("Estación de prueba", presentation.name)
         assertEquals("Dirección · Municipio · Provincia", presentation.address)
-        assertEquals("Gasolina 95: 1,500 €", presentation.price)
+        assertEquals("Gasolina 95: 1,500 €/L", presentation.price)
         assertNull(presentation.schedule)
         assertNull(presentation.distance)
         assertNull(presentation.updatedAt)
@@ -169,6 +171,26 @@ class StationMapLoadStateTest {
             .toDetailsPresentation()
 
         assertEquals("1,8 km", presentation.distance)
+    }
+
+    @Test
+    fun stationDetail_otherFuelPricesExcludeTheHighlightedFuelAndUnavailableValues() {
+        val otherPrices = otherFuelPricesForDetails(
+            station(externalId = "station-1", latitude = 40.4, longitude = -3.7),
+            listOf(
+                StationFuelPrice(StationFuelType.GASOLINE_95, 1.500),
+                StationFuelPrice(StationFuelType.GASOLINE_98, 1.600),
+                StationFuelPrice(StationFuelType.DIESEL, 1.400),
+                StationFuelPrice(StationFuelType.ADBLUE, 0.0),
+                StationFuelPrice(StationFuelType.GLP, 0.900)
+            )
+        )
+
+        assertEquals(
+            listOf(StationFuelType.GASOLINE_98, StationFuelType.DIESEL, StationFuelType.GLP),
+            otherPrices.map { it.fuelType }
+        )
+        assertEquals(listOf("1,600 €/L", "1,400 €/L", "0,900 €/L"), otherPrices.map { it.price.toStationPriceDisplay() })
     }
 
     @Test

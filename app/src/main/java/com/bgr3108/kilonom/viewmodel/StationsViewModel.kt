@@ -16,6 +16,7 @@ import com.bgr3108.kilonom.stations.NoOpStationPreferences
 import com.bgr3108.kilonom.stations.StationCacheMetadataEntity
 import com.bgr3108.kilonom.stations.StationCoordinates
 import com.bgr3108.kilonom.stations.StationFilter
+import com.bgr3108.kilonom.stations.StationFuelPrice
 import com.bgr3108.kilonom.stations.StationListItem
 import com.bgr3108.kilonom.stations.StationPreferencesStore
 import com.bgr3108.kilonom.stations.StationRepository
@@ -201,6 +202,8 @@ class StationsViewModel(
     }
     fun clearChargerCache() = viewModelScope.launch { chargerRepository.clearCache(); chargerRefreshError.value = null }
     fun isChargerCacheStale(metadata: ChargerCacheMetadataEntity?): Boolean = chargerRepository.isStale(metadata)
+    suspend fun getVisibleFuelPrices(stationId: String): List<StationFuelPrice> =
+        repository.getVisibleFuelPrices(stationId)
 
     fun applyFilter(newFilter: StationFilter) {
         val wasNearby = filter.value.province == null && currentLocation.value != null

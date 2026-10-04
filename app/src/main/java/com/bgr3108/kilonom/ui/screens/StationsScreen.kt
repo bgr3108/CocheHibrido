@@ -3,6 +3,7 @@ package com.bgr3108.kilonom.ui.screens
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,6 +55,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.stations.StationFilter
+import com.bgr3108.kilonom.stations.StationFuelPrice
 import com.bgr3108.kilonom.stations.StationFuelType
 import com.bgr3108.kilonom.stations.StationListItem
 import com.bgr3108.kilonom.stations.StationLocationProvider
@@ -94,6 +96,7 @@ private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: Stations
     val snackbarHostState = remember { SnackbarHostState() }
     var showFilters by remember { mutableStateOf(false) }
     var selectedStation by remember { mutableStateOf<StationListItem?>(null) }
+    var selectedStationFuelPrices by remember { mutableStateOf<List<StationFuelPrice>>(emptyList()) }
     var isLocating by remember { mutableStateOf(false) }
     var useLocationAsSearchScope by remember { mutableStateOf(false) }
 
@@ -104,6 +107,12 @@ private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: Stations
 
     LaunchedEffect(mapStations) {
         selectedStation = selectedStationAfterFiltering(selectedStation, mapStations)
+    }
+    LaunchedEffect(selectedStation?.externalId) {
+        selectedStationFuelPrices = emptyList()
+        selectedStation?.externalId?.let { stationId ->
+            selectedStationFuelPrices = viewModel.getVisibleFuelPrices(stationId)
+        }
     }
 
     fun obtainLocation() {
@@ -173,11 +182,19 @@ private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: Stations
                             modifier = Modifier.padding(vertical = 24.dp).align(Alignment.CenterHorizontally)
                         )
                         pagedStations.itemCount == 0 -> EmptyStationsMessage()
-                        else -> PagedStationList(pagedStations, Modifier.weight(1f))
+                        else -> PagedStationList(
+                            stations = pagedStations,
+                            onStationSelected = { selectedStation = it },
+                            modifier = Modifier.weight(1f)
+                        )
                     }
                 }
                 state.viewMode == StationsViewMode.LIST -> {
-                    if (mapStations.isEmpty()) EmptyStationsMessage() else StationList(mapStations, Modifier.weight(1f))
+                    if (mapStations.isEmpty()) EmptyStationsMessage() else StationList(
+                        stations = mapStations,
+                        onStationSelected = { selectedStation = it },
+                        modifier = Modifier.weight(1f)
+                    )
                 }
                 mapStations.isEmpty() -> EmptyStationsMessage()
                 else -> Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
@@ -260,6 +277,7 @@ private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: Stations
         ModalBottomSheet(onDismissRequest = { selectedStation = null }) {
             StationDetailsSheet(
                 station = station,
+                fuelPrices = selectedStationFuelPrices,
                 onNavigate = {
                     val intent = createStationNavigationIntent(station)
                     if (intent?.resolveActivity(context.packageManager) != null) {
@@ -567,14 +585,18 @@ private fun FilterSelectionMenu(
 }
 
 @Composable
-private fun StationList(stations: List<StationListItem>, modifier: Modifier = Modifier) {
+private fun StationList(
+    stations: List<StationListItem>,
+    onStationSelected: (StationListItem) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val context = LocalContext.current
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = PaddingValues(bottom = 24.dp),
         modifier = modifier
     ) {
-        items(stations, key = { it.externalId }) { StationCard(it) }
+        items(stations, key = { it.externalId }) { StationCard(it, onStationSelected) }
         item {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
@@ -596,7 +618,11 @@ private fun StationList(stations: List<StationListItem>, modifier: Modifier = Mo
 }
 
 @Composable
-private fun PagedStationList(stations: LazyPagingItems<StationListItem>, modifier: Modifier = Modifier) {
+private fun PagedStationList(
+    stations: LazyPagingItems<StationListItem>,
+    onStationSelected: (StationListItem) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val context = LocalContext.current
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -606,7 +632,7 @@ private fun PagedStationList(stations: LazyPagingItems<StationListItem>, modifie
         items(
             count = stations.itemCount,
             key = stations.itemKey { it.externalId }
-        ) { index -> stations[index]?.let { StationCard(it) } }
+        ) { index -> stations[index]?.let { StationCard(it, onStationSelected) } }
         stationSourceFooter(context)
     }
 }
@@ -641,9 +667,9 @@ private fun androidx.compose.foundation.lazy.LazyListScope.stationSourceFooter(c
 }
 
 @Composable
-private fun StationCard(item: StationListItem) {
+private fun StationCard(item: StationListItem, onSelected: (StationListItem) -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onSelected(item) },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -669,8 +695,14 @@ private fun StationCard(item: StationListItem) {
 }
 
 @Composable
-private fun StationDetailsSheet(station: StationListItem, onNavigate: () -> Unit) {
+private fun StationDetailsSheet(
+    station: StationListItem,
+    fuelPrices: List<StationFuelPrice>,
+    onNavigate: () -> Unit
+) {
     val presentation = station.toDetailsPresentation()
+    val otherFuelPrices = otherFuelPricesForDetails(station, fuelPrices)
+    var showOtherFuels by remember(station.externalId) { mutableStateOf(false) }
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -683,6 +715,19 @@ private fun StationDetailsSheet(station: StationListItem, onNavigate: () -> Unit
         presentation.schedule?.let { Text("Horario: $it") }
         presentation.distance?.let { Text("Distancia aproximada: $it") }
         presentation.updatedAt?.let { Text("Actualizado: $it") }
+        if (otherFuelPrices.isNotEmpty()) {
+            TextButton(onClick = { showOtherFuels = !showOtherFuels }) {
+                Text(if (showOtherFuels) "Ocultar otros combustibles" else "Ver otros combustibles")
+            }
+            if (showOtherFuels) {
+                otherFuelPrices.forEach { fuel ->
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(fuel.fuelType.displayName)
+                        Text(fuel.price.toStationPriceDisplay())
+                    }
+                }
+            }
+        }
         Button(onClick = onNavigate, modifier = Modifier.fillMaxWidth()) { Text("Cómo llegar") }
     }
 }
@@ -699,11 +744,22 @@ internal data class StationDetailsPresentation(
 internal fun StationListItem.toDetailsPresentation(): StationDetailsPresentation = StationDetailsPresentation(
     name = name,
     address = listOf(address, municipality, province).filter(String::isNotBlank).joinToString(" · ").ifBlank { null },
-    price = "$productName: ${"%.3f".format(java.util.Locale.forLanguageTag("es-ES"), price)} €",
+    price = "$productName: ${price.toStationPriceDisplay()}",
     schedule = schedule?.takeIf(String::isNotBlank),
     distance = distanceMeters?.let(Double::toDisplayDistance),
     updatedAt = sourceUpdatedAtMillis?.toDisplayDateTime()
 )
+
+/** The highlighted fuel is already presented above; the expandable section contains the rest. */
+internal fun otherFuelPricesForDetails(
+    station: StationListItem,
+    fuelPrices: List<StationFuelPrice>
+): List<StationFuelPrice> = fuelPrices
+    .filter { it.price > 0 && it.fuelType.displayName != station.productName }
+    .sortedBy { it.fuelType.ordinal }
+
+internal fun Double.toStationPriceDisplay(): String =
+    "${"%.3f".format(java.util.Locale.forLanguageTag("es-ES"), this)} €/L"
 
 internal fun Double.toDisplayDistance(): String = if (this < 1_000) "${toInt()} m" else String.format(java.util.Locale.forLanguageTag("es-ES"), "%.1f km", this / 1_000)
 

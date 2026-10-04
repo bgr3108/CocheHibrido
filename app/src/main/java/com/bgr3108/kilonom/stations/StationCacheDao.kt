@@ -118,6 +118,35 @@ interface StationCacheDao {
         maxLongitude: Double
     ): Flow<List<StationListItem>>
 
+    /**
+     * The list query intentionally exposes one selected fuel only. This small detail query keeps
+     * all other visible prices lazy and chooses the same preferred product used by list queries.
+     */
+    @Query("""
+        WITH preferred_price AS (
+            SELECT visibleFuelType, MIN(visibleFuelPriority) AS priority
+            FROM fuel_station_prices
+            WHERE stationId = :stationId
+              AND visibleFuelType IS NOT NULL
+              AND price > 0
+            GROUP BY visibleFuelType
+        )
+        SELECT p.visibleFuelType AS fuelType, p.price
+        FROM preferred_price best
+        INNER JOIN fuel_station_prices p ON p.stationId = :stationId
+            AND p.visibleFuelType = best.visibleFuelType
+            AND p.visibleFuelPriority = best.priority
+        ORDER BY CASE p.visibleFuelType
+            WHEN 'GASOLINE_95' THEN 1
+            WHEN 'GASOLINE_98' THEN 2
+            WHEN 'DIESEL' THEN 3
+            WHEN 'ADBLUE' THEN 4
+            WHEN 'GLP' THEN 5
+            ELSE 6
+        END
+    """)
+    suspend fun getVisibleFuelPrices(stationId: String): List<StationFuelPriceRow>
+
     @Query("DELETE FROM fuel_station_prices")
     suspend fun deleteAllPrices()
 
