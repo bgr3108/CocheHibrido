@@ -36,7 +36,7 @@ import androidx.compose.ui.Alignment
 import android.app.TimePickerDialog
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.data.VehicleType
 import com.bgr3108.kilonom.data.supportsElectricEntries
 import com.bgr3108.kilonom.data.supportsFuelEntries
@@ -66,10 +66,10 @@ fun AddConsumptionScreen(
 
     val currentVehicle by homeViewModel
         .vehicle
-        .collectAsState()
+        .collectAsStateWithLifecycle()
 
-    val entries by viewModel.entries.collectAsState()
-    val isSaving by viewModel.isSaving.collectAsState()
+    val entries by viewModel.entries.collectAsStateWithLifecycle()
+    val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
 
     val initialDateMillis = entry?.fecha ?: System.currentTimeMillis()
     val initialCalendar = Calendar.getInstance().apply {

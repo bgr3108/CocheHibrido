@@ -143,29 +143,3 @@ internal fun shouldRefreshChargerCache(
     metadata: ChargerCacheMetadataEntity?,
     nowMillis: Long
 ): Boolean = metadata == null || nowMillis - metadata.downloadedAtMillis >= StationRepository.CACHE_STALE_AFTER_MILLIS
-
-internal fun List<ChargerInstallationEntity>.toChargers(
-    connectors: List<ChargerConnectorSummary>
-): List<ChargerListItem> {
-    val connectorsByInstallation = HashMap<String, MutableList<ChargerConnectorSummary>>()
-    connectors.forEach { connector ->
-        connectorsByInstallation.getOrPut(connector.installationId, ::mutableListOf).add(connector)
-    }
-    return map { installation ->
-        val installationConnectors = connectorsByInstallation[installation.externalId].orEmpty()
-        ChargerListItem(
-            externalId = installation.externalId,
-            name = installation.name,
-            operatorName = installation.operatorName,
-            address = installation.address,
-            municipality = installation.municipality,
-            province = installation.province,
-            schedule = installation.schedule,
-            latitude = installation.latitude,
-            longitude = installation.longitude,
-            sourceUpdatedAtMillis = installation.sourceUpdatedAtMillis,
-            connectorTypes = installationConnectors.mapNotNull(ChargerConnectorSummary::connectorType).distinct().sorted(),
-            maxPowerKw = installationConnectors.mapNotNull(ChargerConnectorSummary::maxPowerKw).maxOrNull()
-        )
-    }
-}

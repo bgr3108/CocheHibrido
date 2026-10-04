@@ -5,10 +5,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.data.Vehicle
 import com.bgr3108.kilonom.data.toVehicle
 import com.bgr3108.kilonom.viewmodel.MyVehiclesViewModel
@@ -18,10 +18,10 @@ fun AddVehicleScreen(
     viewModel: MyVehiclesViewModel,
     onCreated: () -> Unit
 ) {
-    val category by viewModel.selectedCategory.collectAsState()
-    val catalog by viewModel.availableVehicles.collectAsState()
-    val isSaving by viewModel.isWorking.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val category by viewModel.selectedCategory.collectAsStateWithLifecycle()
+    val catalog by viewModel.availableVehicles.collectAsStateWithLifecycle()
+    val isSaving by viewModel.isWorking.collectAsStateWithLifecycle()
+    val error by viewModel.error.collectAsStateWithLifecycle()
     VehicleForm(
         title = "Añadir vehículo",
         initialVehicle = null,
@@ -42,11 +42,11 @@ fun VehicleEditorScreen(
     onSaved: () -> Unit,
     onMissing: () -> Unit
 ) {
-    val summaries by viewModel.vehicleSummaries.collectAsState()
-    val category by viewModel.selectedCategory.collectAsState()
-    val catalog by viewModel.availableVehicles.collectAsState()
-    val isSaving by viewModel.isWorking.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val summaries by viewModel.vehicleSummaries.collectAsStateWithLifecycle()
+    val category by viewModel.selectedCategory.collectAsStateWithLifecycle()
+    val catalog by viewModel.availableVehicles.collectAsStateWithLifecycle()
+    val isSaving by viewModel.isWorking.collectAsStateWithLifecycle()
+    val error by viewModel.error.collectAsStateWithLifecycle()
     val summary = summaries.firstOrNull { it.vehicle.id == vehicleId }
     if (vehicleId == null || summary == null) {
         LaunchedEffect(vehicleId, summaries) { if (summaries.isNotEmpty()) onMissing() }

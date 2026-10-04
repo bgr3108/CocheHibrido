@@ -1,8 +1,8 @@
 package com.bgr3108.kilonom.ui.screens
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 
 /** First-run wrapper around the shared vehicle editor. */
@@ -11,10 +11,10 @@ fun SetupScreen(
     homeViewModel: HomeViewModel,
     onDone: () -> Unit
 ) {
-    val vehicles by homeViewModel.availableVehicles.collectAsState()
-    val category by homeViewModel.setupVehicleCategory.collectAsState()
-    val isSaving by homeViewModel.isSavingVehicle.collectAsState()
-    val saveFailed by homeViewModel.vehicleSaveFailed.collectAsState()
+    val vehicles by homeViewModel.availableVehicles.collectAsStateWithLifecycle()
+    val category by homeViewModel.setupVehicleCategory.collectAsStateWithLifecycle()
+    val isSaving by homeViewModel.isSavingVehicle.collectAsStateWithLifecycle()
+    val saveFailed by homeViewModel.vehicleSaveFailed.collectAsStateWithLifecycle()
 
     VehicleForm(
         title = "Configura tu vehículo",

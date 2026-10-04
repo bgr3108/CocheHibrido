@@ -96,26 +96,6 @@ class MitecoChargersTest {
     }
 
     @Test
-    fun installationAndConnectorSummaries_buildOneListItemWithoutRepeatingInstallationFields() {
-        val installation = ChargerInstallationEntity(
-            externalId = "installation-a", name = "Installation", operatorName = "Operator", operatorCode = null,
-            address = "Address", municipality = "Municipality", province = "Province", postalCode = null,
-            locality = null, schedule = null, scheduleType = null, latitude = 40.0, longitude = -3.0,
-            sourceUpdatedAtMillis = 1L
-        )
-        val chargers = listOf(installation).toChargers(
-            listOf(
-                ChargerConnectorSummary("installation-a", "IEC_62196_T2", 22.0),
-                ChargerConnectorSummary("installation-a", "IEC_62196_T2_COMBO", 50.0)
-            )
-        )
-
-        assertEquals(1, chargers.size)
-        assertEquals(listOf("IEC_62196_T2", "IEC_62196_T2_COMBO"), chargers.single().connectorTypes)
-        assertEquals(50.0, chargers.single().maxPowerKw!!, 0.001)
-    }
-
-    @Test
     fun cacheImport_buildsInstallationSummaryOnce_withoutDroppingOriginalConnectors() {
         val installation = ChargerInstallationEntity(
             externalId = "installation-a", name = "Installation", operatorName = null, operatorCode = null,
