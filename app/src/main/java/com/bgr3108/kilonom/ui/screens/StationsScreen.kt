@@ -159,7 +159,6 @@ private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: Stations
         CacheStatus(
             hasCache = state.hasCache,
             isStale = state.isStale,
-            refreshing = state.isRefreshing,
             error = state.refreshError,
             downloadedAtMillis = state.metadata?.downloadedAtMillis
         )
@@ -230,7 +229,9 @@ private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: Stations
                     context.startActivity(StationLocationProvider.createAppLocationSettingsIntent(context))
                 }
             )
-        } else if (!state.isRefreshing) {
+        } else if (shouldShowInitialFuelStationsLoading(state.hasCache, state.isRefreshing)) {
+            InitialFuelStationsLoading()
+        } else {
             Text(
                 "Necesitas conexión para cargar las estaciones por primera vez.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -360,20 +361,43 @@ internal fun selectedStationAfterFiltering(
 private fun CacheStatus(
     hasCache: Boolean,
     isStale: Boolean,
-    refreshing: Boolean,
     error: String?,
     downloadedAtMillis: Long?
 ) {
     val text = when {
-        refreshing && !hasCache -> "Cargando estaciones…"
         error != null && hasCache -> "No se pudieron actualizar los datos. Mostrando última información disponible."
-        error != null -> "Necesitas conexión para cargar las estaciones por primera vez."
         hasCache && isStale -> "Hay una actualización de estaciones disponible."
         hasCache -> "Datos guardados: ${downloadedAtMillis?.toDisplayDateTime().orEmpty()}"
         else -> ""
     }
     if (text.isNotBlank()) {
         Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/** A first import is the only refresh state that replaces the normal station content. */
+internal fun shouldShowInitialFuelStationsLoading(hasCache: Boolean, refreshing: Boolean): Boolean =
+    !hasCache && refreshing
+
+@Composable
+private fun InitialFuelStationsLoading() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            CircularProgressIndicator()
+            Text("Preparando estaciones", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "La primera carga, o después de borrar la caché, puede tardar varios segundos. Las siguientes aperturas serán mucho más rápidas.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
