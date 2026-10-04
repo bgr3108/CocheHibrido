@@ -9,12 +9,15 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.net.Uri
 import android.os.CancellationSignal
+import android.os.SystemClock
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -46,18 +49,22 @@ object StationLocationProvider {
     suspend fun requestCurrentLocation(context: Context): StationCoordinates? {
         if (!hasPermission(context)) return null
         val manager = context.getSystemService(LocationManager::class.java) ?: return null
-        lastKnownLocation(context, manager)?.let { return it }
         val fineGranted = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
-        val providers = locationProviderOrder(
-            hasFinePermission = fineGranted,
-            networkEnabled = manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER),
-            gpsEnabled = manager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        )
-        return providers.firstNotNullOfOrNull { provider ->
-            requestSingleLocation(context, manager, provider)
+        val freshLastKnown = lastKnownLocation(context, manager, fineGranted)
+        return resolveStationLocation(
+            freshLastKnown = freshLastKnown
+        ) {
+            val providers = locationProviderOrder(
+                hasFinePermission = fineGranted,
+                networkEnabled = manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER),
+                gpsEnabled = manager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+            )
+            providers.firstNotNullOfOrNull { provider ->
+                requestSingleLocation(context, manager, provider)
+            }
         }
     }
 
@@ -99,27 +106,86 @@ object StationLocationProvider {
         }
     }
 
-    private fun lastKnownLocation(context: Context, manager: LocationManager): StationCoordinates? {
+    private fun lastKnownLocation(
+        context: Context,
+        manager: LocationManager,
+        fineGranted: Boolean
+    ): StationCoordinates? {
         val coarseGranted = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
-        val fineGranted = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
         if (!coarseGranted && !fineGranted) return null
-        return runCatching {
-            listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
-                .mapNotNull { provider -> manager.getLastKnownLocation(provider) }
-                .maxByOrNull { location -> location.time }
-                ?.let { StationCoordinates(it.latitude, it.longitude) }
-                ?.takeIf { it.isValid() }
-        }.getOrNull()
+        val nowElapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
+        // A provider can be disabled now yet still hold a recent, valid last fix. Provider state
+        // only limits the subsequent current-location request, not reuse of a fresh reading.
+        val providers = buildList {
+            add(LocationManager.NETWORK_PROVIDER)
+            if (fineGranted) add(LocationManager.GPS_PROVIDER)
+        }
+        return selectFreshLastKnownLocation(
+            candidates = providers.mapNotNull { provider ->
+                runCatching { manager.getLastKnownLocation(provider) }.getOrNull()?.let { location ->
+                    LastKnownStationLocation(
+                        coordinates = StationCoordinates(location.latitude, location.longitude),
+                        elapsedRealtimeNanos = location.elapsedRealtimeNanos,
+                        accuracyMeters = location.accuracy
+                    )
+                }
+            },
+            nowElapsedRealtimeNanos = nowElapsedRealtimeNanos
+        )
     }
 
     private val LOCATION_REQUEST_TIMEOUT = 8.seconds
 }
+
+/**
+ * A nearby search starts at a 10 km radius, so a two-minute fix is recent enough to avoid an
+ * unnecessary request while remaining conservative for a user who may have travelled by car.
+ */
+internal val MAX_LAST_KNOWN_LOCATION_AGE: Duration = 2.minutes
+
+/** A monotonic timestamp avoids reusing a reading incorrectly after a wall-clock change. */
+internal fun isLastKnownLocationFresh(
+    locationElapsedRealtimeNanos: Long,
+    nowElapsedRealtimeNanos: Long,
+    maximumAge: Duration = MAX_LAST_KNOWN_LOCATION_AGE
+): Boolean {
+    if (locationElapsedRealtimeNanos <= 0L || nowElapsedRealtimeNanos <= 0L) return false
+    if (nowElapsedRealtimeNanos < locationElapsedRealtimeNanos) return false
+    return nowElapsedRealtimeNanos - locationElapsedRealtimeNanos <= maximumAge.inWholeNanoseconds
+}
+
+internal data class LastKnownStationLocation(
+    val coordinates: StationCoordinates,
+    val elapsedRealtimeNanos: Long,
+    val accuracyMeters: Float
+)
+
+/**
+ * Prefer the freshest valid reading. Accuracy only breaks a tie, so an older GPS fix cannot win
+ * over a newer network location. Invalid or stale timestamps deliberately return no fallback.
+ */
+internal fun selectFreshLastKnownLocation(
+    candidates: List<LastKnownStationLocation>,
+    nowElapsedRealtimeNanos: Long
+): StationCoordinates? = candidates
+    .asSequence()
+    .filter { it.coordinates.isValid() }
+    .filter { isLastKnownLocationFresh(it.elapsedRealtimeNanos, nowElapsedRealtimeNanos) }
+    .sortedWith(
+        compareByDescending<LastKnownStationLocation> { it.elapsedRealtimeNanos }
+            .thenBy { it.accuracyMeters.takeIf { accuracy -> accuracy.isFinite() && accuracy >= 0f } ?: Float.POSITIVE_INFINITY }
+    )
+    .map(LastKnownStationLocation::coordinates)
+    .firstOrNull()
+
+/** A stale reading is never a fallback: the current one-shot request decides the final result. */
+internal suspend fun resolveStationLocation(
+    freshLastKnown: StationCoordinates?,
+    requestCurrentLocation: suspend () -> StationCoordinates?
+): StationCoordinates? = freshLastKnown ?: requestCurrentLocation()
 
 /** Coarse permission can use network location; GPS is attempted only with fine permission. */
 internal fun locationProviderOrder(
