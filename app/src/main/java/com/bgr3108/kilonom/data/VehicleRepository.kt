@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-internal const val RELEASE_NOTES_VERSION = "1.4.0"
+internal const val RELEASE_NOTES_VERSION = "1.5.0"
 
 internal fun shouldShowReleaseNotes(
     hasExistingInstallation: Boolean,

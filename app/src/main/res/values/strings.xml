@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Kilonom</string>
     <string name="current_estimated_consumption_note">Estimación basada en el nivel indicado del depósito. El consumo real se calculará al completar un nuevo llenado.</string>
-    <string name="whats_new_title">Novedades de Kilonom 1.4</string>
-    <string name="whats_new_message">• Estaciones cerca de ti\nConsulta gasolineras y puntos de recarga desde Kilonom.\n\n• Lista y mapa\nExplora estaciones cercanas o busca por provincia y municipio.\n\n• Filtros más útiles\nFiltra carburante, precio, conectores, potencia y otros datos disponibles.\n\n• Cómo llegar\nAbre tu aplicación de mapas directamente desde la ficha de una estación.\n\n• Nueva navegación\nAccede a las principales secciones desde el nuevo menú lateral.\n\n• Mejoras de rendimiento\nCarga más rápida de estaciones, filtros y mapas.</string>
+    <string name="whats_new_title">Novedades de Kilonom 1.5</string>
+    <string name="whats_new_message" formatted="false">• Cargas eléctricas más completas\nGuarda el porcentaje de batería al iniciar y terminar una carga y consulta también la variación total: 20 % → 80 % (+60 %).\n\n• Consumos más claros\nLas tarjetas de combustible y electricidad tienen ahora una presentación más ordenada y consistente.\n\n• Edición más fiable\nEditar un consumo conserva correctamente sus valores y evita recálculos inesperados.\n\n• Coste por 100 km\nEstadísticas incorpora el coste real registrado por cada 100 km cuando existen datos suficientes.\n\n• Estaciones más eficientes\nSe han optimizado la carga de gasolineras, los mapas y el uso de la ubicación para mejorar rapidez y precisión.\n\n• Mejoras de estabilidad\nCorrecciones internas en mantenimiento, ubicación, rendimiento, copias de seguridad y funcionamiento general.</string>
     <string name="whats_new_confirm">Entendido</string>
     <string name="whats_new_instagram">Instagram de Kilonom</string>
     <string name="usage_guide_introduction">Consulta cómo registrar tus vehículos, consumos, estadísticas, mantenimientos y estaciones en Kilonom.</string>

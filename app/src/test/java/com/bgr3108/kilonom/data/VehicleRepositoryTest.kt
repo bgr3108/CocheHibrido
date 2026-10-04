@@ -376,7 +376,7 @@ class VehicleRepositoryTest {
     }
 
     @Test
-    fun freshInstallation_baselinesCurrentReleaseNotesWithoutShowingThem() = runBlocking {
+    fun freshInstallation_baselinesOnePointFiveWithoutShowingThePopup() = runBlocking {
         val preferences = FakeVehiclePreferences()
         val repository = repository(preferences)
 
@@ -387,7 +387,7 @@ class VehicleRepositoryTest {
     }
 
     @Test
-    fun existingOnePointThreeUser_showsCurrentReleaseNotesOnce() = runBlocking {
+    fun existingOnePointThreeUser_showsOnePointFiveReleaseNotesOnce() = runBlocking {
         val preferences = FakeVehiclePreferences(
             hasStoredAppState = true,
             releaseNotesVersion = "1.3.0"
@@ -405,13 +405,31 @@ class VehicleRepositoryTest {
     }
 
     @Test
-    fun dismissedReleaseNotes_areNotShownAgainForTheSameVersion() = runBlocking {
-        val preferences = FakeVehiclePreferences(hasStoredAppState = true)
-        val firstRepository = repository(preferences)
-        firstRepository.isLoading.first { !it }
-        firstRepository.dismissReleaseNotes()
+    fun existingOnePointFourUser_showsOnePointFiveReleaseNotesOnce() = runBlocking {
+        val preferences = FakeVehiclePreferences(
+            hasStoredAppState = true,
+            releaseNotesVersion = "1.4.0"
+        )
+        val repository = repository(preferences)
 
+        repository.isLoading.first { !it }
+
+        assertTrue(repository.showReleaseNotes.value)
+
+        repository.dismissReleaseNotes()
+
+        assertFalse(repository.showReleaseNotes.value)
+        assertEquals(RELEASE_NOTES_VERSION, preferences.releaseNotesVersion)
+    }
+
+    @Test
+    fun userWhoAlreadySawOnePointFiveReleaseNotes_doesNotSeeThemAgain() = runBlocking {
+        val preferences = FakeVehiclePreferences(
+            hasStoredAppState = true,
+            releaseNotesVersion = RELEASE_NOTES_VERSION
+        )
         val recreatedRepository = repository(preferences)
+
         recreatedRepository.isLoading.first { !it }
 
         assertFalse(recreatedRepository.showReleaseNotes.value)
@@ -431,14 +449,14 @@ class VehicleRepositoryTest {
         assertTrue(
             shouldShowReleaseNotes(
                 hasExistingInstallation = true,
-                lastSeenReleaseNotesVersion = "1.4.0",
-                currentReleaseNotesVersion = "1.5.0"
+                lastSeenReleaseNotesVersion = "1.5.0",
+                currentReleaseNotesVersion = "1.6.0"
             )
         )
     }
 
     @Test
-    fun cleanReinstallation_baselinesCurrentReleaseNotesWithoutShowingThem() = runBlocking {
+    fun cleanReinstallation_baselinesOnePointFiveWithoutShowingThePopup() = runBlocking {
         val preferences = FakeVehiclePreferences()
         val repository = repository(preferences)
 
