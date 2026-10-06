@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [switch]$BootstrapLegacy,
+    [switch]$NormalizeLegacyModels,
     [string]$EditorialPath,
     [string]$RuntimePath,
     [string]$AssetPath
@@ -340,14 +341,139 @@ function Normalize-SearchText {
     (Get-Slug $Value) -replace "-", ""
 }
 
+function Get-ComparisonSlug {
+    param([string]$Value)
+    $characters = [System.Collections.Generic.List[char]]::new()
+    foreach ($character in $Value.Normalize([Text.NormalizationForm]::FormD).ToCharArray()) {
+        if ([Globalization.CharUnicodeInfo]::GetUnicodeCategory($character) -ne [Globalization.UnicodeCategory]::NonSpacingMark) {
+            [void]$characters.Add($character)
+        }
+    }
+    ((-join $characters).ToLowerInvariant() -replace "[^a-z0-9]+", "-").Trim("-")
+}
+
+# One-time import normalisation. It belongs to the editorial tool rather than
+# Android runtime code: future catalog entries must arrive already structured.
+function Get-LegacyCarModelStructure {
+    param([string]$BrandId, [string]$SourceModel)
+
+    if ($BrandId -eq "mercedes-benz" -and $SourceModel -match "^B\s+\d+") {
+        return @{ model = "Clase B"; variant = $SourceModel }
+    }
+    $families = @{
+        "audi" = @("A3 Sportback", "A4 Avant", "TT")
+        "bmw" = @("iX1", "X3", "X5")
+        "byd" = @("Atto 3")
+        "citroen" = @("ë-Berlingo", "Berlingo", "C-Elysée", "C3 Aircross", "C4")
+        "cupra" = @("Formentor", "León")
+        "dacia" = @("Sandero Stepway", "Duster", "Jogger")
+        "fiat" = @("500")
+        "ford" = @("Focus", "Kuga", "Puma")
+        "hyundai" = @("Ioniq 5", "i20", "ix35", "Kona", "Tucson")
+        "jeep" = @("Compass")
+        "kia" = @("EV6", "Niro", "Sorento", "Sportage")
+        "lexus" = @("LBX")
+        "lynk-co" = @("01")
+        "mazda" = @("CX-30")
+        "mercedes-benz" = @("Clase A", "Clase B", "CLK", "GLC")
+        "mg" = @("MG4", "ZS")
+        "mitsubishi" = @("ASX")
+        "nissan" = @("Qashqai", "Juke", "Pulsar")
+        "omoda" = @("7")
+        "opel" = @("Corsa", "Astra")
+        "peugeot" = @("3008", "208")
+        "renault" = @("Megane", "Austral", "Captur", "Clio")
+        "seat" = @("León", "Ateca", "Ibiza")
+        "skoda" = @("Fabia")
+        "suzuki" = @("Swift")
+        "tesla" = @("Model 3")
+        "toyota" = @("Yaris Cross", "GR Yaris", "Yaris", "Corolla", "RAV4")
+        "volkswagen" = @("ID.4", "Golf", "Polo", "Tiguan")
+        "volvo" = @("EX30", "XC60")
+    }
+    $sourceSlug = Get-ComparisonSlug $SourceModel
+    $base = $null
+    foreach ($candidate in @($families[$BrandId] | Sort-Object { $_.Length } -Descending)) {
+        $familySlug = Get-ComparisonSlug $candidate
+        if ($sourceSlug -eq $familySlug -or $sourceSlug.StartsWith("$familySlug-", [StringComparison]::Ordinal)) {
+            $base = $candidate
+            break
+        }
+    }
+    if ($null -eq $base) { throw "legacy normalisation: no base model for $BrandId / $SourceModel" }
+    $variant = $SourceModel.Substring($base.Length).Trim()
+    return @{ model = $base; variant = if ([string]::IsNullOrWhiteSpace($variant)) { $null } else { $variant } }
+}
+
+function Normalize-LegacyModelStructure {
+    param($Catalog)
+
+    $modelLookup = @{}; foreach ($item in $Catalog.models) { $modelLookup["$($item.category)|$($item.brandId)|$($item.id)"] = $item }
+    $generationLookup = @{}; foreach ($item in $Catalog.generations) { $generationLookup["$($item.category)|$($item.brandId)|$($item.modelId)|$($item.id)"] = $item }
+    $variantLookup = @{}; foreach ($item in $Catalog.variants) { $variantLookup["$($item.category)|$($item.brandId)|$($item.modelId)|$($item.generationId)|$($item.id)"] = $item }
+    $modelNames = @{}; $generationNames = @{}; $variantNames = @{}
+
+    foreach ($vehicle in $Catalog.vehicles) {
+        $oldModelId = $vehicle.modelId
+        $oldGenerationId = $vehicle.generationId
+        $oldVariantId = $vehicle.variantId
+        $oldModel = $modelLookup["$($vehicle.category)|$($vehicle.brandId)|$oldModelId"]
+        if ($null -eq $oldModel) { throw "legacy normalisation: missing source model for $($vehicle.catalogId)" }
+
+        $modelDisplayName = $oldModel.displayName
+        $variantDisplayName = if ($null -eq $oldVariantId) { $null } else { $variantLookup["$($vehicle.category)|$($vehicle.brandId)|$oldModelId|$oldGenerationId|$oldVariantId"].displayName }
+        if ($vehicle.provenance -eq "LEGACY_IMPORT" -and $vehicle.category -eq "COCHE" -and $oldModelId.StartsWith("legacy-", [StringComparison]::Ordinal)) {
+            $structure = Get-LegacyCarModelStructure $vehicle.brandId $oldModel.displayName
+            $modelDisplayName = $structure.model
+            $vehicle.modelId = Get-Slug $modelDisplayName
+            $variantDisplayName = $structure.variant
+            $vehicle.variantId = if ($null -eq $variantDisplayName) { $null } else { Get-Slug $variantDisplayName }
+        }
+
+        $modelKey = "$($vehicle.category)|$($vehicle.brandId)|$($vehicle.modelId)"
+        if ($modelNames.ContainsKey($modelKey) -and $modelNames[$modelKey] -ne $modelDisplayName) { throw "legacy normalisation: conflicting model displayName for $modelKey" }
+        $modelNames[$modelKey] = $modelDisplayName
+        if ($null -ne $vehicle.generationId) {
+            $generation = $generationLookup["$($vehicle.category)|$($vehicle.brandId)|$oldModelId|$oldGenerationId"]
+            if ($null -eq $generation) { throw "legacy normalisation: missing generation for $($vehicle.catalogId)" }
+            $generationNames["$modelKey|$($vehicle.generationId)"] = $generation.displayName
+        }
+        if ($null -ne $vehicle.variantId) {
+            $variantNames["$modelKey|$($vehicle.generationId)|$($vehicle.variantId)"] = $variantDisplayName
+        }
+    }
+
+    $Catalog.models = @($modelNames.Keys | Sort-Object | ForEach-Object {
+        $parts = $_.Split("|", 3); New-Object @{ category = $parts[0]; brandId = $parts[1]; id = $parts[2]; displayName = $modelNames[$_]; aliases = @() }
+    })
+    $Catalog.generations = @($generationNames.Keys | Sort-Object | ForEach-Object {
+        $parts = $_.Split("|", 4); New-Object @{ category = $parts[0]; brandId = $parts[1]; modelId = $parts[2]; id = $parts[3]; displayName = $generationNames[$_] }
+    })
+    $Catalog.variants = @($variantNames.Keys | Sort-Object | ForEach-Object {
+        $parts = $_.Split("|", 5); New-Object @{ category = $parts[0]; brandId = $parts[1]; modelId = $parts[2]; generationId = if ($parts[3] -eq "") { $null } else { $parts[3] }; id = $parts[4]; displayName = $variantNames[$_]; aliases = @() }
+    })
+}
+
 function Test-EditorialCatalog {
     param($Catalog)
     if ($Catalog.schemaVersion -ne 1) { throw "catalog: schemaVersion no soportada '$($Catalog.schemaVersion)'" }
     if ($Catalog.catalogVersion -lt 1) { throw "catalog: catalogVersion debe ser positivo" }
     if ([string]::IsNullOrWhiteSpace($Catalog.generatedAt)) { throw "catalog: generatedAt obligatorio" }
 
-    $brandIds = @{}; foreach ($item in $Catalog.brands) { Assert-Id $item.id "brand $($item.displayName)"; if ($brandIds[$item.id]) { throw "brand: id duplicado $($item.id)" }; $brandIds[$item.id] = $true }
-    $modelIds = @{}; foreach ($item in $Catalog.models) { Assert-Id $item.id "model $($item.displayName)"; $key = "$($item.category)|$($item.brandId)|$($item.id)"; if ($modelIds[$key]) { throw "model: id duplicado $key" }; if (-not $brandIds[$item.brandId]) { throw "model ${key}: brandId inexistente" }; $modelIds[$key] = $true }
+    $brandIds = @{}; foreach ($item in $Catalog.brands) {
+        Assert-Id $item.id "brand $($item.displayName)"
+        if ([string]::IsNullOrWhiteSpace($item.displayName)) { throw "brand $($item.id): displayName obligatorio" }
+        if ($brandIds[$item.id]) { throw "brand: id duplicado $($item.id)" }
+        $brandIds[$item.id] = $true
+    }
+    $modelIds = @{}; foreach ($item in $Catalog.models) {
+        Assert-Id $item.id "model $($item.displayName)"
+        if ([string]::IsNullOrWhiteSpace($item.displayName)) { throw "model $($item.id): displayName obligatorio" }
+        $key = "$($item.category)|$($item.brandId)|$($item.id)"
+        if ($modelIds[$key]) { throw "model: id duplicado $key" }
+        if (-not $brandIds[$item.brandId]) { throw "model ${key}: brandId inexistente" }
+        $modelIds[$key] = $true
+    }
     $generationIds = @{}; foreach ($item in $Catalog.generations) { Assert-Id $item.id "generation $($item.displayName)"; $modelKey = "$($item.category)|$($item.brandId)|$($item.modelId)"; if (-not $modelIds[$modelKey]) { throw "generation $($item.id): model inexistente" }; $key = "$modelKey|$($item.id)"; if ($generationIds[$key]) { throw "generation: id duplicado $key" }; $generationIds[$key] = $true }
     $variantIds = @{}; foreach ($item in $Catalog.variants) { Assert-Id $item.id "variant $($item.displayName)"; $modelKey = "$($item.category)|$($item.brandId)|$($item.modelId)"; if (-not $modelIds[$modelKey]) { throw "variant $($item.id): model inexistente" }; if ($null -ne $item.generationId -and -not $generationIds["$modelKey|$($item.generationId)"]) { throw "variant $($item.id): generation inexistente" }; $key = "$modelKey|$($item.generationId)|$($item.id)"; if ($variantIds[$key]) { throw "variant: id duplicado $key" }; $variantIds[$key] = $true }
 
@@ -485,6 +611,10 @@ if ($BootstrapLegacy) {
 }
 
 $editorial = Get-Content -Raw -Encoding UTF8 $EditorialPath | ConvertFrom-Json
+if ($NormalizeLegacyModels) {
+    Normalize-LegacyModelStructure $editorial
+    Write-EditorialJson $editorial $EditorialPath
+}
 Test-EditorialCatalog $editorial
 $runtime = New-RuntimeCatalog $editorial
 Write-DeterministicJson $runtime $RuntimePath

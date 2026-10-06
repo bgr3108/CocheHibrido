@@ -3,9 +3,7 @@ package com.bgr3108.kilonom.data
 import android.content.Context
 interface VehicleCatalog {
     fun loadVehicles(category: VehicleCategory): List<VehicleInfo>
-
-    fun loadSelectionCatalog(category: VehicleCategory): VehicleSelectionCatalog =
-        VehicleSelectionCatalog.fromLegacy(category, loadVehicles(category))
+    fun loadSelectionCatalog(category: VehicleCategory): VehicleSelectionCatalog
 }
 
 class VehicleDataSource(

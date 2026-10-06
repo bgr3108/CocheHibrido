@@ -16,10 +16,12 @@ No se edita el runtime a mano.
 Desde la raíz del repositorio:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/generate_vehicle_catalog.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File tools/generate_vehicle_catalog.ps1
 ```
 
 La primera generación del catálogo heredado usa `-BootstrapLegacy`. Lee los JSON históricos sin modificarlos, crea un registro editorial por entrada y los conserva como `ACTIVE`. Este modo es de inicialización y no debe usarse para sobrescribir trabajo editorial posterior.
+
+Los registros de ejecución siempre llevan `brand.id`/`brand.displayName` y `model.id`/`model.displayName` explícitos. La aplicación no intenta deducir un modelo base a partir de textos heredados. La normalización inicial de modelos legacy se realiza una sola vez con `-NormalizeLegacyModels` en esta herramienta, que conserva literalmente las `legacyKeys` históricas y separa el modelo base de la variante antes de generar el runtime.
 
 El generador rechaza el editorial si encuentra, entre otros problemas: IDs o `legacyKeys` activos duplicados, referencias inexistentes, rangos inválidos, capacidades no positivas, rangos solapados técnicamente iguales, combinaciones de propulsión inválidas o registros `ACTIVE` sin fuentes. Si la validación falla no se escribe un runtime nuevo.
 

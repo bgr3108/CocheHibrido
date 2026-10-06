@@ -73,6 +73,58 @@ class VehicleSelectionCatalogTest {
     }
 
     @Test
+    fun everyRuntimeVehicleProvidesAnExplicitStructuredBrandAndBaseModel() {
+        val runtime = parseRuntimeVehicleCatalog(readRuntime())
+
+        assertTrue(runtime.vehicles.all {
+            it.brand.id.isNotBlank() &&
+                it.brand.displayName.isNotBlank() &&
+                it.model.id.isNotBlank() &&
+                it.model.displayName.isNotBlank()
+        })
+    }
+
+    @Test
+    fun selectorUsesTheStructuredModelOfANewCatalogVehicleWithoutAndroidMappings() {
+        val astra = RuntimeVehicle(
+            catalogId = "car-opel-astra-1-2-turbo",
+            category = VehicleCategory.COCHE,
+            brand = RuntimeIdentity(id = "opel", displayName = "Opel"),
+            model = RuntimeIdentity(id = "astra", displayName = "Astra"),
+            generation = RuntimeIdentity(id = "l", displayName = "L"),
+            variant = RuntimeIdentity(id = "1-2-turbo", displayName = "1.2 Turbo"),
+            yearFrom = 2026,
+            yearTo = 2026,
+            powertrain = RuntimePowertrain(
+                kind = RuntimePowertrainKind.ICE,
+                primaryFuel = RuntimeFuel.GASOLINA,
+                hybridSystem = RuntimeHybridSystem.NONE
+            ),
+            fuelTankLitres = 52.0,
+            battery = RuntimeBattery(null, null, null, null),
+            bodyStyle = null,
+            drivetrain = null,
+            marketCodes = listOf("ES"),
+            legacyKeys = emptyList()
+        )
+
+        val catalog = RuntimeVehicleCatalog(
+            schemaVersion = 1,
+            catalogVersion = 1,
+            generatedAt = "2026-10-06T00:00:00Z",
+            vehicles = listOf(astra)
+        ).selectionFor(VehicleCategory.COCHE)
+
+        val opel = catalog.brands().single()
+        val model = catalog.modelsFor(opel.id).single()
+        assertEquals("Opel", opel.displayName)
+        assertEquals("astra", model.id)
+        assertEquals("Astra", model.displayName)
+        assertEquals(listOf("Gasolina"), catalog.variantsFor(opel.id, model.id, 2026).map { it.displayName })
+        assertEquals("1.2 Turbo", catalog.variantsFor(opel.id, model.id, 2026).single().automaticDisplayName)
+    }
+
+    @Test
     fun everyLegacyKeyStillResolvesToOneRuntimeSelection() {
         val runtime = parseRuntimeVehicleCatalog(readRuntime())
         val activeLegacyKeys = runtime.vehicles.flatMap { it.legacyKeys }.map { it.toStableKey() }

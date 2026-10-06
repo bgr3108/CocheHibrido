@@ -11,6 +11,7 @@ import com.bgr3108.kilonom.data.VehicleCatalog
 import com.bgr3108.kilonom.data.VehicleInfo
 import com.bgr3108.kilonom.data.VehiclePreferencesStore
 import com.bgr3108.kilonom.data.VehicleRepository
+import com.bgr3108.kilonom.data.VehicleSelectionCatalog
 import com.bgr3108.kilonom.data.VehicleType
 import com.bgr3108.kilonom.data.InMemoryFuelEntryDao
 import com.bgr3108.kilonom.data.InMemoryMaintenanceDao
@@ -229,6 +230,8 @@ class ResetApplicationDataTest {
 
     private object EmptyVehicleCatalog : VehicleCatalog {
         override fun loadVehicles(category: VehicleCategory): List<VehicleInfo> = emptyList()
+        override fun loadSelectionCatalog(category: VehicleCategory) =
+            VehicleSelectionCatalog(category, emptyList())
     }
 
     private fun vehicleRepository(preferences: FakeVehiclePreferences) = VehicleRepository(

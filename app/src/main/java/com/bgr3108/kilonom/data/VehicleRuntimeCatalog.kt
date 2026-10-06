@@ -89,15 +89,13 @@ internal data class RuntimeVehicle(
     )
 
     fun toSelectionCandidate(year: Int): VehicleSelectionCandidate {
-        val baseModel = VehicleSelectionModelNaming.resolve(category, brand, model)
         return VehicleSelectionCandidate(
             catalogId = catalogId,
             category = category,
             brandId = brand.id,
             brandDisplayName = brand.displayName,
-            sourceModelId = model.id,
-            modelId = baseModel.id,
-            modelDisplayName = baseModel.displayName,
+            modelId = model.id,
+            modelDisplayName = model.displayName,
             year = year,
             generationId = generation?.id,
             variantDisplayName = variant?.displayName,
@@ -159,50 +157,6 @@ class VehicleSelectionCatalog internal constructor(
     val category: VehicleCategory,
     private val candidates: List<VehicleSelectionCandidate>
 ) {
-    companion object {
-        /** Compatibility projection for focused tests or alternate local catalogs. */
-        fun fromLegacy(category: VehicleCategory, vehicles: List<VehicleInfo>): VehicleSelectionCatalog =
-            VehicleSelectionCatalog(
-                category = category,
-                candidates = vehicles.filter { it.category == category }.map { vehicle ->
-                    val id = "legacy-${vehicle.brand.lowercase().selectionSlug()}-${vehicle.model.lowercase().selectionSlug()}-${vehicle.year}"
-                    VehicleSelectionCandidate(
-                        catalogId = id,
-                        category = category,
-                        brandId = vehicle.brand.selectionSlug(),
-                        brandDisplayName = vehicle.brand,
-                        sourceModelId = vehicle.model.selectionSlug(),
-                        modelId = "selection-${vehicle.brand.selectionSlug()}-${vehicle.model.selectionSlug()}",
-                        modelDisplayName = vehicle.model,
-                        year = vehicle.year,
-                        generationId = null,
-                        variantDisplayName = null,
-                        variantId = null,
-                        generationDisplayName = null,
-                        powertrain = RuntimePowertrain(
-                            kind = when (vehicle.type) {
-                                VehicleType.GASOLINA, VehicleType.DIESEL -> RuntimePowertrainKind.ICE
-                                VehicleType.HIBRIDO -> RuntimePowertrainKind.HEV
-                                VehicleType.HIBRIDO_ENCHUFABLE -> RuntimePowertrainKind.PHEV
-                                VehicleType.ELECTRICO -> RuntimePowertrainKind.BEV
-                            },
-                            primaryFuel = when (vehicle.type) {
-                                VehicleType.GASOLINA -> RuntimeFuel.GASOLINA
-                                VehicleType.DIESEL -> RuntimeFuel.DIESEL
-                                else -> null
-                            },
-                            hybridSystem = null
-                        ),
-                        fuelTankLitres = vehicle.fuelTankCapacity.takeIf { it > 0.0 },
-                        operationalBatteryKwh = vehicle.batteryCapacity.takeIf { it > 0.0 },
-                        bodyStyle = null,
-                        drivetrain = null,
-                        vehicleInfo = vehicle,
-                        legacyKeys = emptyList()
-                    )
-                }
-            )
-    }
     fun brands(): List<VehicleSelectionBrand> = candidates
         .map { VehicleSelectionBrand(it.brandId, it.brandDisplayName) }
         .distinctBy { it.id }
@@ -269,11 +223,6 @@ class VehicleSelectionCatalog internal constructor(
     }
 }
 
-private fun String.selectionSlug(): String = lowercase()
-    .replace('ó', 'o').replace('ë', 'e').replace('é', 'e')
-    .replace(Regex("[^a-z0-9]+"), "-")
-    .trim('-')
-
 data class VehicleSelectionBrand(val id: String, val displayName: String)
 data class VehicleSelectionModel(val id: String, val displayName: String)
 data class VehicleSelectionVariant(
@@ -294,7 +243,6 @@ internal data class VehicleSelectionCandidate(
     val category: VehicleCategory,
     val brandId: String,
     val brandDisplayName: String,
-    val sourceModelId: String,
     val modelId: String,
     val modelDisplayName: String,
     val year: Int,
@@ -343,63 +291,6 @@ internal data class VehicleSelectionCandidate(
     fun automaticDisplayName(): String = variantDisplayName.orEmpty().ifBlank {
         vehicleInfo.model.removePrefix(modelDisplayName).trim(' ', '·', '-', '/')
     }.ifBlank { energyLabel() }
-}
-
-/**
- * Legacy data used a composite model field. This projection groups the established families by
- * familiar names while retaining every source model id and generation in the technical record.
- */
-private object VehicleSelectionModelNaming {
-    private val carFamilies = mapOf(
-        "audi" to listOf("A3 Sportback", "A4 Avant", "TT"),
-        "bmw" to listOf("iX1", "X3", "X5"),
-        "byd" to listOf("Atto 3"),
-        "citroen" to listOf("ë-Berlingo", "Berlingo", "C-Elysée", "C3 Aircross", "C4"),
-        "cupra" to listOf("Formentor", "León"),
-        "dacia" to listOf("Sandero Stepway", "Duster", "Jogger"),
-        "fiat" to listOf("500"),
-        "ford" to listOf("Focus", "Kuga", "Puma"),
-        "hyundai" to listOf("Ioniq 5", "i20", "ix35", "Kona", "Tucson"),
-        "jeep" to listOf("Compass"),
-        "kia" to listOf("EV6", "Niro", "Sorento", "Sportage"),
-        "lexus" to listOf("LBX"),
-        "lynk-co" to listOf("01"),
-        "mazda" to listOf("CX-30"),
-        "mercedes-benz" to listOf("Clase A", "Clase B", "Clase C", "CLK", "GLC"),
-        "mg" to listOf("MG4", "ZS"),
-        "mitsubishi" to listOf("ASX"),
-        "nissan" to listOf("Qashqai", "Juke", "Pulsar"),
-        "omoda" to listOf("7"),
-        "opel" to listOf("Corsa", "Astra"),
-        "peugeot" to listOf("3008", "208"),
-        "renault" to listOf("Megane", "Austral", "Captur", "Clio"),
-        "seat" to listOf("León", "Ateca", "Ibiza"),
-        "skoda" to listOf("Fabia"),
-        "suzuki" to listOf("Swift"),
-        "tesla" to listOf("Model 3"),
-        "toyota" to listOf("Yaris Cross", "GR Yaris", "Yaris", "Corolla", "RAV4"),
-        "volkswagen" to listOf("ID.4", "Golf", "Polo", "Tiguan"),
-        "volvo" to listOf("EX30", "XC60")
-    )
-
-    fun resolve(category: VehicleCategory, brand: RuntimeIdentity, sourceModel: RuntimeIdentity): RuntimeIdentity {
-        if (category == VehicleCategory.MOTO) return sourceModel
-        if (brand.id == "mercedes-benz" && sourceModel.displayName.matches(Regex("B\\s+\\d+.*"))) {
-            return RuntimeIdentity(selectionId(brand.id, "Clase B"), "Clase B")
-        }
-        val family = carFamilies[brand.id]
-            .orEmpty()
-            .sortedByDescending(String::length)
-            .firstOrNull { name -> sourceModel.displayName == name || sourceModel.displayName.startsWith("$name ") }
-            ?: sourceModel.displayName
-        return RuntimeIdentity(selectionId(brand.id, family), family)
-    }
-
-    private fun selectionId(brandId: String, name: String): String =
-        "selection-$brandId-" + name.lowercase()
-            .replace('ó', 'o').replace('ë', 'e').replace('é', 'e')
-            .replace(Regex("[^a-z0-9]+"), "-")
-            .trim('-')
 }
 
 internal const val RUNTIME_CATALOG_ASSET = "catalog/catalog-runtime.json"

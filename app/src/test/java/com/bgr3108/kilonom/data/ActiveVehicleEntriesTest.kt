@@ -188,6 +188,8 @@ class ActiveVehicleEntriesTest {
 
     private object EmptyCatalog : VehicleCatalog {
         override fun loadVehicles(category: VehicleCategory): List<VehicleInfo> = emptyList()
+        override fun loadSelectionCatalog(category: VehicleCategory) =
+            VehicleSelectionCatalog(category, emptyList())
     }
 
     private class Preferences(
