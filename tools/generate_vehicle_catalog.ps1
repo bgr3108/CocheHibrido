@@ -63,7 +63,49 @@ function Get-Property {
     param($Object, [string]$Name)
     $property = $Object.PSObject.Properties[$Name]
     if ($null -eq $property) { return $null }
-    return $property.Value
+    # Preserve empty arrays: returning them through the pipeline would otherwise look like null.
+    return ,$property.Value
+}
+
+function Get-RuntimeIdentification {
+    param($Vehicle)
+    $identification = Get-Property $Vehicle "identification"
+    if ($null -eq $identification) {
+        return New-Object @{ displacementCc = @(); powerKw = @(); commercialVersions = @(); engineCodes = @() }
+    }
+    return New-Object @{
+        displacementCc = @((Get-Property $identification "displacementCc"))
+        powerKw = @((Get-Property $identification "powerKw"))
+        commercialVersions = @((Get-Property $identification "commercialVersions"))
+        engineCodes = @((Get-Property $identification "engineCodes"))
+    }
+}
+
+function Test-Identification {
+    param($Vehicle, [string]$Context)
+    $identification = Get-Property $Vehicle "identification"
+    if ($null -eq $identification) { return }
+    foreach ($name in @("displacementCc", "powerKw")) {
+        $values = Get-Property $identification $name
+        if ($null -eq $values) { throw "${Context}.identification.${name}: obligatorio cuando existe identification" }
+        $seen = @{}
+        foreach ($value in @($values)) {
+            if ($null -eq $value -or [double]$value -le 0 -or [double]$value -ne [math]::Truncate([double]$value)) { throw "${Context}.identification.${name}: debe contener enteros positivos" }
+            if ($seen[[string]$value]) { throw "${Context}.identification.${name}: valor duplicado '$value'" }
+            $seen[[string]$value] = $true
+        }
+    }
+    foreach ($name in @("commercialVersions", "engineCodes")) {
+        $values = Get-Property $identification $name
+        if ($null -eq $values) { throw "${Context}.identification.${name}: obligatorio cuando existe identification" }
+        $seen = @{}
+        foreach ($value in @($values)) {
+            if ([string]::IsNullOrWhiteSpace([string]$value)) { throw "${Context}.identification.${name}: no admite valores vacíos" }
+            $key = ([string]$value).Trim().ToLowerInvariant()
+            if ($seen[$key]) { throw "${Context}.identification.${name}: valor duplicado '$value'" }
+            $seen[$key] = $true
+        }
+    }
 }
 
 function Get-PowertrainForLegacyType {
@@ -1102,6 +1144,7 @@ function Test-EditorialCatalog {
         if ($vehicle.category -notin $allowedCategory) { throw "$context.category: enum desconocido '$($vehicle.category)'" }
         if ($vehicle.editorialStatus -notin $allowedStatus) { throw "$context.editorialStatus: enum desconocido '$($vehicle.editorialStatus)'" }
         if ($vehicle.provenance -notin $allowedProvenance) { throw "$context.provenance: enum desconocido '$($vehicle.provenance)'" }
+        Test-Identification $vehicle $context
         $modelKey = "$($vehicle.category)|$($vehicle.brandId)|$($vehicle.modelId)"; if (-not $modelIds[$modelKey]) { throw "${context}: modelId inexistente" }
         if ($null -ne $vehicle.generationId -and -not $generationIds["$modelKey|$($vehicle.generationId)"]) { throw "${context}: generationId inexistente" }
         if ($null -ne $vehicle.variantId -and -not $variantIds["$modelKey|$($vehicle.generationId)|$($vehicle.variantId)"]) { throw "${context}: variantId inexistente" }
@@ -1183,7 +1226,7 @@ function New-RuntimeCatalog {
             variant = if ($null -eq $variant) { $null } else { New-Object @{ id = $variant.id; displayName = $variant.displayName; aliases = @($variant.aliases) } }
             yearFrom = $entry.yearFrom; yearTo = $entry.yearTo; powertrain = $entry.powertrain
             fuelTankLitres = $entry.fuelTankLitres; battery = $entry.battery
-            bodyStyle = $entry.bodyStyle; drivetrain = $entry.drivetrain; marketCodes = @($entry.marketCodes); aliases = @($entry.aliases); legacyKeys = @($entry.legacyKeys)
+            bodyStyle = $entry.bodyStyle; drivetrain = $entry.drivetrain; marketCodes = @($entry.marketCodes); aliases = @($entry.aliases); legacyKeys = @($entry.legacyKeys); identification = Get-RuntimeIdentification $entry
         }
     }
     return New-Object @{ schemaVersion = $Editorial.schemaVersion; catalogVersion = $Editorial.catalogVersion; generatedAt = $Editorial.generatedAt; vehicles = $vehicles }
@@ -1195,6 +1238,8 @@ function ConvertTo-CanonicalObject {
     # Strings expose adapted PowerShell properties such as Length. Handle them before
     # PSCustomObject so a one-item string array remains ["ES"], not [{"Length":2}].
     if ($Value -is [string]) { return $Value }
+    # Numeric documentary hints are scalar JSON values, not adapted PowerShell objects.
+    if ($Value -is [ValueType]) { return $Value }
     if ($Value -is [System.Collections.IDictionary]) {
         $ordered = [ordered]@{}
         foreach ($key in @($Value.Keys | Sort-Object)) { $ordered[$key] = ConvertTo-CanonicalObject $Value[$key] }

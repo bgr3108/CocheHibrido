@@ -70,7 +70,8 @@ internal data class RuntimeVehicle(
     val bodyStyle: String?,
     val drivetrain: String?,
     val marketCodes: List<String>,
-    val legacyKeys: List<RuntimeLegacyKey>
+    val legacyKeys: List<RuntimeLegacyKey>,
+    val identification: RuntimeVehicleIdentification = RuntimeVehicleIdentification.EMPTY
 ) {
     fun years(selectionYearUpperBound: Int): IntRange = yearFrom..(yearTo ?: selectionYearUpperBound)
 
@@ -108,6 +109,7 @@ internal data class RuntimeVehicle(
             declaredBatteryKwh = battery.declaredKwh ?: battery.grossKwh,
             bodyStyle = bodyStyle,
             drivetrain = drivetrain,
+            identification = identification,
             vehicleInfo = toVehicleInfo(year),
             legacyKeys = legacyKeys
         )
@@ -152,6 +154,18 @@ internal data class RuntimeBattery(
 ) {
     fun hasDeclaredCapacity(): Boolean =
         grossKwh != null || usableKwh != null || declaredKwh != null
+}
+
+/** Optional, documentary facts used only to help a person identify a technical record. */
+data class RuntimeVehicleIdentification(
+    val displacementCc: List<Int>,
+    val powerKw: List<Int>,
+    val commercialVersions: List<String>,
+    val engineCodes: List<String>
+) {
+    companion object {
+        val EMPTY = RuntimeVehicleIdentification(emptyList(), emptyList(), emptyList(), emptyList())
+    }
 }
 
 /** A simplified selector view over immutable runtime records. */
@@ -216,6 +230,9 @@ class VehicleSelectionCatalog internal constructor(
                 id = candidate.functionalKey,
                 displayName = labelsByFunctionalKey.getValue(candidate.functionalKey),
                 automaticDisplayName = candidate.automaticDisplayName(),
+                energyType = candidate.vehicleInfo.type,
+                identification = candidate.identification,
+                bodyStyle = candidate.bodyStyle,
                 vehicle = candidate.vehicleInfo
             )
         }.sortedBy { it.displayName }
@@ -246,6 +263,9 @@ data class VehicleSelectionVariant(
     val id: String,
     val displayName: String,
     val automaticDisplayName: String,
+    val energyType: VehicleType,
+    val identification: RuntimeVehicleIdentification,
+    val bodyStyle: String?,
     val vehicle: VehicleInfo
 )
 data class VehicleSelectionInitial(
@@ -275,6 +295,7 @@ internal data class VehicleSelectionCandidate(
     val declaredBatteryKwh: Double?,
     val bodyStyle: String?,
     val drivetrain: String?,
+    val identification: RuntimeVehicleIdentification,
     val vehicleInfo: VehicleInfo,
     val legacyKeys: List<RuntimeLegacyKey>
 ) {
@@ -395,6 +416,13 @@ private fun parseRuntimeVehicle(
         declaredKwh = batteryObject.optionalPositiveDouble("declaredKwh", "$catalogId.battery"),
         declaredCapacityType = batteryObject.optionalEnum("declaredCapacityType", "$catalogId.battery")
     )
+    val identificationObject = obj.requiredObject("identification", catalogId)
+    val identification = RuntimeVehicleIdentification(
+        displacementCc = identificationObject.requiredPositiveIntArray("displacementCc", "$catalogId.identification"),
+        powerKw = identificationObject.requiredPositiveIntArray("powerKw", "$catalogId.identification"),
+        commercialVersions = identificationObject.requiredStringArray("commercialVersions", "$catalogId.identification"),
+        engineCodes = identificationObject.requiredStringArray("engineCodes", "$catalogId.identification")
+    )
     val bodyStyle = obj.optionalString("bodyStyle", catalogId)
     val drivetrain = obj.optionalString("drivetrain", catalogId)
     val marketCodes = obj.requiredStringArray("marketCodes", catalogId)
@@ -409,7 +437,7 @@ private fun parseRuntimeVehicle(
     validateRuntimeVehicle(catalogId, powertrain, fuelTankLitres, battery)
     return RuntimeVehicle(
         catalogId, category, brand, model, generation, variant, yearFrom, yearTo,
-        powertrain, fuelTankLitres, battery, bodyStyle, drivetrain, marketCodes, legacyKeys
+        powertrain, fuelTankLitres, battery, bodyStyle, drivetrain, marketCodes, legacyKeys, identification
     )
 }
 
@@ -521,6 +549,18 @@ private fun JsonObject.requiredStringArray(name: String, context: String): List<
             "$context.$name[$index]: expected non-empty string"
         }
         value.content
+    }.also { values ->
+        require(values == values.distinct()) { "$context.$name: duplicate values" }
+    }
+
+private fun JsonObject.requiredPositiveIntArray(name: String, context: String): List<Int> =
+    requiredArray(name, context).mapIndexed { index, value ->
+        val primitive = value as? JsonPrimitive
+        val integer = primitive?.intOrNull
+        require(integer != null && integer > 0) {
+            "$context.$name[$index]: expected positive integer"
+        }
+        integer
     }.also { values ->
         require(values == values.distinct()) { "$context.$name: duplicate values" }
     }

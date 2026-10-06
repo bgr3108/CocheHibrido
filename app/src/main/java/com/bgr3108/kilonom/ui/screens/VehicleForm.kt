@@ -22,6 +22,7 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -30,6 +31,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -41,11 +43,18 @@ import androidx.compose.ui.unit.dp
 import com.bgr3108.kilonom.data.Vehicle
 import com.bgr3108.kilonom.data.VehicleCategory
 import com.bgr3108.kilonom.data.VehicleInfo
+import com.bgr3108.kilonom.data.VehicleIdentificationField
 import com.bgr3108.kilonom.data.VehicleSelectionCatalog
+import com.bgr3108.kilonom.data.VehicleSelectionVariant
+import com.bgr3108.kilonom.data.VehicleType
+import com.bgr3108.kilonom.data.VehicleVersionAssistant
+import com.bgr3108.kilonom.data.VehicleVersionAssistantResolution
+import com.bgr3108.kilonom.data.assistantLabel
 import com.bgr3108.kilonom.data.isVehicleSelectionCompatible
+import com.bgr3108.kilonom.data.versionAssistantFor
 import com.bgr3108.kilonom.util.ExternalLinks
 import com.bgr3108.kilonom.util.openExternalUrl
-import com.bgr3108.kilonom.util.openSupportEmail
+import com.bgr3108.kilonom.util.openVehicleRequestEmail
 import com.bgr3108.kilonom.util.toKilometersDisplay
 import com.bgr3108.kilonom.util.toKilometersOrNull
 
@@ -81,6 +90,10 @@ fun VehicleForm(
     var modelsExpanded by rememberSaveable { mutableStateOf(false) }
     var yearsExpanded by rememberSaveable { mutableStateOf(false) }
     var variantsExpanded by rememberSaveable { mutableStateOf(false) }
+    var showVersionAssistant by rememberSaveable(initialId) { mutableStateOf(false) }
+    var assistantEnergyName by rememberSaveable(initialId) { mutableStateOf<String?>(null) }
+    var assistantAnswers by remember { mutableStateOf<Map<VehicleIdentificationField, Set<String>>>(emptyMap()) }
+    var skippedAssistantHints by remember { mutableStateOf<Set<VehicleIdentificationField>>(emptySet()) }
 
     val category = VehicleCategory.entries.firstOrNull { it.name == categoryName.value } ?: VehicleCategory.COCHE
 
@@ -114,6 +127,24 @@ fun VehicleForm(
         }
     }
     val selectedVariant = variants.firstOrNull { it.id == variantId }
+    val assistant = year.toIntOrNull()?.let { selectedYear ->
+        selectionCatalog.versionAssistantFor(brandId, modelId, selectedYear)
+    }
+    val selectedAssistantEnergy = assistantEnergyName?.let { energyName ->
+        VehicleType.entries.firstOrNull { it.name == energyName }
+    }
+    val selectedAssistantResolution = assistant?.let { helper ->
+        selectedAssistantEnergy?.let { helper.resolve(it, assistantAnswers, skippedAssistantHints) }
+    }
+    val selectedBrandName = brands.firstOrNull { it.id == brandId }?.displayName
+    val selectedModelName = models.firstOrNull { it.id == modelId }?.displayName
+
+    LaunchedEffect(assistant) {
+        if (assistant == null) {
+            showVersionAssistant = false
+            assistantEnergyName = null
+        }
+    }
     val selectedVehicle = selectedVariant?.vehicle ?: initialVehicle
         ?.toVehicleInfoOrNull()
         ?.takeIf { !catalogEditable }
@@ -214,8 +245,19 @@ fun VehicleForm(
                     expanded = variantsExpanded,
                     onExpandedChange = { variantsExpanded = it }
                 ) { variantId = it }
+                TextButton(
+                    onClick = {
+                        assistantEnergyName = null
+                        assistantAnswers = emptyMap()
+                        skippedAssistantHints = emptySet()
+                        showVersionAssistant = true
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("¿No sabes cuál es tu versión?")
+                }
             } else if (
-                selectedVariant?.vehicle?.type == com.bgr3108.kilonom.data.VehicleType.HIBRIDO_ENCHUFABLE &&
+                selectedVariant?.vehicle?.type == VehicleType.HIBRIDO_ENCHUFABLE &&
                 selectedVariant.automaticDisplayName != selectedVariant.displayName
             ) {
                 Text(
@@ -230,6 +272,18 @@ fun VehicleForm(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall
                 )
+                TextButton(
+                    onClick = {
+                        context.openVehicleRequestEmail(
+                            brand = selectedBrandName,
+                            model = selectedModelName,
+                            year = year,
+                            variant = null
+                        )
+                    }
+                ) {
+                    Text("Solicitar que la añadamos")
+                }
             }
         } else {
             Text("Marca: ${initialVehicle?.brand.orEmpty()}", style = MaterialTheme.typography.bodyLarge)
@@ -288,11 +342,187 @@ fun VehicleForm(
             else Text("Guardar")
         }
         VehicleCatalogHelpCard(
-            onSendEmail = { context.openSupportEmail() },
+            onSendEmail = {
+                context.openVehicleRequestEmail(
+                    brand = selectedBrandName,
+                    model = selectedModelName,
+                    year = year,
+                    variant = selectedVariant?.automaticDisplayName
+                )
+            },
             onOpenInstagram = { context.openExternalUrl(ExternalLinks.INSTAGRAM_PROFILE_URL) }
         )
     }
+
+    if (showVersionAssistant && assistant != null && selectedBrandName != null && selectedModelName != null) {
+        VehicleVersionAssistantSheet(
+            brand = selectedBrandName,
+            model = selectedModelName,
+            year = year,
+            assistant = assistant,
+            selectedEnergy = selectedAssistantEnergy,
+            resolution = selectedAssistantResolution,
+            onEnergySelected = {
+                assistantEnergyName = it.name
+                assistantAnswers = emptyMap()
+                skippedAssistantHints = emptySet()
+            },
+            onIdentificationSelected = { field, values ->
+                assistantAnswers = assistantAnswers + (field to values)
+            },
+            onIdentificationNotFound = { field ->
+                skippedAssistantHints = skippedAssistantHints + field
+            },
+            onUseVariant = { variant ->
+                variantId = variant.id
+                showVersionAssistant = false
+                assistantEnergyName = null
+            },
+            onRequestHelp = {
+                context.openVehicleRequestEmail(
+                    brand = selectedBrandName,
+                    model = selectedModelName,
+                    year = year,
+                    variant = null,
+                    fuel = selectedAssistantEnergy?.assistantLabel(),
+                    note = "No sé qué versión corresponde."
+                )
+            },
+            onDismiss = {
+                showVersionAssistant = false
+                assistantEnergyName = null
+                assistantAnswers = emptyMap()
+                skippedAssistantHints = emptySet()
+            }
+        )
+    }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun VehicleVersionAssistantSheet(
+    brand: String,
+    model: String,
+    year: String,
+    assistant: VehicleVersionAssistant,
+    selectedEnergy: VehicleType?,
+    resolution: VehicleVersionAssistantResolution?,
+    onEnergySelected: (VehicleType) -> Unit,
+    onIdentificationSelected: (VehicleIdentificationField, Set<String>) -> Unit,
+    onIdentificationNotFound: (VehicleIdentificationField) -> Unit,
+    onUseVariant: (VehicleSelectionVariant) -> Unit,
+    onRequestHelp: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 8.dp)
+                .safeDrawingPadding()
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text("Ayúdanos a identificar tu vehículo", style = MaterialTheme.typography.titleLarge)
+            Text(
+                "$brand $model · $year",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text("¿Qué tipo de vehículo tienes?", style = MaterialTheme.typography.titleMedium)
+            assistant.energyOptions.forEach { option ->
+                FilterChip(
+                    selected = selectedEnergy == option.type,
+                    onClick = { onEnergySelected(option.type) },
+                    label = { Text(option.displayName) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            when (resolution) {
+                is VehicleVersionAssistantResolution.Match -> VehicleVersionMatch(
+                    variant = resolution.variant,
+                    onUseVariant = { onUseVariant(resolution.variant) }
+                )
+                is VehicleVersionAssistantResolution.AskIdentification -> {
+                    val hint = resolution.hint
+                    Text(hint.instruction, style = MaterialTheme.typography.titleSmall)
+                    Text(hint.question, style = MaterialTheme.typography.titleMedium)
+                    Text(hint.helperText, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    hint.options.forEach { option ->
+                        TextButton(
+                            onClick = { onIdentificationSelected(hint.field, option.values) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text(option.displayName) }
+                    }
+                    TextButton(onClick = { onIdentificationNotFound(hint.field) }, modifier = Modifier.fillMaxWidth()) {
+                        Text("No lo encuentro")
+                    }
+                }
+                VehicleVersionAssistantResolution.Unresolved -> {
+                    Text(
+                        "No podemos distinguir estas versiones con los datos disponibles.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = onDismiss, modifier = Modifier.weight(1f)) {
+                            Text("Elegir manualmente")
+                        }
+                        TextButton(onClick = onRequestHelp, modifier = Modifier.weight(1f)) {
+                            Text("Necesito ayuda")
+                        }
+                    }
+                }
+                null -> Unit
+            }
+
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text("Puedes consultar la documentación del vehículo", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        "P.1 indica la cilindrada, P.2 la potencia en kW, P.3 el combustible y D.2/D.3 el tipo, variante o denominación comercial.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+            TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
+                Text("Seguir eligiendo manualmente")
+            }
+        }
+    }
+}
+
+@Composable
+private fun VehicleVersionMatch(
+    variant: VehicleSelectionVariant,
+    onUseVariant: () -> Unit
+) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text("Hemos encontrado una coincidencia", style = MaterialTheme.typography.titleSmall)
+            Text(variant.vehicle.brand, style = MaterialTheme.typography.bodyLarge)
+            Text("${variant.vehicle.model} · ${variant.vehicle.year}")
+            Text(variant.displayName, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            variant.vehicle.fuelTankCapacity.takeIf { it > 0.0 }?.let { capacity ->
+                Text("Depósito: ${capacity.toCleanNumber()} L", style = MaterialTheme.typography.bodySmall)
+            }
+            Button(onClick = onUseVariant, modifier = Modifier.fillMaxWidth()) {
+                Text("Usar esta versión")
+            }
+        }
+    }
+}
+
+private fun Double.toCleanNumber(): String =
+    if (this % 1.0 == 0.0) toInt().toString() else toString().replace('.', ',')
 
 @Composable
 private fun VehicleCatalogHelpCard(

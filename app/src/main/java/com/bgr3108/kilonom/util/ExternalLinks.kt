@@ -14,7 +14,9 @@ object ExternalLinks {
 
 internal data class ExternalIntentRequest(
     val action: String,
-    val uri: String
+    val uri: String,
+    val subject: String? = null,
+    val body: String? = null
 )
 
 internal fun externalUrlIntentRequest(url: String): ExternalIntentRequest = ExternalIntentRequest(
@@ -22,9 +24,31 @@ internal fun externalUrlIntentRequest(url: String): ExternalIntentRequest = Exte
     uri = url
 )
 
-internal fun supportEmailIntentRequest(): ExternalIntentRequest = ExternalIntentRequest(
+internal fun vehicleRequestEmailIntentRequest(
+    brand: String?,
+    model: String?,
+    year: String?,
+    variant: String?,
+    fuel: String? = null,
+    note: String? = null
+): ExternalIntentRequest = ExternalIntentRequest(
     action = Intent.ACTION_SENDTO,
-    uri = "mailto:${ExternalLinks.SUPPORT_EMAIL_ADDRESS}"
+    uri = "mailto:${ExternalLinks.SUPPORT_EMAIL_ADDRESS}",
+    subject = "Kilonom - Solicitud de vehículo",
+    body = buildString {
+        appendLine("Hola,")
+        appendLine()
+        appendLine("No encuentro mi vehículo en Kilonom.")
+        appendLine()
+        brand?.takeIf(String::isNotBlank)?.let { appendLine("Marca: $it") }
+        model?.takeIf(String::isNotBlank)?.let { appendLine("Modelo: $it") }
+        year?.takeIf(String::isNotBlank)?.let { appendLine("Año: $it") }
+        fuel?.takeIf(String::isNotBlank)?.let { appendLine("Combustible: $it") }
+        variant?.takeIf(String::isNotBlank)?.let { appendLine("Motorización: $it") }
+        note?.takeIf(String::isNotBlank)?.let { appendLine(it) }
+        appendLine()
+        append("Gracias.")
+    }
 )
 
 fun Context.openExternalUrl(url: String): Boolean = runCatching {
@@ -32,7 +56,17 @@ fun Context.openExternalUrl(url: String): Boolean = runCatching {
     startActivity(Intent(request.action, request.uri.toUri()))
 }.isSuccess
 
-fun Context.openSupportEmail(): Boolean = runCatching {
-    val request = supportEmailIntentRequest()
-    startActivity(Intent(request.action, request.uri.toUri()))
+fun Context.openVehicleRequestEmail(
+    brand: String?,
+    model: String?,
+    year: String?,
+    variant: String?,
+    fuel: String? = null,
+    note: String? = null
+): Boolean = runCatching {
+    val request = vehicleRequestEmailIntentRequest(brand, model, year, variant, fuel, note)
+    startActivity(Intent(request.action, request.uri.toUri()).apply {
+        putExtra(Intent.EXTRA_SUBJECT, request.subject)
+        putExtra(Intent.EXTRA_TEXT, request.body)
+    })
 }.isSuccess

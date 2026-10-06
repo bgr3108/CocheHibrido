@@ -45,6 +45,8 @@ El mapeo temporal a Android es explícito: ICE gasolina/diésel → `GASOLINA`/`
 
 `battery` conserva por separado `grossKwh`, `usableKwh`, `declaredKwh` y `declaredCapacityType` (`UNKNOWN` cuando la fuente no clasifica el valor). La capacidad útil es la única que Android puede usar automáticamente para estimar kWh desde porcentajes de batería. Un dato bruto o desconocido se conserva para trazabilidad, pero no se trata como capacidad operativa. `0` no se usa para ausencia de capacidad: se usa `null`.
 
+`identification` es opcional en editorial y contiene únicamente pistas documentales para resolver variantes funcionalmente distintas: `displacementCc`, `powerKw`, `commercialVersions` y `engineCodes`. Al generar runtime siempre se serializa con listas, incluso vacías. No altera el snapshot del vehículo ni se usa para cálculos. Android puede preguntar por P.1 (cilindrada), P.2 (potencia en kW) o D.2/D.3 (tipo, variante o denominación comercial) solo cuando esas pistas distinguen de forma segura los candidatos; sus fuentes permanecen en editorial.
+
 `fuelTankLitres` es `null` en BEV y positivo en ICE, HEV y PHEV. Las motos siguen el mismo contrato con `category: MOTO`.
 
 ## Estados y compatibilidad

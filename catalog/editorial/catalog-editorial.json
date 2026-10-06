@@ -5800,6 +5800,14 @@
           ],
           "accessedAt": "2026-10-06",
           "type": "TECHNICAL_REFERENCE"
+        },
+        {
+          "url": "https://www.boe.es/boe/dias/2011/12/29/pdfs/BOE-A-2011-20471.pdf",
+          "fields": [
+            "identification.displacementCc"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_TECHNICAL_DOCUMENT"
         }
       ],
       "variantId": "gasolina",
@@ -5828,7 +5836,13 @@
       },
       "category": "COCHE",
       "modelId": "clase-b",
-      "notes": "Clase B diésel de primera generación: depósito de 54 L.",
+      "notes": "Clase B diésel de primera generación: depósito de 54 L. Pista P.1: 1.991 cm³.",
+      "identification": {
+        "displacementCc": [1991],
+        "powerKw": [],
+        "commercialVersions": [],
+        "engineCodes": []
+      },
       "yearTo": 2011,
       "battery": {
         "grossKwh": null,
@@ -5850,7 +5864,8 @@
           "fields": [
             "yearFrom",
             "yearTo",
-            "fuelTankLitres"
+            "fuelTankLitres",
+            "identification.displacementCc"
           ],
           "accessedAt": "2026-10-06",
           "type": "TECHNICAL_REFERENCE"
@@ -5882,7 +5897,13 @@
       },
       "category": "COCHE",
       "modelId": "clase-b",
-      "notes": "Clase B diésel de segunda generación: depósito de 50 L.",
+      "notes": "Clase B diésel de segunda generación: depósito de 50 L. Pista P.1: 1.796 cm³.",
+      "identification": {
+        "displacementCc": [1796],
+        "powerKw": [],
+        "commercialVersions": [],
+        "engineCodes": []
+      },
       "yearTo": 2018,
       "battery": {
         "grossKwh": null,
@@ -5910,7 +5931,8 @@
           "fields": [
             "yearFrom",
             "yearTo",
-            "fuelTankLitres"
+            "fuelTankLitres",
+            "identification.displacementCc"
           ],
           "accessedAt": "2026-10-06",
           "type": "TECHNICAL_REFERENCE"
@@ -7516,7 +7538,13 @@
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "Corsa F: gasolina con depósito de 44 L.",
+      "notes": "Corsa F: gasolina con depósito de 44 L. Pista documental P.1 para el asistente: 1.199 cm³.",
+      "identification": {
+        "displacementCc": [1199],
+        "powerKw": [],
+        "commercialVersions": [],
+        "engineCodes": []
+      },
       "yearTo": 2026,
       "battery": {
         "usableKwh": null,
@@ -7552,7 +7580,8 @@
           "accessedAt": "2026-10-06",
           "fields": [
             "yearFrom",
-            "fuelTankLitres"
+            "fuelTankLitres",
+            "identification.displacementCc"
           ],
           "type": "TECHNICAL_REFERENCE"
         }
@@ -7874,7 +7903,13 @@
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "Corsa E: diésel con depósito de 45 L.",
+      "notes": "Corsa E: diésel con depósito de 45 L. Pista P.1 para el asistente: 1.248 cm³.",
+      "identification": {
+        "displacementCc": [1248],
+        "powerKw": [],
+        "commercialVersions": [],
+        "engineCodes": []
+      },
       "yearTo": 2019,
       "battery": {
         "usableKwh": null,
@@ -7892,10 +7927,11 @@
       ],
       "sources": [
         {
-          "url": "https://www.km77.com/coches/opel/corsa/2011/5-puertas/selective/corsa-5p-selective-14-100-cv-startstop/datos",
+          "url": "https://www.km77.com/coches/opel/corsa/2015/3-puertas/expression/corsa-3p-13-cdti-75-cv-ecoflex-startstop/datos",
           "accessedAt": "2026-10-06",
           "fields": [
-            "fuelTankLitres"
+            "fuelTankLitres",
+            "identification.displacementCc"
           ],
           "type": "TECHNICAL_REFERENCE"
         }
@@ -7925,7 +7961,13 @@
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "Corsa E: gasolina con depósito de 45 L.",
+      "notes": "Corsa E: gasolina con depósito de 45 L. Pista documental P.1 para el asistente: 1.364 o 1.398 cm³.",
+      "identification": {
+        "displacementCc": [1364, 1398],
+        "powerKw": [],
+        "commercialVersions": [],
+        "engineCodes": []
+      },
       "yearTo": 2019,
       "battery": {
         "usableKwh": null,
@@ -7946,7 +7988,8 @@
           "url": "https://www.km77.com/coches/opel/corsa/2011/5-puertas/selective/corsa-5p-selective-14-100-cv-startstop/datos",
           "accessedAt": "2026-10-06",
           "fields": [
-            "fuelTankLitres"
+            "fuelTankLitres",
+            "identification.displacementCc"
           ],
           "type": "TECHNICAL_REFERENCE"
         }
@@ -8031,7 +8074,13 @@
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "Corsa F: diésel con depósito de 41 L.",
+      "notes": "Corsa F: diésel con depósito de 41 L. Pista P.1 para el asistente: 1.499 cm³.",
+      "identification": {
+        "displacementCc": [1499],
+        "powerKw": [],
+        "commercialVersions": [],
+        "engineCodes": []
+      },
       "yearTo": 2023,
       "battery": {
         "usableKwh": null,
@@ -8054,7 +8103,8 @@
           "fields": [
             "yearFrom",
             "yearTo",
-            "fuelTankLitres"
+            "fuelTankLitres",
+            "identification.displacementCc"
           ],
           "type": "TECHNICAL_REFERENCE"
         }
