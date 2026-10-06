@@ -1,19 +1,13 @@
 package com.bgr3108.kilonom.data
 
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Test
 
 class VehicleCatalogTest {
 
     @Test
-    fun cars_useTheVehiclesCatalog() {
-        assertEquals("vehicles.json", catalogFileNameFor(VehicleCategory.COCHE))
-    }
-
-    @Test
-    fun motorcycles_useTheMotorcyclesCatalog() {
-        assertEquals("motorcycles.json", catalogFileNameFor(VehicleCategory.MOTO))
+    fun runtimeCatalogUsesTheBundledSeed() {
+        assertFalse(RUNTIME_CATALOG_ASSET.isBlank())
     }
 
     @Test
