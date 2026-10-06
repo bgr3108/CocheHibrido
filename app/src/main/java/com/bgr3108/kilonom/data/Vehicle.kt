@@ -4,6 +4,9 @@ data class Vehicle(
 
     val id: Long? = null,
 
+    /** Optional provenance only; the persisted snapshot remains the source of truth. */
+    val catalogId: String? = null,
+
     val brand: String = "",
 
     val model: String = "",

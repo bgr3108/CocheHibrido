@@ -13,6 +13,8 @@ import androidx.room.PrimaryKey
 data class VehicleEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
+    /** Optional catalog provenance. It is deliberately not a foreign key. */
+    val catalogId: String? = null,
     val category: VehicleCategory,
     val brand: String,
     val model: String,
@@ -26,6 +28,7 @@ data class VehicleEntity(
 
 internal fun VehicleEntity.toVehicle() = Vehicle(
     id = id,
+    catalogId = catalogId,
     brand = brand,
     model = model,
     year = year,
@@ -41,6 +44,7 @@ internal fun Vehicle.toEntity(
     createdAt: Long
 ) = VehicleEntity(
     id = id,
+    catalogId = catalogId,
     category = category,
     brand = brand,
     model = model,

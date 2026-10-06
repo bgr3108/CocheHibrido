@@ -236,6 +236,7 @@ class VehicleVersionAssistantTest {
         powerKw: List<Int> = emptyList()
     ) = VehicleSelectionVariant(
         id = id,
+        catalogId = id,
         displayName = displayName,
         automaticDisplayName = displayName,
         energyType = type,

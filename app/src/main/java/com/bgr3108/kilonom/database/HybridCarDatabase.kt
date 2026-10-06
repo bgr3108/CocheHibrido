@@ -16,7 +16,7 @@ import com.bgr3108.kilonom.data.VehicleEntity
 
 @Database(
     entities = [Car::class, FuelEntry::class, VehicleEntity::class, MaintenanceItemEntity::class, MaintenanceRecordEntity::class],
-    version = 14,
+    version = 15,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -47,7 +47,8 @@ abstract class HybridCarDatabase : RoomDatabase() {
                         MIGRATION_10_11,
                         MIGRATION_11_12,
                         MIGRATION_12_13,
-                        MIGRATION_13_14
+                        MIGRATION_13_14,
+                        MIGRATION_14_15
                     )
                     .build()
                     .also { Instance = it }
@@ -197,6 +198,13 @@ abstract class HybridCarDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE `fuel_entries` ADD COLUMN `electricChargeStartPercentage` REAL")
                 db.execSQL("ALTER TABLE `fuel_entries` ADD COLUMN `electricChargeEndPercentage` REAL")
+            }
+        }
+
+        /** Adds optional catalog provenance while preserving every personal vehicle snapshot. */
+        val MIGRATION_14_15 = object : Migration(14, 15) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `vehicles` ADD COLUMN `catalogId` TEXT")
             }
         }
     }

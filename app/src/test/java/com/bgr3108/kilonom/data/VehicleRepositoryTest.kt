@@ -482,6 +482,33 @@ class VehicleRepositoryTest {
     }
 
     @Test
+    fun createVehicleFromCatalog_persistsCatalogIdAlongsideTheSnapshot() = runBlocking {
+        val vehicleDao = InMemoryVehicleDao()
+        val repository = repository(FakeVehiclePreferences(), vehicleDao)
+        repository.isLoading.first { !it }
+
+        repository.createVehicle(configuredVehicle(catalogId = "car-seat-leon-e-hybrid"))
+
+        val stored = vehicleDao.vehicles.single()
+        assertEquals("car-seat-leon-e-hybrid", stored.catalogId)
+        assertEquals("SEAT", stored.brand)
+        assertEquals("León e-HYBRID", stored.model)
+        assertEquals(40.0, stored.fuelTankCapacity, 0.0)
+        assertEquals(19.7, stored.batteryCapacity, 0.0)
+    }
+
+    @Test
+    fun createVehicleWithoutCatalogId_remainsValidForLegacyAndManualVehicles() = runBlocking {
+        val vehicleDao = InMemoryVehicleDao()
+        val repository = repository(FakeVehiclePreferences(), vehicleDao)
+        repository.isLoading.first { !it }
+
+        repository.createVehicle(configuredVehicle())
+
+        assertNull(vehicleDao.vehicles.single().catalogId)
+    }
+
+    @Test
     fun updateVehicleWithoutEntries_canReplaceTheCatalogSnapshot() = runBlocking {
         val stored = entity(id = 1, initialKm = 1_000.0)
         val repository = repository(
@@ -493,6 +520,39 @@ class VehicleRepositoryTest {
         repository.updateVehicle(1, configuredVehicle(type = VehicleType.ELECTRICO, initialKm = 2_000.0))
 
         assertEquals(VehicleType.ELECTRICO, repository.vehicle.value.type)
+    }
+
+    @Test
+    fun updateVehicleAfterExplicitCatalogSelection_replacesCatalogIdAndSnapshot() = runBlocking {
+        val stored = entity(id = 1, initialKm = 1_000.0)
+        val vehicleDao = InMemoryVehicleDao(listOf(stored))
+        val repository = repository(
+            preferences = FakeVehiclePreferences(activeVehicleId = 1),
+            vehicleDao = vehicleDao
+        )
+        repository.isLoading.first { !it }
+
+        repository.updateVehicle(
+            1,
+            configuredVehicle(catalogId = "car-seat-leon-e-hybrid", initialKm = 2_000.0)
+        )
+
+        val updated = vehicleDao.vehicles.single()
+        assertEquals("car-seat-leon-e-hybrid", updated.catalogId)
+        assertEquals(2_000.0, updated.initialKm, 0.0)
+    }
+
+    @Test
+    fun unknownCatalogId_neverPreventsUsingItsStoredSnapshot() {
+        val stored = entity(id = 1).copy(catalogId = "removed-catalog-record")
+
+        val snapshot = stored.toVehicle()
+
+        assertEquals("removed-catalog-record", snapshot.catalogId)
+        assertEquals(stored.brand, snapshot.brand)
+        assertEquals(stored.model, snapshot.model)
+        assertEquals(stored.fuelTankCapacity, snapshot.fuelTankCapacity, 0.0)
+        assertEquals(stored.batteryCapacity, snapshot.batteryCapacity, 0.0)
     }
 
     @Test
@@ -629,8 +689,10 @@ class VehicleRepositoryTest {
 
     private fun configuredVehicle(
         type: VehicleType = VehicleType.HIBRIDO_ENCHUFABLE,
-        initialKm: Double = 50_000.0
+        initialKm: Double = 50_000.0,
+        catalogId: String? = null
     ) = Vehicle(
+        catalogId = catalogId,
         brand = "SEAT",
         model = "León e-HYBRID",
         year = 2026,

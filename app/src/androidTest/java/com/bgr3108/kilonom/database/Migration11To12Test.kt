@@ -59,7 +59,8 @@ class Migration11To12Test {
             .addMigrations(
                 HybridCarDatabase.MIGRATION_11_12,
                 HybridCarDatabase.MIGRATION_12_13,
-                HybridCarDatabase.MIGRATION_13_14
+                HybridCarDatabase.MIGRATION_13_14,
+                HybridCarDatabase.MIGRATION_14_15
             )
             .allowMainThreadQueries()
             .build()

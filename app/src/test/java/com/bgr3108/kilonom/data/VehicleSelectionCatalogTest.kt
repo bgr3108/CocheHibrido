@@ -347,6 +347,21 @@ class VehicleSelectionCatalogTest {
         assertEquals("Astra", model.displayName)
         assertEquals(listOf("Gasolina"), catalog.variantsFor(opel.id, model.id, 2026).map { it.displayName })
         assertEquals("1.2 Turbo", catalog.variantsFor(opel.id, model.id, 2026).single().automaticDisplayName)
+        assertEquals("car-opel-astra-1-2-turbo", catalog.variantsFor(opel.id, model.id, 2026).single().catalogId)
+        assertEquals(
+            VehicleSelectionInitial(opel.id, model.id, 2026, catalog.variantsFor(opel.id, model.id, 2026).single().id),
+            catalog.initialSelectionFor(
+                Vehicle(
+                    catalogId = "car-opel-astra-1-2-turbo",
+                    brand = "Opel",
+                    model = "Astra · 1.2 Turbo",
+                    year = 2026,
+                    category = VehicleCategory.COCHE,
+                    type = VehicleType.GASOLINA,
+                    fuelTankCapacity = 52.0
+                )
+            )
+        )
     }
 
     @Test

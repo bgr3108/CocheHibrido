@@ -228,6 +228,7 @@ class VehicleSelectionCatalog internal constructor(
         return grouped.map { candidate ->
             VehicleSelectionVariant(
                 id = candidate.functionalKey,
+                catalogId = candidate.catalogId,
                 displayName = labelsByFunctionalKey.getValue(candidate.functionalKey),
                 automaticDisplayName = candidate.automaticDisplayName(),
                 energyType = candidate.vehicleInfo.type,
@@ -248,11 +249,14 @@ class VehicleSelectionCatalog internal constructor(
                 candidate.vehicleInfo.fuelTankCapacity == vehicle.fuelTankCapacity &&
                 candidate.vehicleInfo.batteryCapacity == vehicle.batteryCapacity
         }
+        val catalogMatch = vehicle.catalogId?.let { catalogId ->
+            matching.firstOrNull { it.catalogId == catalogId }
+        }
         val exact = matching.firstOrNull { it.vehicleInfo.model == vehicle.model }
         val legacy = matching.firstOrNull { candidate ->
             candidate.legacyKeys.any { it.model == vehicle.model && it.year == vehicle.year }
         }
-        val candidate = exact ?: legacy ?: return null
+        val candidate = catalogMatch ?: exact ?: legacy ?: return null
         return VehicleSelectionInitial(candidate.brandId, candidate.modelId, candidate.year, candidate.functionalKey)
     }
 }
@@ -261,6 +265,7 @@ data class VehicleSelectionBrand(val id: String, val displayName: String)
 data class VehicleSelectionModel(val id: String, val displayName: String)
 data class VehicleSelectionVariant(
     val id: String,
+    val catalogId: String,
     val displayName: String,
     val automaticDisplayName: String,
     val energyType: VehicleType,

@@ -83,6 +83,7 @@ fun VehicleForm(
     var modelId by rememberSaveable(initialId) { mutableStateOf("") }
     var year by rememberSaveable(initialId) { mutableStateOf(initialVehicle?.year?.toString().orEmpty()) }
     var variantId by rememberSaveable(initialId) { mutableStateOf("") }
+    var catalogSelectionChanged by rememberSaveable(initialId) { mutableStateOf(false) }
     var initialKmText by rememberSaveable(initialId) {
         mutableStateOf(initialVehicle?.initialKm?.toKilometersDisplay()?.removeSuffix(" km").orEmpty())
     }
@@ -145,9 +146,7 @@ fun VehicleForm(
             assistantEnergyName = null
         }
     }
-    val selectedVehicle = selectedVariant?.vehicle ?: initialVehicle
-        ?.toVehicleInfoOrNull()
-        ?.takeIf { !catalogEditable }
+    val selectedVehicle = selectedVariant?.vehicle ?: initialVehicle?.toVehicleInfoOrNull()
     val initialKm = initialKmText.toKilometersOrNull()
     val kmError = when {
         initialKmText.isBlank() -> null
@@ -179,6 +178,7 @@ fun VehicleForm(
                     enabled = catalogEditable && !isSaving,
                     onClick = {
                         if (category != item) {
+                            catalogSelectionChanged = true
                             categoryName.value = item.name
                             brandId = ""
                             modelId = ""
@@ -211,6 +211,7 @@ fun VehicleForm(
                 expanded = brandsExpanded,
                 onExpandedChange = { brandsExpanded = it }
             ) { value ->
+                catalogSelectionChanged = true
                 brandId = value
                 modelId = ""
                 year = ""
@@ -223,6 +224,7 @@ fun VehicleForm(
                 expanded = modelsExpanded,
                 onExpandedChange = { modelsExpanded = it }
             ) { value ->
+                catalogSelectionChanged = true
                 modelId = value
                 year = ""
                 variantId = ""
@@ -234,6 +236,7 @@ fun VehicleForm(
                 expanded = yearsExpanded,
                 onExpandedChange = { yearsExpanded = it }
             ) { value ->
+                catalogSelectionChanged = true
                 year = value
                 variantId = ""
             }
@@ -244,7 +247,10 @@ fun VehicleForm(
                     values = variants.map { CatalogDropdownOption(it.id, it.displayName) },
                     expanded = variantsExpanded,
                     onExpandedChange = { variantsExpanded = it }
-                ) { variantId = it }
+                ) {
+                    catalogSelectionChanged = true
+                    variantId = it
+                }
                 TextButton(
                     onClick = {
                         assistantEnergyName = null
@@ -324,6 +330,11 @@ fun VehicleForm(
                 onSubmit(
                     Vehicle(
                         id = initialVehicle?.id,
+                        catalogId = if (initialVehicle != null && !catalogSelectionChanged) {
+                            initialVehicle.catalogId
+                        } else {
+                            selectedVariant?.catalogId
+                        },
                         brand = selected.brand,
                         model = selected.model,
                         year = selected.year,
@@ -374,6 +385,7 @@ fun VehicleForm(
                 skippedAssistantHints = skippedAssistantHints + field
             },
             onUseVariant = { variant ->
+                catalogSelectionChanged = true
                 variantId = variant.id
                 showVersionAssistant = false
                 assistantEnergyName = null
