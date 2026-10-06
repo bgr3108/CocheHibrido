@@ -21,7 +21,7 @@ class VehicleRuntimeCatalogTest {
         readLegacy("vehicles.json", VehicleCategory.COCHE).plus(readLegacy("motorcycles.json", VehicleCategory.MOTO)).forEach { legacy ->
             assertTrue("legacy entry missing: $legacy", activeLegacyKeys.contains(legacy.key))
         }
-        assertEquals(201, runtime.vehicles.size)
+        assertEquals(205, runtime.vehicles.size)
         assertTrue(runtime.vehicles.any { it.catalogId == "car-seat-leon-kl-facelift-e-hybrid-1-5" })
         assertTrue(runtime.vehicles.any { it.catalogId == "car-bmw-x5-g05-lci-xdrive50e" })
     }
@@ -148,6 +148,38 @@ class VehicleRuntimeCatalogTest {
             assertEquals(legacy.fuelTankCapacity ?: 0.0, snapshot.fuelTankCapacity, 0.0)
             assertEquals(legacy.batteryCapacity ?: 0.0, vehicle.battery.declaredKwh ?: 0.0, 0.0)
             assertEquals(0.0, snapshot.batteryCapacity, 0.0)
+        }
+    }
+
+    @Test
+    fun normalizedRav4YarisLeonAndIx35PreserveEveryLegacyFunctionalSnapshot() {
+        val runtime = parseRuntimeVehicleCatalog(readRuntime())
+        val legacyCars = readLegacyCars().filter { legacy ->
+            legacy.brand == "Toyota" && (legacy.model.startsWith("RAV4") ||
+                legacy.model.startsWith("Yaris ") && !legacy.model.startsWith("Yaris Cross")) ||
+                legacy.brand == "SEAT" && legacy.model.startsWith("León") ||
+                legacy.brand == "Hyundai" && legacy.model.startsWith("ix35")
+        }
+
+        assertEquals(26, legacyCars.size)
+        legacyCars.forEach { legacy ->
+            val vehicle = runtime.vehicles.single { candidate ->
+                candidate.legacyKeys.any { key ->
+                    key.brand == legacy.brand && key.model == legacy.model && key.year == legacy.year
+                }
+            }
+            val snapshot = vehicle.toVehicleInfo(legacy.year)
+
+            assertTrue("year missing: $legacy", legacy.year in vehicle.years(runtime.selectionYearUpperBound))
+            assertEquals(legacy.type, snapshot.type)
+            assertEquals(legacy.fuelTankCapacity ?: 0.0, snapshot.fuelTankCapacity, 0.0)
+            // Unclassified legacy values remain non-operational. The 2025 León is the
+            // exception: its historical 19.7 kWh value is now backed by the verified
+            // usable capacity of the current e-Hybrid 1.5 range.
+            val expectedOperationalBattery = if (
+                legacy.brand == "SEAT" && legacy.model == "León e-Hybrid" && legacy.year == 2025
+            ) 19.7 else 0.0
+            assertEquals(expectedOperationalBattery, snapshot.batteryCapacity, 0.0)
         }
     }
 

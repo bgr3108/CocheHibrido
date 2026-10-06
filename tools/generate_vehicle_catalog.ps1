@@ -599,7 +599,7 @@ function Test-DenseCarLegacyMatch {
 function Set-DenseCarRecord {
     param($Vehicle, $Spec, $LegacyKeys)
     $Vehicle.editorialStatus = "ACTIVE"
-    $Vehicle.provenance = "RESEARCH_READY"
+    $Vehicle.provenance = if ([string]::IsNullOrWhiteSpace($Spec.provenance)) { "RESEARCH_READY" } else { $Spec.provenance }
     $Vehicle.category = "COCHE"
     $Vehicle.brandId = $Spec.brandId; $Vehicle.modelId = $Spec.modelId
     $Vehicle.generationId = $Spec.generationId; $Vehicle.variantId = $Spec.variantId
@@ -607,8 +607,8 @@ function Set-DenseCarRecord {
     $Vehicle.powertrain = New-Object @{ kind = $Spec.kind; primaryFuel = if ([string]::IsNullOrWhiteSpace($Spec.fuel)) { $null } else { $Spec.fuel }; hybridSystem = $Spec.hybrid }
     $Vehicle.fuelTankLitres = $Spec.tank
     $Vehicle.battery = New-Object @{ grossKwh = $Spec.gross; usableKwh = $Spec.usable; declaredKwh = $Spec.declared; declaredCapacityType = if ([string]::IsNullOrWhiteSpace($Spec.declaredType)) { $null } else { $Spec.declaredType } }
-    $Vehicle.bodyStyle = if ($Spec.brandId -eq "citroen" -and $Spec.modelId -eq "berlingo") { "MPV" } elseif ($Spec.brandId -eq "nissan") { "SUV" } else { "HATCHBACK" }
-    $Vehicle.drivetrain = "FWD"
+    $Vehicle.bodyStyle = if (-not [string]::IsNullOrWhiteSpace($Spec.bodyStyle)) { $Spec.bodyStyle } elseif ($Spec.brandId -eq "citroen" -and $Spec.modelId -eq "berlingo") { "MPV" } elseif ($Spec.brandId -eq "nissan") { "SUV" } else { "HATCHBACK" }
+    $Vehicle.drivetrain = if ([string]::IsNullOrWhiteSpace($Spec.drivetrain)) { "FWD" } else { $Spec.drivetrain }
     $Vehicle.marketCodes = @("ES")
     $Vehicle.aliases = @()
     $Vehicle.legacyKeys = @($LegacyKeys | Sort-Object category,brand,model,year)
@@ -725,6 +725,159 @@ function Normalize-DenseCarFamilies {
 
     $unresolved = @($original | Where-Object { $_.editorialStatus -eq "ACTIVE" -and (Get-Property $_ "denseCarNormalizationVersion") -ne 1 })
     if ($unresolved.Count -gt 0) { throw "dense car normalization: registros legacy sin rango: $($unresolved.catalogId -join ', ')" }
+    return $retiredCount
+}
+
+# Second editorial pass: four dense European families. The ranges are deliberately
+# conservative: they describe only powertrain/capacity combinations supported by
+# the cited Spain/Europe material, never a trim or power output.
+function New-AdditionalDenseCarSpec {
+    param(
+        [string]$BrandId, [string]$ModelId, [string]$GenerationId, [string]$GenerationName,
+        [string]$VariantId, [string]$VariantName, [int]$YearFrom, [Nullable[int]]$YearTo,
+        [string]$Kind, [string]$Fuel, [string]$Hybrid, [Nullable[double]]$Tank,
+        [Nullable[double]]$Gross, [Nullable[double]]$Usable, [Nullable[double]]$Declared, [string]$DeclaredType,
+        [string]$NewCatalogId, [object[]]$Sources, [string]$Notes, [string]$BodyStyle, [string]$Drivetrain = "FWD",
+        [string]$Provenance = "RESEARCH_READY", [object[]]$ExtraLegacyKeys = @()
+    )
+    if ([string]::IsNullOrWhiteSpace($NewCatalogId)) {
+        $NewCatalogId = "car-$BrandId-$ModelId-$GenerationId-$VariantId"
+    }
+    $spec = New-DenseCarSpec $BrandId $ModelId $GenerationId $GenerationName $VariantId $VariantName $YearFrom $YearTo $Kind $Fuel $Hybrid $Tank $Gross $Usable $Declared $DeclaredType $null $NewCatalogId $Sources $Notes
+    Set-EditorialProperty $spec "bodyStyle" $BodyStyle
+    Set-EditorialProperty $spec "drivetrain" $Drivetrain
+    Set-EditorialProperty $spec "provenance" $Provenance
+    Set-EditorialProperty $spec "extraLegacyKeys" @($ExtraLegacyKeys)
+    return $spec
+}
+
+function Normalize-AdditionalDenseCarFamilies {
+    param($Catalog)
+
+    $families = @("toyota|rav4", "toyota|yaris", "seat|leon", "hyundai|ix35")
+    $activeTargets = @($Catalog.vehicles | Where-Object {
+        $_.category -eq "COCHE" -and $_.editorialStatus -eq "ACTIVE" -and
+            $families -contains "$($_.brandId)|$($_.modelId)"
+    })
+    if (@($activeTargets | Where-Object { (Get-Property $_ "additionalDenseCarNormalizationVersion") -ne 3 }).Count -eq 0) {
+        return 0
+    }
+
+    # Repair the only v2 intermediate mapping that could have reused an empty
+    # (no-legacy-key) XP90 diesel range for XP130. Keep both documented ranges.
+    $xp90Diesel = $activeTargets | Where-Object { $_.catalogId -eq "car-toyota-yaris-xp90-diesel" } | Select-Object -First 1
+    $xp130DieselLegacy = $Catalog.vehicles | Where-Object {
+        $_.catalogId -eq "legacy-coche-toyota-legacy-yaris-1-4-d-4d-aa6f9bd2d7-2012-diesel-e51b8f0156"
+    } | Select-Object -First 1
+    if ($null -ne $xp90Diesel -and $null -ne $xp130DieselLegacy -and $xp90Diesel.yearFrom -eq 2011) {
+        # The temporary v2 record borrowed the XP90 id while describing XP130.
+        # This catalogue work is not published yet, so restore a stable id that
+        # reflects its actual generation before recreating the XP90 range.
+        $xp90Diesel.catalogId = "car-toyota-yaris-xp130-diesel"
+        $xp130DieselLegacy.editorialStatus = "ACTIVE"
+        $xp130DieselLegacy.replacedByCatalogId = $null
+        $xp90Diesel.yearFrom = 2006
+        $xp90Diesel.yearTo = 2010
+        # v2 had temporarily transferred the 2012 legacy selection to the
+        # XP90 range. That key belongs exclusively to the XP130 record being
+        # restored here; XP90 has no legacy selection of its own.
+        $xp90Diesel.legacyKeys = @()
+    }
+
+    $rav4Phev = $activeTargets | Where-Object { $_.catalogId -eq "car-toyota-rav4-xa50-plug-in-hybrid" } | Select-Object -First 1
+    $rav4Phev2025Key = @()
+    if ($null -ne $rav4Phev) {
+        $rav4Phev2025Key = @($rav4Phev.legacyKeys | Where-Object { $_.year -eq 2025 })
+        $rav4Phev.legacyKeys = @($rav4Phev.legacyKeys | Where-Object { $_.year -ne 2025 })
+    }
+
+    $toyotaRav4Xa20 = "https://www.km77.com/coches/toyota/rav4/2001/datos"
+    $toyotaRav4Xa30 = "https://www.km77.com/coches/toyota/rav4/2006/datos"
+    $toyotaRav4Xa40 = "https://prensa.toyota.es/toyota-espaa-presenta-el-nuevo-rav4-2013/"
+    $toyotaRav4Hybrid = "https://www.toyota.es/world-of-toyota/articles-news-events/2018/duracion-deposito-gasolina-reserva-toyota"
+    $toyotaRav4Xa50 = "https://prensa.toyota.es/la-gama-completa-del-nuevo-toyota-rav4-hybrid-ya-disponible-en-espana/"
+    $toyotaRav4Phev18 = "https://prensa.toyota.es/download/1018741/toyotarav4plug-in-dosierdeprensa.pdf"
+    $toyotaRav4Phev227 = "https://www.toyota.es/content/dam/toyota/nmsc/spain/cross-model/new-cars/catalogos-precios/pdf/rav4/Catalogo_Toyota_RAV4.pdf"
+    $toyotaYarisXp10 = "https://www.km77.com/coches/toyota/yaris/1999/datos"
+    $toyotaYarisXp90 = "https://www.toyota.es/service-and-accessories/my-toyota/manuales/yaris"
+    $toyotaYarisXp130 = "https://prensa.toyota.es/nueva-gama-yaris-2011/"
+    $toyotaYarisHybrid = "https://www.km77.com/coches/toyota/yaris/2012/5-puertas/advance/yaris-5p-hibrido-advance/datos"
+    $toyotaYarisXp210 = "https://www.toyota.es/coches/yaris/caracteristicas/ficha-tecnica"
+    $seatLeonIi = "https://www.km77.com/coches/seat/leon/2005/5-puertas/sport-limited/leon-16-102-cv-sport-limited3/datos?nam=1"
+    $seatLeonIii = "https://www.km77.com/revista/curvas-enlazadas/prueba-interesante-36-seat-leon-iii-fr-2-0-tdi-184-cv/"
+    $seatLeonIv = "https://www.km77.com/coches/seat/leon/2020/5-puertas/estandar/leon-20-tdi-cr-110-kw-150-cv-dsg-startstop-fr/datos?nam=1"
+    $seatLeonEarlyPhev = "https://www.km77.com/coches/seat/leon/2020/5-puertas/ehybrid/informacion?amp=1"
+    $seatLeonPhev = "https://www.seat.es/sobre-seat/noticias/coches/nuevo-seat-leon-y-leon-sportstourer-style-e-hybrid"
+    $hyundaiIx35 = "https://www.km77.com/coches/hyundai/ix35/2010/datos"
+
+    $specs = @(
+        (New-AdditionalDenseCarSpec "toyota" "rav4" "xa20" "XA20" "gasolina" "Gasolina" 2000 2005 "ICE" "GASOLINA" "NONE" 57 $null $null $null $null "" @((New-DenseCarSource $toyotaRav4Xa20 @("yearFrom", "yearTo", "fuelTankLitres"))) "RAV4 XA20 gasolina: depósito de 57 L." "SUV"),
+        (New-AdditionalDenseCarSpec "toyota" "rav4" "xa20" "XA20" "diesel" "Diésel" 2000 2005 "ICE" "DIESEL" "NONE" 57 $null $null $null $null "" @((New-DenseCarSource $toyotaRav4Xa20 @("yearFrom", "yearTo", "fuelTankLitres"))) "RAV4 XA20 diésel: depósito de 57 L." "SUV"),
+        (New-AdditionalDenseCarSpec "toyota" "rav4" "xa30" "XA30" "gasolina" "Gasolina" 2006 2012 "ICE" "GASOLINA" "NONE" 60 $null $null $null $null "" @((New-DenseCarSource $toyotaRav4Xa30 @("yearFrom", "yearTo", "fuelTankLitres"))) "RAV4 XA30 gasolina: depósito de 60 L." "SUV"),
+        (New-AdditionalDenseCarSpec "toyota" "rav4" "xa30" "XA30" "diesel" "Diésel" 2006 2012 "ICE" "DIESEL" "NONE" 60 $null $null $null $null "" @((New-DenseCarSource $toyotaRav4Xa30 @("yearFrom", "yearTo", "fuelTankLitres"))) "RAV4 XA30 diésel: depósito de 60 L." "SUV"),
+        (New-AdditionalDenseCarSpec "toyota" "rav4" "xa40" "XA40" "gasolina" "Gasolina" 2013 2018 "ICE" "GASOLINA" "NONE" 60 $null $null $null $null "car-toyota-rav4-xa40-gasolina" @((New-DenseCarSource $toyotaRav4Xa40 @("yearFrom", "yearTo", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "RAV4 XA40 gasolina: depósito de 60 L." "SUV"),
+        (New-AdditionalDenseCarSpec "toyota" "rav4" "xa40" "XA40" "diesel" "Diésel" 2013 2018 "ICE" "DIESEL" "NONE" 60 $null $null $null $null "car-toyota-rav4-xa40-diesel" @((New-DenseCarSource $toyotaRav4Xa40 @("yearFrom", "yearTo", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "RAV4 XA40 diésel: depósito de 60 L." "SUV"),
+        (New-AdditionalDenseCarSpec "toyota" "rav4" "xa40" "XA40" "hybrid" "Hybrid" 2016 2018 "HEV" "" "FULL" 56 $null $null $null $null "" @((New-DenseCarSource $toyotaRav4Hybrid @("yearFrom", "yearTo", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "RAV4 XA40 Hybrid: depósito de 56 L." "SUV"),
+        (New-AdditionalDenseCarSpec "toyota" "rav4" "xa50" "XA50" "gasolina" "Gasolina" 2020 2020 "ICE" "GASOLINA" "NONE" 55 $null $null $null $null "" @((New-DenseCarSource "https://www.km77.com/coches/toyota/rav4/2020/datos" @("yearFrom", "yearTo", "fuelTankLitres"))) "RAV4 XA50 gasolina: se conserva exclusivamente el año legacy 2020 con depósito de 55 L." "SUV"),
+        (New-AdditionalDenseCarSpec "toyota" "rav4" "xa50" "XA50" "hybrid" "Hybrid" 2019 2026 "HEV" "" "FULL" 55 $null $null $null $null "car-toyota-rav4-xa50-hybrid" @((New-DenseCarSource $toyotaRav4Xa50 @("yearFrom", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "RAV4 XA50 Hybrid: depósito de 55 L." "SUV"),
+        (New-AdditionalDenseCarSpec "toyota" "rav4" "xa50" "XA50" "plug-in-hybrid" "Plug-in Hybrid" 2021 2024 "PHEV" "GASOLINA" "PLUG_IN" 55 $null $null 18.1 "UNKNOWN" "" @((New-DenseCarSource $toyotaRav4Phev18 @("yearFrom", "yearTo", "fuelTankLitres", "battery.declaredKwh") "OFFICIAL_MANUFACTURER")) "RAV4 Plug-in Hybrid: capacidad publicada de 18,1 kWh sin clasificación bruto/útil." "SUV" "AWD"),
+        (New-AdditionalDenseCarSpec "toyota" "rav4" "xa50" "XA50" "plug-in-hybrid-22-7" "Plug-in Hybrid" 2025 2026 "PHEV" "GASOLINA" "PLUG_IN" 55 22.7 $null $null $null "car-toyota-rav4-xa50-plug-in-hybrid-22-7" @((New-DenseCarSource $toyotaRav4Phev227 @("yearFrom", "fuelTankLitres", "battery.grossKwh") "OFFICIAL_MANUFACTURER")) "RAV4 Plug-in Hybrid actualizado: 22,7 kWh brutos; sin capacidad útil publicada." "SUV" "AWD" "RESEARCH_READY" $rav4Phev2025Key),
+
+        (New-AdditionalDenseCarSpec "toyota" "yaris" "xp10" "XP10" "gasolina" "Gasolina" 1999 2005 "ICE" "GASOLINA" "NONE" 45 $null $null $null $null "" @((New-DenseCarSource $toyotaYarisXp10 @("yearFrom", "yearTo", "fuelTankLitres"))) "Yaris XP10 gasolina: depósito de 45 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "toyota" "yaris" "xp10" "XP10" "diesel" "Diésel" 1999 2005 "ICE" "DIESEL" "NONE" 45 $null $null $null $null "" @((New-DenseCarSource $toyotaYarisXp10 @("yearFrom", "yearTo", "fuelTankLitres"))) "Yaris XP10 diésel: depósito de 45 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "toyota" "yaris" "xp90" "XP90" "gasolina" "Gasolina" 2006 2010 "ICE" "GASOLINA" "NONE" 42 $null $null $null $null "" @((New-DenseCarSource $toyotaYarisXp90 @("fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Yaris XP90 gasolina: depósito de 42 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "toyota" "yaris" "xp90" "XP90" "diesel" "Diésel" 2006 2010 "ICE" "DIESEL" "NONE" 42 $null $null $null $null "" @((New-DenseCarSource $toyotaYarisXp90 @("fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Yaris XP90 diésel: depósito de 42 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "toyota" "yaris" "xp130" "XP130" "gasolina" "Gasolina" 2011 2019 "ICE" "GASOLINA" "NONE" 42 $null $null $null $null "car-toyota-yaris-xp130-gasolina" @((New-DenseCarSource $toyotaYarisXp130 @("yearFrom", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Yaris XP130 gasolina: depósito de 42 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "toyota" "yaris" "xp130" "XP130" "diesel" "Diésel" 2011 2015 "ICE" "DIESEL" "NONE" 42 $null $null $null $null "" @((New-DenseCarSource "https://prensa.toyota.es/nuevo-toyota-yaris-2015/" @("yearFrom", "yearTo", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Yaris XP130 diésel: depósito de 42 L, documentado hasta 2015." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "toyota" "yaris" "xp130" "XP130" "hybrid" "Hybrid" 2012 2019 "HEV" "" "FULL" 36 $null $null $null $null "car-toyota-yaris-xp130-hybrid" @((New-DenseCarSource $toyotaYarisHybrid @("yearFrom", "yearTo", "fuelTankLitres"))) "Yaris XP130 Hybrid: depósito de 36 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "toyota" "yaris" "xp210" "XP210" "hybrid" "Hybrid" 2020 2026 "HEV" "" "FULL" 36 $null $null $null $null "car-toyota-yaris-xp210-hybrid" @((New-DenseCarSource $toyotaYarisXp210 @("yearFrom", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Yaris XP210 Hybrid: depósito de 36 L." "HATCHBACK"),
+
+        (New-AdditionalDenseCarSpec "seat" "leon" "1p" "1P" "gasolina" "Gasolina" 2005 2012 "ICE" "GASOLINA" "NONE" 55 $null $null $null $null "car-seat-leon-1p-gasolina" @((New-DenseCarSource $seatLeonIi @("yearFrom", "yearTo", "fuelTankLitres"))) "León 1P gasolina: depósito de 55 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "seat" "leon" "1p" "1P" "diesel" "Diésel" 2005 2012 "ICE" "DIESEL" "NONE" 55 $null $null $null $null "car-seat-leon-1p-diesel" @((New-DenseCarSource $seatLeonIi @("yearFrom", "yearTo", "fuelTankLitres"))) "León 1P diésel: depósito de 55 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "seat" "leon" "5f" "5F" "gasolina" "Gasolina" 2013 2019 "ICE" "GASOLINA" "NONE" 50 $null $null $null $null "car-seat-leon-5f-gasolina" @((New-DenseCarSource $seatLeonIii @("yearFrom", "yearTo", "fuelTankLitres"))) "León 5F gasolina: depósito de 50 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "seat" "leon" "5f" "5F" "diesel" "Diésel" 2013 2019 "ICE" "DIESEL" "NONE" 50 $null $null $null $null "car-seat-leon-5f-diesel" @((New-DenseCarSource $seatLeonIii @("yearFrom", "yearTo", "fuelTankLitres"))) "León 5F diésel: depósito de 50 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "seat" "leon" "kl" "KL" "gasolina" "Gasolina" 2020 2026 "ICE" "GASOLINA" "NONE" 45 $null $null $null $null "car-seat-leon-kl-gasolina" @((New-DenseCarSource $seatLeonIv @("yearFrom", "fuelTankLitres"))) "León KL gasolina: depósito de 45 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "seat" "leon" "kl" "KL" "diesel" "Diésel" 2020 2026 "ICE" "DIESEL" "NONE" 45 $null $null $null $null "car-seat-leon-kl-diesel" @((New-DenseCarSource $seatLeonIv @("yearFrom", "fuelTankLitres"))) "León KL diésel: depósito de 45 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "seat" "leon" "kl" "KL" "e-hybrid" "e-Hybrid" 2021 2021 "PHEV" "" "PLUG_IN" 40 $null $null 10.4 "UNKNOWN" "" @((New-DenseCarSource $seatLeonEarlyPhev @("fuelTankLitres"))) "La capacidad de 10,4 kWh es un dato legacy sin clasificación bruto/útil; se conserva solo para su selección histórica." "HATCHBACK" "FWD" "LEGACY_IMPORT"),
+        (New-AdditionalDenseCarSpec "seat" "leon" "kl-facelift" "KL facelift" "e-hybrid-1-5" "e-Hybrid 1.5" 2024 $null "PHEV" "GASOLINA" "PLUG_IN" 40 25.7 19.7 $null $null "" @((New-DenseCarSource $seatLeonPhev @("yearFrom", "battery.grossKwh", "battery.usableKwh") "OFFICIAL_MANUFACTURER"),(New-DenseCarSource $seatLeonEarlyPhev @("fuelTankLitres"))) "León e-Hybrid 1.5: 25,7 kWh brutos y 19,7 kWh utilizables." "HATCHBACK"),
+
+        (New-AdditionalDenseCarSpec "hyundai" "ix35" "lm" "LM" "gasolina" "Gasolina" 2010 2015 "ICE" "GASOLINA" "NONE" 55 $null $null $null $null "" @((New-DenseCarSource $hyundaiIx35 @("yearFrom", "yearTo", "fuelTankLitres"))) "ix35 gasolina: depósito de 55 L." "SUV"),
+        (New-AdditionalDenseCarSpec "hyundai" "ix35" "lm" "LM" "diesel" "Diésel" 2010 2015 "ICE" "DIESEL" "NONE" 55 $null $null $null $null "" @((New-DenseCarSource $hyundaiIx35 @("yearFrom", "yearTo", "fuelTankLitres"))) "ix35 diésel: depósito de 55 L." "SUV")
+    )
+
+    $activeTargets = @($Catalog.vehicles | Where-Object {
+        $_.category -eq "COCHE" -and $_.editorialStatus -eq "ACTIVE" -and
+            $families -contains "$($_.brandId)|$($_.modelId)"
+    })
+    $original = @($activeTargets | Where-Object { (Get-Property $_ "additionalDenseCarNormalizationVersion") -ne 3 })
+    $retiredCount = 0
+    foreach ($spec in $specs) {
+        Add-CatalogIdentity $Catalog "COCHE" $spec.brandId $spec.modelId $spec.generationId $spec.generationName $spec.variantId $spec.variantName
+        $matches = @($original | Where-Object {
+            $_.editorialStatus -eq "ACTIVE" -and $_.brandId -eq $spec.brandId -and $_.modelId -eq $spec.modelId -and
+                ($null -eq $_.generationId -or $_.generationId -eq $spec.generationId) -and (Test-DenseCarLegacyMatch $_ $spec)
+        } | Sort-Object yearFrom,catalogId)
+        $canonical = if ($matches.Count -gt 0) { $matches[0] } else { $null }
+        if ($null -eq $canonical) {
+            if ([string]::IsNullOrWhiteSpace($spec.newCatalogId)) { throw "additional dense normalization: falta catalogId nuevo para $($spec.brandId)/$($spec.modelId)/$($spec.variantId)" }
+            $canonical = New-Object @{ catalogId = $spec.newCatalogId; editorialStatus = "ACTIVE"; provenance = $spec.provenance; category = "COCHE"; brandId = $spec.brandId; modelId = $spec.modelId; generationId = $spec.generationId; variantId = $spec.variantId; yearFrom = $spec.yearFrom; yearTo = $spec.yearTo; powertrain = $null; fuelTankLitres = $null; battery = $null; bodyStyle = $null; drivetrain = $null; marketCodes = @("ES"); aliases = @(); legacyKeys = @(); sources = @(); notes = ""; editorialRevision = 0 }
+            $Catalog.vehicles = @($Catalog.vehicles) + $canonical
+        }
+        $keys = @($matches | ForEach-Object { $_.legacyKeys }) + @($spec.extraLegacyKeys)
+        Set-DenseCarRecord $canonical $spec $keys
+        Set-EditorialProperty $canonical "additionalDenseCarNormalizationVersion" 3
+        $retired = @($matches | Where-Object { $_.catalogId -ne $canonical.catalogId })
+        if ($retired.Count -gt 0) { Set-EditorialProperty $canonical "supersededCatalogIds" @($retired | ForEach-Object { $_.catalogId }) }
+        foreach ($entry in $retired) {
+            $entry.editorialStatus = "INACTIVE"
+            Set-EditorialProperty $entry "replacedByCatalogId" $canonical.catalogId
+            $entry.editorialRevision = [int]$entry.editorialRevision + 1
+            $entry.notes = "$($entry.notes) Consolidado en $($canonical.catalogId) mediante normalización editorial investigada."
+            $retiredCount++
+        }
+    }
+    $unresolved = @($original | Where-Object { $_.editorialStatus -eq "ACTIVE" -and (Get-Property $_ "additionalDenseCarNormalizationVersion") -ne 3 })
+    if ($unresolved.Count -gt 0) { throw "additional dense normalization: registros legacy sin rango: $($unresolved.catalogId -join ', ')" }
     return $retiredCount
 }
 
@@ -904,6 +1057,7 @@ $editorial = Get-Content -Raw -Encoding UTF8 $EditorialPath | ConvertFrom-Json
 $editorialDirty = $false
 $retiredMotorcycles = $null
 $retiredCars = $null
+$retiredAdditionalCars = $null
 if ($NormalizeLegacyModels) {
     Normalize-LegacyModelStructure $editorial
     $editorialDirty = $true
@@ -914,6 +1068,7 @@ if ($ConsolidateMotorcycles) {
 }
 if ($NormalizeDenseCarFamilies) {
     $retiredCars = Normalize-DenseCarFamilies $editorial
+    $retiredAdditionalCars = Normalize-AdditionalDenseCarFamilies $editorial
     $editorialDirty = $true
 }
 Test-EditorialCatalog $editorial
@@ -925,6 +1080,9 @@ if ($null -ne $retiredMotorcycles) {
 }
 if ($null -ne $retiredCars) {
     Write-Output "Coches normalizados: $retiredCars registros absorbidos"
+}
+if ($null -ne $retiredAdditionalCars) {
+    Write-Output "Coches normalizados (RAV4/Yaris/León/ix35): $retiredAdditionalCars registros absorbidos"
 }
 $runtime = New-RuntimeCatalog $editorial
 Write-DeterministicJson $runtime $RuntimePath

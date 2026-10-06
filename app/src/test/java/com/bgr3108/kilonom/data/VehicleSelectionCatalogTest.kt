@@ -49,12 +49,12 @@ class VehicleSelectionCatalogTest {
     fun selectorShowsOnlyFunctionallyNecessaryHumanVariants() {
         val seat = cars.brandId("SEAT")
         val leon = cars.modelId(seat, "León")
-        assertEquals(listOf("Híbrido enchufable"), cars.variantsFor(seat, leon, 2021).map { it.displayName })
-        assertEquals(listOf("Híbrido enchufable"), cars.variantsFor(seat, leon, 2024).map { it.displayName })
+        assertEquals(listOf("Diésel", "Gasolina", "Híbrido enchufable"), cars.variantsFor(seat, leon, 2021).map { it.displayName })
+        assertEquals(listOf("Diésel", "Gasolina", "Híbrido enchufable"), cars.variantsFor(seat, leon, 2024).map { it.displayName })
         val leon2025 = cars.variantsFor(seat, leon, 2025)
-        assertEquals(listOf("Híbrido enchufable"), leon2025.map { it.displayName })
-        assertEquals("e-Hybrid 1.5", leon2025.single().automaticDisplayName)
-        assertEquals(listOf("Híbrido enchufable"), cars.variantsFor(seat, leon, 2026).map { it.displayName })
+        assertEquals(listOf("Diésel", "Gasolina", "Híbrido enchufable"), leon2025.map { it.displayName })
+        assertEquals("e-Hybrid 1.5", leon2025.single { it.displayName == "Híbrido enchufable" }.automaticDisplayName)
+        assertEquals(listOf("Diésel", "Gasolina", "Híbrido enchufable"), cars.variantsFor(seat, leon, 2026).map { it.displayName })
 
         val nissan = cars.brandId("Nissan")
         assertEquals(
@@ -80,7 +80,7 @@ class VehicleSelectionCatalogTest {
         )
         val toyota = cars.brandId("Toyota")
         assertEquals(
-            listOf("Híbrido"),
+            listOf("Gasolina", "Híbrido"),
             cars.variantsFor(toyota, cars.modelId(toyota, "Yaris"), 2017).map { it.displayName }
         )
         val volkswagen = cars.brandId("Volkswagen")
@@ -102,6 +102,51 @@ class VehicleSelectionCatalogTest {
             setOf("e-POWER híbrido", "Mild Hybrid híbrido"),
             cars.variantsFor(nissan, qashqai, 2024).map { it.displayName }.toSet()
         )
+    }
+
+    @Test
+    fun additionalDenseFamiliesExposeHumanFunctionalChoicesForTheirYears() {
+        val toyota = cars.brandId("Toyota")
+        assertVariants(toyota, "RAV4", 2015, "Diésel", "Gasolina")
+        assertVariants(toyota, "RAV4", 2018, "Diésel", "Gasolina", "Híbrido")
+        assertVariants(toyota, "RAV4", 2021, "Híbrido", "Híbrido enchufable")
+        assertVariants(toyota, "RAV4", 2025, "Híbrido", "Híbrido enchufable")
+
+        assertVariants(toyota, "Yaris", 2010, "Diésel", "Gasolina")
+        assertVariants(toyota, "Yaris", 2017, "Gasolina", "Híbrido")
+        assertVariants(toyota, "Yaris", 2020, "Híbrido")
+        assertVariants(toyota, "Yaris", 2024, "Híbrido")
+
+        val seat = cars.brandId("SEAT")
+        assertVariants(seat, "León", 2021, "Diésel", "Gasolina", "Híbrido enchufable")
+        val leon2025 = cars.variantsFor(seat, cars.modelId(seat, "León"), 2025)
+        assertEquals(listOf("Diésel", "Gasolina", "Híbrido enchufable"), leon2025.map { it.displayName })
+        assertEquals("e-Hybrid 1.5", leon2025.single { it.displayName == "Híbrido enchufable" }.automaticDisplayName)
+        assertVariants(seat, "León", 2026, "Diésel", "Gasolina", "Híbrido enchufable")
+
+        val hyundai = cars.brandId("Hyundai")
+        assertVariants(hyundai, "ix35", 2010, "Diésel", "Gasolina")
+        assertVariants(hyundai, "ix35", 2012, "Diésel", "Gasolina")
+        assertVariants(hyundai, "ix35", 2015, "Diésel", "Gasolina")
+    }
+
+    @Test
+    fun additionalDenseFamiliesKeepTechnicalNamesOutOfTheSelector() {
+        listOf(
+            "Toyota" to "RAV4",
+            "Toyota" to "Yaris",
+            "SEAT" to "León",
+            "Hyundai" to "ix35"
+        ).forEach { (brandName, modelName) ->
+            val brandId = cars.brandId(brandName)
+            val modelId = cars.modelId(brandId, modelName)
+            cars.yearsFor(brandId, modelId).forEach { year ->
+                val labels = cars.variantsFor(brandId, modelId, year).map { it.displayName }
+                assertTrue("$brandName $modelName $year", labels.none {
+                    it.contains(Regex("(?i)\\b(xa20|xa30|xa40|xp10|xp90|xp130|xp210|1p|5f|kl|lm|facelift|my)\\b"))
+                })
+            }
+        }
     }
 
     @Test
@@ -227,6 +272,12 @@ class VehicleSelectionCatalogTest {
         val variants = motorcycles.variantsFor(brandId, motorcycles.modelId(brandId, model), year)
         assertEquals("$brand $model $year", 1, variants.size)
         assertFalse(variants.single().displayName.isBlank())
+    }
+
+    private fun assertVariants(brandId: String, modelName: String, year: Int, vararg expected: String) {
+        val variants = cars.variantsFor(brandId, cars.modelId(brandId, modelName), year)
+        assertEquals(expected.toList(), variants.map { it.displayName })
+        assertEquals(variants.size, variants.map { it.displayName }.distinct().size)
     }
 
     private fun VehicleSelectionCatalog.brandId(displayName: String): String =

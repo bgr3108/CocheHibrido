@@ -1344,8 +1344,8 @@
     {
       "brandId": "seat",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 40,
+      "editorialRevision": 4,
+      "fuelTankLitres": 40.0,
       "provenance": "RESEARCH_READY",
       "catalogId": "car-seat-leon-kl-facelift-e-hybrid-1-5",
       "drivetrain": "FWD",
@@ -1357,19 +1357,19 @@
       "yearFrom": 2024,
       "generationId": "kl-facelift",
       "powertrain": {
+        "kind": "PHEV",
         "hybridSystem": "PLUG_IN",
-        "primaryFuel": "GASOLINA",
-        "kind": "PHEV"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "leon",
-      "notes": "",
+      "notes": "León e-Hybrid 1.5: 25,7 kWh brutos y 19,7 kWh utilizables.",
       "yearTo": null,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": 25.7,
+        "declaredKwh": null,
         "usableKwh": 19.7,
-        "declaredKwh": null
+        "grossKwh": 25.7
       },
       "legacyKeys": [
         {
@@ -1382,29 +1382,32 @@
       "sources": [
         {
           "url": "https://www.seat.es/sobre-seat/noticias/coches/nuevo-seat-leon-y-leon-sportstourer-style-e-hybrid",
+          "type": "OFFICIAL_MANUFACTURER",
+          "accessedAt": "2026-10-06",
           "fields": [
+            "yearFrom",
             "battery.grossKwh",
             "battery.usableKwh"
-          ],
-          "type": "OFFICIAL_MANUFACTURER",
-          "accessedAt": "2026-10-05"
+          ]
         },
         {
           "url": "https://www.km77.com/coches/seat/leon/2020/5-puertas/ehybrid/informacion?amp=1",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
           "fields": [
             "fuelTankLitres"
-          ],
-          "type": "TECHNICAL_REFERENCE",
-          "accessedAt": "2026-10-05"
+          ]
         }
       ],
-      "variantId": "e-hybrid-1-5"
+      "variantId": "e-hybrid-1-5",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 55,
+      "editorialRevision": 4,
+      "fuelTankLitres": 55.0,
       "provenance": "RESEARCH_READY",
       "catalogId": "car-toyota-rav4-xa50-plug-in-hybrid",
       "drivetrain": "AWD",
@@ -1416,19 +1419,19 @@
       "yearFrom": 2021,
       "generationId": "xa50",
       "powertrain": {
+        "kind": "PHEV",
         "hybridSystem": "PLUG_IN",
-        "primaryFuel": "GASOLINA",
-        "kind": "PHEV"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "rav4",
-      "notes": "",
-      "yearTo": 2025,
+      "notes": "RAV4 Plug-in Hybrid: capacidad publicada de 18,1 kWh sin clasificación bruto/útil.",
+      "yearTo": 2024,
       "battery": {
         "declaredCapacityType": "UNKNOWN",
-        "grossKwh": null,
+        "declaredKwh": 18.1,
         "usableKwh": null,
-        "declaredKwh": 18.1
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -1436,33 +1439,24 @@
           "category": "COCHE",
           "model": "RAV4 Plug-in Hybrid",
           "year": 2022
-        },
-        {
-          "brand": "Toyota",
-          "category": "COCHE",
-          "model": "RAV4 GR SPORT PHEV",
-          "year": 2025
         }
       ],
       "sources": [
         {
-          "url": "https://www.toyota.es/world-of-toyota/articles-news-events/que-consume-menos-coche-hibrido-o-hibrido",
-          "fields": [
-            "battery.declaredKwh"
-          ],
+          "url": "https://prensa.toyota.es/download/1018741/toyotarav4plug-in-dosierdeprensa.pdf",
           "type": "OFFICIAL_MANUFACTURER",
-          "accessedAt": "2026-10-05"
-        },
-        {
-          "url": "https://www.km77.com/coches/toyota/rav4/2019/estandar/plug-in-hybrid/rav4-plug-in-hybrid/datos?nam=1",
+          "accessedAt": "2026-10-06",
           "fields": [
-            "fuelTankLitres"
-          ],
-          "type": "TECHNICAL_REFERENCE",
-          "accessedAt": "2026-10-05"
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres",
+            "battery.declaredKwh"
+          ]
         }
       ],
-      "variantId": "plug-in-hybrid"
+      "variantId": "plug-in-hybrid",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "volkswagen",
@@ -4855,32 +4849,32 @@
     {
       "brandId": "hyundai",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 55,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 55.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-hyundai-legacy-ix35-1-6-gdi-3cb07c6fb6-2010-gasolina-9ba5d38302",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2010,
-      "generationId": null,
+      "generationId": "lm",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "ix35",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2010,
+      "notes": "ix35 gasolina: depósito de 55 L.",
+      "yearTo": 2015,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -4888,53 +4882,62 @@
           "category": "COCHE",
           "model": "ix35 1.6 GDi",
           "year": 2010
+        },
+        {
+          "brand": "Hyundai",
+          "category": "COCHE",
+          "model": "ix35 2.0 MPI",
+          "year": 2010
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-6-gdi"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/hyundai/ix35/2010/datos",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3,
+      "supersededCatalogIds": [
+        "legacy-coche-hyundai-legacy-ix35-2-0-mpi-36439845e9-2010-gasolina-be68677560"
+      ]
     },
     {
       "brandId": "hyundai",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 55,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 55.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-hyundai-legacy-ix35-1-7-crdi-9f9a6ccd57-2010-diesel-332ea942bc",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2010,
-      "generationId": null,
+      "generationId": "lm",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "ix35",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2010,
+      "notes": "ix35 diésel: depósito de 55 L.",
+      "yearTo": 2015,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -4942,33 +4945,49 @@
           "category": "COCHE",
           "model": "ix35 1.7 CRDi",
           "year": 2010
+        },
+        {
+          "brand": "Hyundai",
+          "category": "COCHE",
+          "model": "ix35 2.0 CRDi 136CV",
+          "year": 2010
+        },
+        {
+          "brand": "Hyundai",
+          "category": "COCHE",
+          "model": "ix35 2.0 CRDi 184CV",
+          "year": 2010
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-7-crdi"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/hyundai/ix35/2010/datos",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3,
+      "supersededCatalogIds": [
+        "legacy-coche-hyundai-legacy-ix35-2-0-crdi-136cv-17ffc6bbd5-2010-diesel-2d019839f2",
+        "legacy-coche-hyundai-legacy-ix35-2-0-crdi-184cv-b1812def43-2010-diesel-f26a2481aa"
+      ]
     },
     {
       "brandId": "hyundai",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 55,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-hyundai-legacy-ix35-2-0-crdi-136cv-17ffc6bbd5-2010-diesel-2d019839f2",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -4982,7 +5001,7 @@
       },
       "category": "COCHE",
       "modelId": "ix35",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-hyundai-legacy-ix35-1-7-crdi-9f9a6ccd57-2010-diesel-332ea942bc mediante normalización editorial investigada.",
       "yearTo": 2010,
       "battery": {
         "declaredCapacityType": null,
@@ -5012,17 +5031,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "2-0-crdi-136cv"
+      "variantId": "2-0-crdi-136cv",
+      "replacedByCatalogId": "legacy-coche-hyundai-legacy-ix35-1-7-crdi-9f9a6ccd57-2010-diesel-332ea942bc"
     },
     {
       "brandId": "hyundai",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 55,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-hyundai-legacy-ix35-2-0-crdi-184cv-b1812def43-2010-diesel-f26a2481aa",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -5036,7 +5056,7 @@
       },
       "category": "COCHE",
       "modelId": "ix35",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-hyundai-legacy-ix35-1-7-crdi-9f9a6ccd57-2010-diesel-332ea942bc mediante normalización editorial investigada.",
       "yearTo": 2010,
       "battery": {
         "declaredCapacityType": null,
@@ -5066,17 +5086,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "2-0-crdi-184cv"
+      "variantId": "2-0-crdi-184cv",
+      "replacedByCatalogId": "legacy-coche-hyundai-legacy-ix35-1-7-crdi-9f9a6ccd57-2010-diesel-332ea942bc"
     },
     {
       "brandId": "hyundai",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 55,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-hyundai-legacy-ix35-2-0-mpi-36439845e9-2010-gasolina-be68677560",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -5090,7 +5111,7 @@
       },
       "category": "COCHE",
       "modelId": "ix35",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-hyundai-legacy-ix35-1-6-gdi-3cb07c6fb6-2010-gasolina-9ba5d38302 mediante normalización editorial investigada.",
       "yearTo": 2010,
       "battery": {
         "declaredCapacityType": null,
@@ -5120,7 +5141,8 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "2-0-mpi"
+      "variantId": "2-0-mpi",
+      "replacedByCatalogId": "legacy-coche-hyundai-legacy-ix35-1-6-gdi-3cb07c6fb6-2010-gasolina-9ba5d38302"
     },
     {
       "brandId": "hyundai",
@@ -8623,32 +8645,32 @@
     {
       "brandId": "seat",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 40,
+      "editorialRevision": 4,
+      "fuelTankLitres": 40.0,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-seat-legacy-leon-e-hybrid-cef8ab9a50-2021-hibrido-enchufable-43ee9c54dc",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2021,
-      "generationId": null,
+      "generationId": "kl",
       "powertrain": {
+        "kind": "PHEV",
         "hybridSystem": "PLUG_IN",
-        "primaryFuel": null,
-        "kind": "PHEV"
+        "primaryFuel": null
       },
       "category": "COCHE",
       "modelId": "leon",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "La capacidad de 10,4 kWh es un dato legacy sin clasificación bruto/útil; se conserva solo para su selección histórica.",
       "yearTo": 2021,
       "battery": {
         "declaredCapacityType": "UNKNOWN",
-        "grossKwh": null,
+        "declaredKwh": 10.4,
         "usableKwh": null,
-        "declaredKwh": 10.4
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -8658,21 +8680,19 @@
           "year": 2021
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "e-hybrid"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/seat/leon/2020/5-puertas/ehybrid/informacion?amp=1",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "e-hybrid",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "seat",
@@ -9055,32 +9075,32 @@
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 57,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 57.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-rav4-2-0-16v-4b7fc188a9-2002-gasolina-ba5198f289",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2002,
-      "generationId": null,
+      "yearFrom": 2000,
+      "generationId": "xa20",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "rav4",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2002,
+      "notes": "RAV4 XA20 gasolina: depósito de 57 L.",
+      "yearTo": 2005,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -9090,51 +9110,51 @@
           "year": 2002
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "2-0-16v"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/toyota/rav4/2001/datos",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 57,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 57.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-rav4-2-0-d-4d-36f8e52d7d-2004-diesel-afdd95be59",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2004,
-      "generationId": null,
+      "yearFrom": 2000,
+      "generationId": "xa20",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "rav4",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2004,
+      "notes": "RAV4 XA20 diésel: depósito de 57 L.",
+      "yearTo": 2005,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -9144,51 +9164,51 @@
           "year": 2004
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "2-0-d-4d"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/toyota/rav4/2001/datos",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 60,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 60.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-rav4-2-0-d-4d-36f8e52d7d-2015-diesel-81b8513bfc",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2015,
-      "generationId": null,
+      "yearFrom": 2013,
+      "generationId": "xa40",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "rav4",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2015,
+      "notes": "RAV4 XA40 diésel: depósito de 60 L.",
+      "yearTo": 2018,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -9198,51 +9218,51 @@
           "year": 2015
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "2-0-d-4d"
+      "sources": [
+        {
+          "url": "https://prensa.toyota.es/toyota-espaa-presenta-el-nuevo-rav4-2013/",
+          "type": "OFFICIAL_MANUFACTURER",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 55,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 55.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-rav4-2-0-dynamic-force-48fba8d728-2020-gasolina-b426850680",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2020,
-      "generationId": null,
+      "generationId": "xa50",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "rav4",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "RAV4 XA50 gasolina: se conserva exclusivamente el año legacy 2020 con depósito de 55 L.",
       "yearTo": 2020,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -9252,51 +9272,51 @@
           "year": 2020
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "2-0-dynamic-force"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/toyota/rav4/2020/datos",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 60,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 60.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-rav4-2-0-valvematic-9e8acadaf5-2017-gasolina-49c88aa11c",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2017,
-      "generationId": null,
+      "yearFrom": 2013,
+      "generationId": "xa40",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "rav4",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2017,
+      "notes": "RAV4 XA40 gasolina: depósito de 60 L.",
+      "yearTo": 2018,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -9306,51 +9326,51 @@
           "year": 2017
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "2-0-valvematic"
+      "sources": [
+        {
+          "url": "https://prensa.toyota.es/toyota-espaa-presenta-el-nuevo-rav4-2013/",
+          "type": "OFFICIAL_MANUFACTURER",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 60,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 60.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-rav4-2-0-vvt-i-2aeb737346-2010-gasolina-b90adf63f8",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2010,
-      "generationId": null,
+      "yearFrom": 2006,
+      "generationId": "xa30",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "rav4",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2010,
+      "notes": "RAV4 XA30 gasolina: depósito de 60 L.",
+      "yearTo": 2012,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -9360,51 +9380,51 @@
           "year": 2010
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "2-0-vvt-i"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/toyota/rav4/2006/datos",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 60,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 60.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-rav4-2-2-d-4d-64e7bc72a1-2007-diesel-bf132ecc92",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2007,
-      "generationId": null,
+      "yearFrom": 2006,
+      "generationId": "xa30",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "rav4",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2007,
+      "notes": "RAV4 XA30 diésel: depósito de 60 L.",
+      "yearTo": 2012,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -9412,33 +9432,42 @@
           "category": "COCHE",
           "model": "RAV4 2.2 D-4D",
           "year": 2007
+        },
+        {
+          "brand": "Toyota",
+          "category": "COCHE",
+          "model": "RAV4 2.2 D-CAT",
+          "year": 2011
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "2-2-d-4d"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/toyota/rav4/2006/datos",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3,
+      "supersededCatalogIds": [
+        "legacy-coche-toyota-legacy-rav4-2-2-d-cat-c55064b348-2011-diesel-d1c1f4bf73"
+      ]
     },
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 60,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-toyota-legacy-rav4-2-2-d-cat-c55064b348-2011-diesel-d1c1f4bf73",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -9452,7 +9481,7 @@
       },
       "category": "COCHE",
       "modelId": "rav4",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-toyota-legacy-rav4-2-2-d-4d-64e7bc72a1-2007-diesel-bf132ecc92 mediante normalización editorial investigada.",
       "yearTo": 2011,
       "battery": {
         "declaredCapacityType": null,
@@ -9482,7 +9511,8 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "2-2-d-cat"
+      "variantId": "2-2-d-cat",
+      "replacedByCatalogId": "legacy-coche-toyota-legacy-rav4-2-2-d-4d-64e7bc72a1-2007-diesel-bf132ecc92"
     },
     {
       "brandId": "toyota",
@@ -9541,32 +9571,32 @@
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 56,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 56.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-rav4-hybrid-15024497ed-2018-hibrido-f9bb7717fa",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2018,
-      "generationId": null,
+      "yearFrom": 2016,
+      "generationId": "xa40",
       "powertrain": {
+        "kind": "HEV",
         "hybridSystem": "FULL",
-        "primaryFuel": null,
-        "kind": "HEV"
+        "primaryFuel": null
       },
       "category": "COCHE",
       "modelId": "rav4",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "RAV4 XA40 Hybrid: depósito de 56 L.",
       "yearTo": 2018,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -9576,51 +9606,51 @@
           "year": 2018
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "hybrid"
+      "sources": [
+        {
+          "url": "https://www.toyota.es/world-of-toyota/articles-news-events/2018/duracion-deposito-gasolina-reserva-toyota",
+          "type": "OFFICIAL_MANUFACTURER",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "hybrid",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 55,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 55.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-rav4-hybrid-15024497ed-2025-hibrido-1f0c2952b1",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2025,
-      "generationId": null,
+      "yearFrom": 2019,
+      "generationId": "xa50",
       "powertrain": {
+        "kind": "HEV",
         "hybridSystem": "FULL",
-        "primaryFuel": null,
-        "kind": "HEV"
+        "primaryFuel": null
       },
       "category": "COCHE",
       "modelId": "rav4",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2025,
+      "notes": "RAV4 XA50 Hybrid: depósito de 55 L.",
+      "yearTo": 2026,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -9630,21 +9660,20 @@
           "year": 2025
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "hybrid"
+      "sources": [
+        {
+          "url": "https://prensa.toyota.es/la-gama-completa-del-nuevo-toyota-rav4-hybrid-ya-disponible-en-espana/",
+          "type": "OFFICIAL_MANUFACTURER",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "hybrid",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "toyota",
@@ -9703,32 +9732,32 @@
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 45,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 45.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-yaris-1-0-vvt-i-e93659c3a5-2003-gasolina-aa81047522",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2003,
-      "generationId": null,
+      "yearFrom": 1999,
+      "generationId": "xp10",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "yaris",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2003,
+      "notes": "Yaris XP10 gasolina: depósito de 45 L.",
+      "yearTo": 2005,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -9738,51 +9767,51 @@
           "year": 2003
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-0-vvt-i"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/toyota/yaris/1999/datos",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 42,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 42.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-yaris-1-33-dual-vvt-i-997deb7a75-2015-gasolina-f6939a53bd",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2015,
-      "generationId": null,
+      "yearFrom": 2011,
+      "generationId": "xp130",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "yaris",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2015,
+      "notes": "Yaris XP130 gasolina: depósito de 42 L.",
+      "yearTo": 2019,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -9792,51 +9821,50 @@
           "year": 2015
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-33-dual-vvt-i"
+      "sources": [
+        {
+          "url": "https://prensa.toyota.es/nueva-gama-yaris-2011/",
+          "type": "OFFICIAL_MANUFACTURER",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 42,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 42.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-yaris-1-3-vvt-i-fa8fe421af-2008-gasolina-08ab365e2d",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2008,
-      "generationId": null,
+      "yearFrom": 2006,
+      "generationId": "xp90",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "yaris",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2008,
+      "notes": "Yaris XP90 gasolina: depósito de 42 L.",
+      "yearTo": 2010,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -9846,51 +9874,49 @@
           "year": 2008
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-3-vvt-i"
+      "sources": [
+        {
+          "url": "https://www.toyota.es/service-and-accessories/my-toyota/manuales/yaris",
+          "type": "OFFICIAL_MANUFACTURER",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 45,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 45.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-yaris-1-4-d-4d-aa6f9bd2d7-2005-diesel-1d4596c5e2",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2005,
-      "generationId": null,
+      "yearFrom": 1999,
+      "generationId": "xp10",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "yaris",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "Yaris XP10 diésel: depósito de 45 L.",
       "yearTo": 2005,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -9900,51 +9926,51 @@
           "year": 2005
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-4-d-4d"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/toyota/yaris/1999/datos",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 42,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 42.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-yaris-1-4-d-4d-aa6f9bd2d7-2012-diesel-e51b8f0156",
-      "drivetrain": null,
-      "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "drivetrain": "FWD",
+      "editorialStatus": "INACTIVE",
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2012,
-      "generationId": null,
+      "yearFrom": 2011,
+      "generationId": "xp130",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "yaris",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2012,
+      "notes": "Yaris XP130 diésel: depósito de 42 L. Consolidado en car-toyota-yaris-xp90-diesel mediante normalización editorial investigada. Consolidado en car-toyota-yaris-xp130-diesel mediante normalización editorial investigada.",
+      "yearTo": 2020,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -9954,21 +9980,21 @@
           "year": 2012
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-4-d-4d"
+      "sources": [
+        {
+          "url": "https://prensa.toyota.es/nueva-gama-yaris-2011/",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 1,
+      "replacedByCatalogId": "car-toyota-yaris-xp130-diesel"
     },
     {
       "brandId": "toyota",
@@ -10027,32 +10053,32 @@
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 36,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 36.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-yaris-hybrid-130-8ce01f3be2-2025-hibrido-84fe62e96d",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2025,
-      "generationId": null,
+      "yearFrom": 2020,
+      "generationId": "xp210",
       "powertrain": {
+        "kind": "HEV",
         "hybridSystem": "FULL",
-        "primaryFuel": null,
-        "kind": "HEV"
+        "primaryFuel": null
       },
       "category": "COCHE",
       "modelId": "yaris",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2025,
+      "notes": "Yaris XP210 Hybrid: depósito de 36 L.",
+      "yearTo": 2026,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -10062,51 +10088,50 @@
           "year": 2025
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "hybrid-130"
+      "sources": [
+        {
+          "url": "https://www.toyota.es/coches/yaris/caracteristicas/ficha-tecnica",
+          "type": "OFFICIAL_MANUFACTURER",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "hybrid",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 36,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 4,
+      "fuelTankLitres": 36.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-yaris-hybrid-c80547676c-2017-hibrido-9c225b813d",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2017,
-      "generationId": null,
+      "yearFrom": 2012,
+      "generationId": "xp130",
       "powertrain": {
+        "kind": "HEV",
         "hybridSystem": "FULL",
-        "primaryFuel": null,
-        "kind": "HEV"
+        "primaryFuel": null
       },
       "category": "COCHE",
       "modelId": "yaris",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2017,
+      "notes": "Yaris XP130 Hybrid: depósito de 36 L.",
+      "yearTo": 2019,
       "battery": {
         "declaredCapacityType": null,
-        "grossKwh": null,
+        "declaredKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "grossKwh": null
       },
       "legacyKeys": [
         {
@@ -10116,21 +10141,21 @@
           "year": 2017
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "hybrid"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/toyota/yaris/2012/5-puertas/advance/yaris-5p-hibrido-advance/datos",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "variantId": "hybrid",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     },
     {
       "brandId": "volkswagen",
@@ -35320,6 +35345,442 @@
       "notes": "ë-Berlingo actual: Citroën publica 54 kWh sin clasificación bruto/útil.",
       "editorialStatus": "ACTIVE",
       "denseCarNormalizationVersion": 1
+    },
+    {
+      "provenance": "RESEARCH_READY",
+      "legacyKeys": [
+        {
+          "brand": "Toyota",
+          "category": "COCHE",
+          "model": "RAV4 GR SPORT PHEV",
+          "year": 2025
+        }
+      ],
+      "variantId": "plug-in-hybrid-22-7",
+      "yearFrom": 2025,
+      "modelId": "rav4",
+      "marketCodes": [
+        "ES"
+      ],
+      "catalogId": "car-toyota-rav4-xa50-plug-in-hybrid-22-7",
+      "editorialStatus": "ACTIVE",
+      "battery": {
+        "declaredCapacityType": null,
+        "declaredKwh": null,
+        "usableKwh": null,
+        "grossKwh": 22.7
+      },
+      "editorialRevision": 3,
+      "sources": [
+        {
+          "url": "https://www.toyota.es/content/dam/toyota/nmsc/spain/cross-model/new-cars/catalogos-precios/pdf/rav4/Catalogo_Toyota_RAV4.pdf",
+          "type": "OFFICIAL_MANUFACTURER",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres",
+            "battery.grossKwh"
+          ]
+        }
+      ],
+      "yearTo": 2026,
+      "bodyStyle": "SUV",
+      "category": "COCHE",
+      "fuelTankLitres": 55.0,
+      "notes": "RAV4 Plug-in Hybrid actualizado: 22,7 kWh brutos; sin capacidad útil publicada.",
+      "brandId": "toyota",
+      "drivetrain": "AWD",
+      "generationId": "xa50",
+      "aliases": [],
+      "powertrain": {
+        "kind": "PHEV",
+        "hybridSystem": "PLUG_IN",
+        "primaryFuel": "GASOLINA"
+      },
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
+    },
+    {
+      "provenance": "RESEARCH_READY",
+      "legacyKeys": [
+        {
+          "brand": "Toyota",
+          "category": "COCHE",
+          "model": "Yaris 1.4 D-4D",
+          "year": 2012
+        }
+      ],
+      "variantId": "diesel",
+      "yearFrom": 2011,
+      "modelId": "yaris",
+      "marketCodes": [
+        "ES"
+      ],
+      "catalogId": "car-toyota-yaris-xp130-diesel",
+      "editorialStatus": "ACTIVE",
+      "battery": {
+        "declaredCapacityType": null,
+        "declaredKwh": null,
+        "usableKwh": null,
+        "grossKwh": null
+      },
+      "editorialRevision": 4,
+      "sources": [
+        {
+          "url": "https://prensa.toyota.es/nuevo-toyota-yaris-2015/",
+          "type": "OFFICIAL_MANUFACTURER",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "yearTo": 2015,
+      "bodyStyle": "HATCHBACK",
+      "category": "COCHE",
+      "fuelTankLitres": 42.0,
+      "notes": "Yaris XP130 diésel: depósito de 42 L, documentado hasta 2015.",
+      "brandId": "toyota",
+      "drivetrain": "FWD",
+      "generationId": "xp130",
+      "aliases": [],
+      "powertrain": {
+        "kind": "ICE",
+        "hybridSystem": "NONE",
+        "primaryFuel": "DIESEL"
+      },
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3,
+      "supersededCatalogIds": [
+        "legacy-coche-toyota-legacy-yaris-1-4-d-4d-aa6f9bd2d7-2012-diesel-e51b8f0156"
+      ]
+    },
+    {
+      "provenance": "RESEARCH_READY",
+      "legacyKeys": [],
+      "variantId": "gasolina",
+      "yearFrom": 2005,
+      "modelId": "leon",
+      "marketCodes": [
+        "ES"
+      ],
+      "catalogId": "car-seat-leon-1p-gasolina",
+      "editorialStatus": "ACTIVE",
+      "battery": {
+        "declaredCapacityType": null,
+        "declaredKwh": null,
+        "usableKwh": null,
+        "grossKwh": null
+      },
+      "editorialRevision": 3,
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/seat/leon/2005/5-puertas/sport-limited/leon-16-102-cv-sport-limited3/datos?nam=1",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "yearTo": 2012,
+      "bodyStyle": "HATCHBACK",
+      "category": "COCHE",
+      "fuelTankLitres": 55.0,
+      "notes": "León 1P gasolina: depósito de 55 L.",
+      "brandId": "seat",
+      "drivetrain": "FWD",
+      "generationId": "1p",
+      "aliases": [],
+      "powertrain": {
+        "kind": "ICE",
+        "hybridSystem": "NONE",
+        "primaryFuel": "GASOLINA"
+      },
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
+    },
+    {
+      "provenance": "RESEARCH_READY",
+      "legacyKeys": [],
+      "variantId": "diesel",
+      "yearFrom": 2005,
+      "modelId": "leon",
+      "marketCodes": [
+        "ES"
+      ],
+      "catalogId": "car-seat-leon-1p-diesel",
+      "editorialStatus": "ACTIVE",
+      "battery": {
+        "declaredCapacityType": null,
+        "declaredKwh": null,
+        "usableKwh": null,
+        "grossKwh": null
+      },
+      "editorialRevision": 3,
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/seat/leon/2005/5-puertas/sport-limited/leon-16-102-cv-sport-limited3/datos?nam=1",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "yearTo": 2012,
+      "bodyStyle": "HATCHBACK",
+      "category": "COCHE",
+      "fuelTankLitres": 55.0,
+      "notes": "León 1P diésel: depósito de 55 L.",
+      "brandId": "seat",
+      "drivetrain": "FWD",
+      "generationId": "1p",
+      "aliases": [],
+      "powertrain": {
+        "kind": "ICE",
+        "hybridSystem": "NONE",
+        "primaryFuel": "DIESEL"
+      },
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
+    },
+    {
+      "provenance": "RESEARCH_READY",
+      "legacyKeys": [],
+      "variantId": "gasolina",
+      "yearFrom": 2013,
+      "modelId": "leon",
+      "marketCodes": [
+        "ES"
+      ],
+      "catalogId": "car-seat-leon-5f-gasolina",
+      "editorialStatus": "ACTIVE",
+      "battery": {
+        "declaredCapacityType": null,
+        "declaredKwh": null,
+        "usableKwh": null,
+        "grossKwh": null
+      },
+      "editorialRevision": 3,
+      "sources": [
+        {
+          "url": "https://www.km77.com/revista/curvas-enlazadas/prueba-interesante-36-seat-leon-iii-fr-2-0-tdi-184-cv/",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "yearTo": 2019,
+      "bodyStyle": "HATCHBACK",
+      "category": "COCHE",
+      "fuelTankLitres": 50.0,
+      "notes": "León 5F gasolina: depósito de 50 L.",
+      "brandId": "seat",
+      "drivetrain": "FWD",
+      "generationId": "5f",
+      "aliases": [],
+      "powertrain": {
+        "kind": "ICE",
+        "hybridSystem": "NONE",
+        "primaryFuel": "GASOLINA"
+      },
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
+    },
+    {
+      "provenance": "RESEARCH_READY",
+      "legacyKeys": [],
+      "variantId": "diesel",
+      "yearFrom": 2013,
+      "modelId": "leon",
+      "marketCodes": [
+        "ES"
+      ],
+      "catalogId": "car-seat-leon-5f-diesel",
+      "editorialStatus": "ACTIVE",
+      "battery": {
+        "declaredCapacityType": null,
+        "declaredKwh": null,
+        "usableKwh": null,
+        "grossKwh": null
+      },
+      "editorialRevision": 3,
+      "sources": [
+        {
+          "url": "https://www.km77.com/revista/curvas-enlazadas/prueba-interesante-36-seat-leon-iii-fr-2-0-tdi-184-cv/",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "yearTo": 2019,
+      "bodyStyle": "HATCHBACK",
+      "category": "COCHE",
+      "fuelTankLitres": 50.0,
+      "notes": "León 5F diésel: depósito de 50 L.",
+      "brandId": "seat",
+      "drivetrain": "FWD",
+      "generationId": "5f",
+      "aliases": [],
+      "powertrain": {
+        "kind": "ICE",
+        "hybridSystem": "NONE",
+        "primaryFuel": "DIESEL"
+      },
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
+    },
+    {
+      "provenance": "RESEARCH_READY",
+      "legacyKeys": [],
+      "variantId": "gasolina",
+      "yearFrom": 2020,
+      "modelId": "leon",
+      "marketCodes": [
+        "ES"
+      ],
+      "catalogId": "car-seat-leon-kl-gasolina",
+      "editorialStatus": "ACTIVE",
+      "battery": {
+        "declaredCapacityType": null,
+        "declaredKwh": null,
+        "usableKwh": null,
+        "grossKwh": null
+      },
+      "editorialRevision": 3,
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/seat/leon/2020/5-puertas/estandar/leon-20-tdi-cr-110-kw-150-cv-dsg-startstop-fr/datos?nam=1",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "yearTo": 2026,
+      "bodyStyle": "HATCHBACK",
+      "category": "COCHE",
+      "fuelTankLitres": 45.0,
+      "notes": "León KL gasolina: depósito de 45 L.",
+      "brandId": "seat",
+      "drivetrain": "FWD",
+      "generationId": "kl",
+      "aliases": [],
+      "powertrain": {
+        "kind": "ICE",
+        "hybridSystem": "NONE",
+        "primaryFuel": "GASOLINA"
+      },
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
+    },
+    {
+      "provenance": "RESEARCH_READY",
+      "legacyKeys": [],
+      "variantId": "diesel",
+      "yearFrom": 2020,
+      "modelId": "leon",
+      "marketCodes": [
+        "ES"
+      ],
+      "catalogId": "car-seat-leon-kl-diesel",
+      "editorialStatus": "ACTIVE",
+      "battery": {
+        "declaredCapacityType": null,
+        "declaredKwh": null,
+        "usableKwh": null,
+        "grossKwh": null
+      },
+      "editorialRevision": 3,
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/seat/leon/2020/5-puertas/estandar/leon-20-tdi-cr-110-kw-150-cv-dsg-startstop-fr/datos?nam=1",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "yearTo": 2026,
+      "bodyStyle": "HATCHBACK",
+      "category": "COCHE",
+      "fuelTankLitres": 45.0,
+      "notes": "León KL diésel: depósito de 45 L.",
+      "brandId": "seat",
+      "drivetrain": "FWD",
+      "generationId": "kl",
+      "aliases": [],
+      "powertrain": {
+        "kind": "ICE",
+        "hybridSystem": "NONE",
+        "primaryFuel": "DIESEL"
+      },
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
+    },
+    {
+      "powertrain": {
+        "kind": "ICE",
+        "hybridSystem": "NONE",
+        "primaryFuel": "DIESEL"
+      },
+      "editorialStatus": "ACTIVE",
+      "bodyStyle": "HATCHBACK",
+      "marketCodes": [
+        "ES"
+      ],
+      "aliases": [],
+      "yearTo": 2010,
+      "battery": {
+        "declaredCapacityType": null,
+        "declaredKwh": null,
+        "usableKwh": null,
+        "grossKwh": null
+      },
+      "brandId": "toyota",
+      "fuelTankLitres": 42.0,
+      "editorialRevision": 1,
+      "catalogId": "car-toyota-yaris-xp90-diesel",
+      "legacyKeys": [],
+      "modelId": "yaris",
+      "provenance": "RESEARCH_READY",
+      "variantId": "diesel",
+      "sources": [
+        {
+          "url": "https://www.toyota.es/service-and-accessories/my-toyota/manuales/yaris",
+          "type": "OFFICIAL_MANUFACTURER",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "fuelTankLitres"
+          ]
+        }
+      ],
+      "drivetrain": "FWD",
+      "yearFrom": 2006,
+      "category": "COCHE",
+      "generationId": "xp90",
+      "notes": "Yaris XP90 diésel: depósito de 42 L.",
+      "denseCarNormalizationVersion": 1,
+      "additionalDenseCarNormalizationVersion": 3
     }
   ],
   "generations": [
@@ -35462,6 +35923,83 @@
       "modelId": "qashqai",
       "brandId": "nissan",
       "displayName": "J12"
+    },
+    {
+      "displayName": "XA20",
+      "modelId": "rav4",
+      "brandId": "toyota",
+      "category": "COCHE",
+      "id": "xa20"
+    },
+    {
+      "displayName": "XA30",
+      "modelId": "rav4",
+      "brandId": "toyota",
+      "category": "COCHE",
+      "id": "xa30"
+    },
+    {
+      "displayName": "XA40",
+      "modelId": "rav4",
+      "brandId": "toyota",
+      "category": "COCHE",
+      "id": "xa40"
+    },
+    {
+      "displayName": "XP10",
+      "modelId": "yaris",
+      "brandId": "toyota",
+      "category": "COCHE",
+      "id": "xp10"
+    },
+    {
+      "displayName": "XP90",
+      "modelId": "yaris",
+      "brandId": "toyota",
+      "category": "COCHE",
+      "id": "xp90"
+    },
+    {
+      "displayName": "XP130",
+      "modelId": "yaris",
+      "brandId": "toyota",
+      "category": "COCHE",
+      "id": "xp130"
+    },
+    {
+      "displayName": "XP210",
+      "modelId": "yaris",
+      "brandId": "toyota",
+      "category": "COCHE",
+      "id": "xp210"
+    },
+    {
+      "displayName": "1P",
+      "modelId": "leon",
+      "brandId": "seat",
+      "category": "COCHE",
+      "id": "1p"
+    },
+    {
+      "displayName": "5F",
+      "modelId": "leon",
+      "brandId": "seat",
+      "category": "COCHE",
+      "id": "5f"
+    },
+    {
+      "displayName": "KL",
+      "modelId": "leon",
+      "brandId": "seat",
+      "category": "COCHE",
+      "id": "kl"
+    },
+    {
+      "displayName": "LM",
+      "modelId": "ix35",
+      "brandId": "hyundai",
+      "category": "COCHE",
+      "id": "lm"
     }
   ],
   "variants": [
@@ -36940,6 +37478,249 @@
       "aliases": [],
       "generationId": "j12",
       "id": "e-power"
+    },
+    {
+      "brandId": "toyota",
+      "id": "gasolina",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "rav4",
+      "displayName": "Gasolina",
+      "generationId": "xa20"
+    },
+    {
+      "brandId": "toyota",
+      "id": "diesel",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "rav4",
+      "displayName": "Diésel",
+      "generationId": "xa20"
+    },
+    {
+      "brandId": "toyota",
+      "id": "gasolina",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "rav4",
+      "displayName": "Gasolina",
+      "generationId": "xa30"
+    },
+    {
+      "brandId": "toyota",
+      "id": "diesel",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "rav4",
+      "displayName": "Diésel",
+      "generationId": "xa30"
+    },
+    {
+      "brandId": "toyota",
+      "id": "gasolina",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "rav4",
+      "displayName": "Gasolina",
+      "generationId": "xa40"
+    },
+    {
+      "brandId": "toyota",
+      "id": "diesel",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "rav4",
+      "displayName": "Diésel",
+      "generationId": "xa40"
+    },
+    {
+      "brandId": "toyota",
+      "id": "hybrid",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "rav4",
+      "displayName": "Hybrid",
+      "generationId": "xa40"
+    },
+    {
+      "brandId": "toyota",
+      "id": "gasolina",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "rav4",
+      "displayName": "Gasolina",
+      "generationId": "xa50"
+    },
+    {
+      "brandId": "toyota",
+      "id": "hybrid",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "rav4",
+      "displayName": "Hybrid",
+      "generationId": "xa50"
+    },
+    {
+      "brandId": "toyota",
+      "id": "plug-in-hybrid-22-7",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "rav4",
+      "displayName": "Plug-in Hybrid",
+      "generationId": "xa50"
+    },
+    {
+      "brandId": "toyota",
+      "id": "gasolina",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "yaris",
+      "displayName": "Gasolina",
+      "generationId": "xp10"
+    },
+    {
+      "brandId": "toyota",
+      "id": "diesel",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "yaris",
+      "displayName": "Diésel",
+      "generationId": "xp10"
+    },
+    {
+      "brandId": "toyota",
+      "id": "gasolina",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "yaris",
+      "displayName": "Gasolina",
+      "generationId": "xp90"
+    },
+    {
+      "brandId": "toyota",
+      "id": "diesel",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "yaris",
+      "displayName": "Diésel",
+      "generationId": "xp90"
+    },
+    {
+      "brandId": "toyota",
+      "id": "gasolina",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "yaris",
+      "displayName": "Gasolina",
+      "generationId": "xp130"
+    },
+    {
+      "brandId": "toyota",
+      "id": "diesel",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "yaris",
+      "displayName": "Diésel",
+      "generationId": "xp130"
+    },
+    {
+      "brandId": "toyota",
+      "id": "hybrid",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "yaris",
+      "displayName": "Hybrid",
+      "generationId": "xp130"
+    },
+    {
+      "brandId": "toyota",
+      "id": "hybrid",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "yaris",
+      "displayName": "Hybrid",
+      "generationId": "xp210"
+    },
+    {
+      "brandId": "seat",
+      "id": "gasolina",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "leon",
+      "displayName": "Gasolina",
+      "generationId": "1p"
+    },
+    {
+      "brandId": "seat",
+      "id": "diesel",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "leon",
+      "displayName": "Diésel",
+      "generationId": "1p"
+    },
+    {
+      "brandId": "seat",
+      "id": "gasolina",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "leon",
+      "displayName": "Gasolina",
+      "generationId": "5f"
+    },
+    {
+      "brandId": "seat",
+      "id": "diesel",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "leon",
+      "displayName": "Diésel",
+      "generationId": "5f"
+    },
+    {
+      "brandId": "seat",
+      "id": "gasolina",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "leon",
+      "displayName": "Gasolina",
+      "generationId": "kl"
+    },
+    {
+      "brandId": "seat",
+      "id": "diesel",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "leon",
+      "displayName": "Diésel",
+      "generationId": "kl"
+    },
+    {
+      "brandId": "seat",
+      "id": "e-hybrid",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "leon",
+      "displayName": "e-Hybrid",
+      "generationId": "kl"
+    },
+    {
+      "brandId": "hyundai",
+      "id": "gasolina",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "ix35",
+      "displayName": "Gasolina",
+      "generationId": "lm"
+    },
+    {
+      "brandId": "hyundai",
+      "id": "diesel",
+      "category": "COCHE",
+      "aliases": [],
+      "modelId": "ix35",
+      "displayName": "Diésel",
+      "generationId": "lm"
     }
   ],
   "schemaVersion": 1,
