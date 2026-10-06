@@ -2,6 +2,7 @@
 param(
     [switch]$BootstrapLegacy,
     [switch]$NormalizeLegacyModels,
+    [switch]$ConsolidateMotorcycles,
     [string]$EditorialPath,
     [string]$RuntimePath,
     [string]$AssetPath
@@ -454,6 +455,86 @@ function Normalize-LegacyModelStructure {
     })
 }
 
+function Set-EditorialProperty {
+    param($Object, [string]$Name, $Value)
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property) {
+        $Object | Add-Member -NotePropertyName $Name -NotePropertyValue $Value
+    } else {
+        $property.Value = $Value
+    }
+}
+
+function Get-MotorcycleTechnicalKey {
+    param($Vehicle)
+    @(
+        $Vehicle.category,
+        $Vehicle.brandId,
+        $Vehicle.modelId,
+        $Vehicle.generationId,
+        $Vehicle.variantId,
+        $Vehicle.powertrain.kind,
+        $Vehicle.powertrain.primaryFuel,
+        $Vehicle.powertrain.hybridSystem,
+        $Vehicle.fuelTankLitres,
+        $Vehicle.battery.grossKwh,
+        $Vehicle.battery.usableKwh,
+        $Vehicle.battery.declaredKwh,
+        $Vehicle.battery.declaredCapacityType,
+        $Vehicle.bodyStyle,
+        $Vehicle.drivetrain,
+        (@($Vehicle.marketCodes) -join ",")
+    ) -join "|"
+}
+
+function Consolidate-MotorcycleRun {
+    param([System.Collections.Generic.List[object]]$Run)
+    if ($Run.Count -lt 2) { return 0 }
+
+    $canonical = $Run[0]
+    $retired = @($Run | Select-Object -Skip 1)
+    $canonical.yearFrom = [int]$Run[0].yearFrom
+    $canonical.yearTo = [int]$Run[$Run.Count - 1].yearTo
+    $keys = @()
+    foreach ($entry in $Run) { $keys += @($entry.legacyKeys) }
+    $canonical.legacyKeys = @($keys | Sort-Object category,brand,model,year)
+    Set-EditorialProperty $canonical "supersededCatalogIds" @($retired | ForEach-Object { $_.catalogId })
+    $canonical.editorialRevision = [int]$canonical.editorialRevision + 1
+    $canonical.notes = "$($canonical.notes) Consolidación editorial de años técnicamente equivalentes."
+
+    foreach ($entry in $retired) {
+        $entry.editorialStatus = "INACTIVE"
+        Set-EditorialProperty $entry "replacedByCatalogId" $canonical.catalogId
+        $entry.editorialRevision = [int]$entry.editorialRevision + 1
+        $entry.notes = "$($entry.notes) Consolidado en $($canonical.catalogId)."
+    }
+    return $retired.Count
+}
+
+function Consolidate-LegacyMotorcycles {
+    param($Catalog)
+
+    $activeMotorcycles = @($Catalog.vehicles | Where-Object {
+        $_.category -eq "MOTO" -and $_.editorialStatus -eq "ACTIVE" -and $_.provenance -eq "LEGACY_IMPORT"
+    })
+    $retiredCount = 0
+    foreach ($group in ($activeMotorcycles | Group-Object { Get-MotorcycleTechnicalKey $_ })) {
+        $ordered = @($group.Group | Sort-Object yearFrom,catalogId)
+        $run = [System.Collections.Generic.List[object]]::new()
+        $previous = $null
+        foreach ($vehicle in $ordered) {
+            if ($null -ne $previous -and [int]$vehicle.yearFrom -ne ([int]$previous.yearTo + 1)) {
+                $retiredCount += Consolidate-MotorcycleRun $run
+                $run = [System.Collections.Generic.List[object]]::new()
+            }
+            [void]$run.Add($vehicle)
+            $previous = $vehicle
+        }
+        $retiredCount += Consolidate-MotorcycleRun $run
+    }
+    return $retiredCount
+}
+
 function Test-EditorialCatalog {
     param($Catalog)
     if ($Catalog.schemaVersion -ne 1) { throw "catalog: schemaVersion no soportada '$($Catalog.schemaVersion)'" }
@@ -478,11 +559,11 @@ function Test-EditorialCatalog {
     $variantIds = @{}; foreach ($item in $Catalog.variants) { Assert-Id $item.id "variant $($item.displayName)"; $modelKey = "$($item.category)|$($item.brandId)|$($item.modelId)"; if (-not $modelIds[$modelKey]) { throw "variant $($item.id): model inexistente" }; if ($null -ne $item.generationId -and -not $generationIds["$modelKey|$($item.generationId)"]) { throw "variant $($item.id): generation inexistente" }; $key = "$modelKey|$($item.generationId)|$($item.id)"; if ($variantIds[$key]) { throw "variant: id duplicado $key" }; $variantIds[$key] = $true }
 
     $allowedCategory = @("COCHE", "MOTO"); $allowedKind = @("ICE", "HEV", "PHEV", "BEV"); $allowedFuel = @("GASOLINA", "DIESEL"); $allowedHybrid = @("NONE", "MILD", "FULL", "PLUG_IN", "BATTERY_ELECTRIC"); $allowedStatus = @("DRAFT", "REVIEW", "ACTIVE", "INACTIVE"); $allowedProvenance = @("LEGACY_IMPORT", "RESEARCH_READY")
-    $catalogIds = @{}; $legacyKeys = @{}; $technicalRanges = @{}
+    $catalogIds = @{}; $vehiclesById = @{}; $legacyKeys = @{}; $technicalRanges = @{}
     foreach ($vehicle in $Catalog.vehicles) {
         $context = "vehicle $($vehicle.catalogId)"
         Assert-Id $vehicle.catalogId $context
-        if ($catalogIds[$vehicle.catalogId]) { throw "${context}: catalogId duplicado" }; $catalogIds[$vehicle.catalogId] = $true
+        if ($catalogIds[$vehicle.catalogId]) { throw "${context}: catalogId duplicado" }; $catalogIds[$vehicle.catalogId] = $true; $vehiclesById[$vehicle.catalogId] = $vehicle
         if ($vehicle.category -notin $allowedCategory) { throw "$context.category: enum desconocido '$($vehicle.category)'" }
         if ($vehicle.editorialStatus -notin $allowedStatus) { throw "$context.editorialStatus: enum desconocido '$($vehicle.editorialStatus)'" }
         if ($vehicle.provenance -notin $allowedProvenance) { throw "$context.provenance: enum desconocido '$($vehicle.provenance)'" }
@@ -521,6 +602,22 @@ function Test-EditorialCatalog {
             if ($technicalRanges.ContainsKey($rangeKey)) { foreach ($other in $technicalRanges[$rangeKey]) { if ($from -le $other.to -and $to -ge $other.from) { throw "${context}: rango solapado con $($other.id)" } } }
             if (-not $technicalRanges.ContainsKey($rangeKey)) { $technicalRanges[$rangeKey] = @() }
             $technicalRanges[$rangeKey] += (New-Object @{ id = $vehicle.catalogId; from = $from; to = $to })
+        }
+    }
+    foreach ($vehicle in $Catalog.vehicles) {
+        $context = "vehicle $($vehicle.catalogId)"
+        $supersededIds = Get-Property $vehicle "supersededCatalogIds"
+        if ($null -ne $supersededIds) {
+            foreach ($supersededId in @($supersededIds)) {
+                Assert-Id $supersededId "$context.supersededCatalogIds"
+                if (-not $catalogIds[$supersededId]) { throw "$context.supersededCatalogIds: catalogId inexistente '$supersededId'" }
+            }
+        }
+        $replacementId = Get-Property $vehicle "replacedByCatalogId"
+        if ($null -ne $replacementId) {
+            Assert-Id $replacementId "$context.replacedByCatalogId"
+            $replacement = $vehiclesById[$replacementId]
+            if ($null -eq $replacement -or $replacement.editorialStatus -ne "ACTIVE") { throw "$context.replacedByCatalogId: debe referenciar un ACTIVE" }
         }
     }
 }
@@ -614,6 +711,11 @@ $editorial = Get-Content -Raw -Encoding UTF8 $EditorialPath | ConvertFrom-Json
 if ($NormalizeLegacyModels) {
     Normalize-LegacyModelStructure $editorial
     Write-EditorialJson $editorial $EditorialPath
+}
+if ($ConsolidateMotorcycles) {
+    $retiredMotorcycles = Consolidate-LegacyMotorcycles $editorial
+    Write-EditorialJson $editorial $EditorialPath
+    Write-Output "Motocicletas consolidadas: $retiredMotorcycles registros absorbidos"
 }
 Test-EditorialCatalog $editorial
 $runtime = New-RuntimeCatalog $editorial

@@ -23,6 +23,8 @@ La primera generación del catálogo heredado usa `-BootstrapLegacy`. Lee los JS
 
 Los registros de ejecución siempre llevan `brand.id`/`brand.displayName` y `model.id`/`model.displayName` explícitos. La aplicación no intenta deducir un modelo base a partir de textos heredados. La normalización inicial de modelos legacy se realiza una sola vez con `-NormalizeLegacyModels` en esta herramienta, que conserva literalmente las `legacyKeys` históricas y separa el modelo base de la variante antes de generar el runtime.
 
+Las motocicletas legacy pueden consolidarse una sola vez con `-ConsolidateMotorcycles`. Solo une años consecutivos con el mismo snapshot técnico completo; conserva el `catalogId` más antiguo del tramo, migra todas sus `legacyKeys`, registra los IDs absorbidos en `supersededCatalogIds` y mantiene los registros sustituidos como `INACTIVE` con `replacedByCatalogId`. El runtime sigue expandiendo cada rango en sus años documentados, por lo que no incorpora años nuevos ni elimina opciones existentes.
+
 El generador rechaza el editorial si encuentra, entre otros problemas: IDs o `legacyKeys` activos duplicados, referencias inexistentes, rangos inválidos, capacidades no positivas, rangos solapados técnicamente iguales, combinaciones de propulsión inválidas o registros `ACTIVE` sin fuentes. Si la validación falla no se escribe un runtime nuevo.
 
 La salida es estable: el orden se fija por ID y `generatedAt` procede del editorial, no del reloj de la máquina. Dos ejecuciones con el mismo editorial producen los mismos bytes y el mismo SHA-256, que el script muestra al terminar.

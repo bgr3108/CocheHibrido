@@ -1,5 +1,10 @@
 package com.bgr3108.kilonom.data
 
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -16,7 +21,7 @@ class VehicleRuntimeCatalogTest {
         readLegacy("vehicles.json", VehicleCategory.COCHE).plus(readLegacy("motorcycles.json", VehicleCategory.MOTO)).forEach { legacy ->
             assertTrue("legacy entry missing: $legacy", activeLegacyKeys.contains(legacy.key))
         }
-        assertEquals(570, runtime.vehicles.size)
+        assertEquals(234, runtime.vehicles.size)
         assertTrue(runtime.vehicles.any { it.catalogId == "car-seat-leon-kl-facelift-e-hybrid-1-5" })
         assertTrue(runtime.vehicles.any { it.catalogId == "car-bmw-x5-g05-lci-xdrive50e" })
     }
@@ -75,12 +80,44 @@ class VehicleRuntimeCatalogTest {
     }
 
     @Test
-    fun openEndedYearsRemainSelectableAndOneYearLegacyEntriesStayOneYearOnly() {
+    fun openEndedCarYearsAndConsolidatedMotorcycleYearsRemainSelectable() {
         val runtime = parseRuntimeVehicleCatalog(readRuntime())
         val seat = runtime.vehicles.single { it.catalogId == "car-seat-leon-kl-facelift-e-hybrid-1-5" }
         assertTrue(2026 in seat.years(runtime.selectionYearUpperBound))
-        val legacy = runtime.vehicles.first { it.catalogId.contains("legacy-moto") }
-        assertEquals(legacy.yearFrom, legacy.years(runtime.selectionYearUpperBound).single())
+        val mt07 = runtime.vehicles.single { vehicle ->
+            vehicle.category == VehicleCategory.MOTO && vehicle.legacyKeys.any { it.brand == "Yamaha" && it.model == "MT-07" && it.year == 2022 }
+        }
+        assertTrue(2022 in mt07.years(runtime.selectionYearUpperBound))
+        assertEquals(mt07.years(runtime.selectionYearUpperBound).count(), mt07.legacyKeys.size)
+    }
+
+    @Test
+    fun consolidatedMotorcyclesRemainEquivalentToEveryLegacySnapshot() {
+        val runtime = parseRuntimeVehicleCatalog(readRuntime())
+        val legacyMotorcycles = readLegacyMotorcycles()
+        val activeMotorcycles = runtime.vehicles.filter { it.category == VehicleCategory.MOTO }
+
+        assertEquals(404, legacyMotorcycles.size)
+        assertEquals(68, activeMotorcycles.size)
+        assertTrue(activeMotorcycles.all { vehicle ->
+            vehicle.years(runtime.selectionYearUpperBound).count() == vehicle.legacyKeys.size
+        })
+
+        legacyMotorcycles.forEach { legacy ->
+            val vehicle = activeMotorcycles.single { candidate ->
+                candidate.legacyKeys.any { key ->
+                    key.brand == legacy.brand && key.model == legacy.model && key.year == legacy.year
+                }
+            }
+            val snapshot = vehicle.toVehicleInfo(legacy.year)
+
+            assertTrue("year missing: $legacy", legacy.year in vehicle.years(runtime.selectionYearUpperBound))
+            assertEquals(legacy.type, snapshot.type)
+            assertEquals(legacy.fuelTankCapacity ?: 0.0, snapshot.fuelTankCapacity, 0.0)
+            assertEquals(legacy.batteryCapacity ?: 0.0, vehicle.battery.declaredKwh ?: 0.0, 0.0)
+            assertEquals(0.0, vehicle.battery.usableKwh ?: 0.0, 0.0)
+            assertEquals(0.0, snapshot.batteryCapacity, 0.0)
+        }
     }
 
     private fun runtimeWith(from: String, to: String): String = readRuntime().replace(from, to)
@@ -95,9 +132,31 @@ class VehicleRuntimeCatalogTest {
             .toList()
     }
 
+    private fun readLegacyMotorcycles(): List<LegacyMotorcycleSnapshot> =
+        Json.parseToJsonElement(findAsset("motorcycles.json").readText()).jsonArray.map { element ->
+            val entry = element.jsonObject
+            LegacyMotorcycleSnapshot(
+                brand = entry.getValue("brand").jsonPrimitive.content,
+                model = entry.getValue("model").jsonPrimitive.content,
+                year = entry.getValue("year").jsonPrimitive.content.toInt(),
+                type = VehicleType.valueOf(entry.getValue("type").jsonPrimitive.content),
+                fuelTankCapacity = entry["fuelTankCapacity"]?.jsonPrimitive?.doubleOrNull,
+                batteryCapacity = entry["batteryCapacity"]?.jsonPrimitive?.doubleOrNull
+            )
+        }
+
     private data class LegacyKey(val category: String, val brand: String, val model: String, val year: Int) {
         val key = "$category|$brand|$model|$year"
     }
+
+    private data class LegacyMotorcycleSnapshot(
+        val brand: String,
+        val model: String,
+        val year: Int,
+        val type: VehicleType,
+        val fuelTankCapacity: Double?,
+        val batteryCapacity: Double?
+    )
 
     private val RuntimeLegacyKey.key: String
         get() = "$category|$brand|$model|$year"
