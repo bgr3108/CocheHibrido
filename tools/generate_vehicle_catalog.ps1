@@ -881,6 +881,122 @@ function Normalize-AdditionalDenseCarFamilies {
     return $retiredCount
 }
 
+# Third editorial pass: remaining fragmented car families. As above, this is
+# deliberately an editorial/generator concern; Android consumes the explicit
+# model, range and human variant emitted in the runtime seed.
+function Normalize-RemainingDenseCarFamilies {
+    param($Catalog)
+
+    $families = @(
+        "citroen|c-elysee", "ford|focus", "kia|niro", "mercedes-benz|clase-b",
+        "nissan|juke", "peugeot|3008", "seat|ibiza", "toyota|gr-yaris",
+        "volkswagen|golf", "volkswagen|tiguan"
+    )
+    $activeTargets = @($Catalog.vehicles | Where-Object {
+        $_.category -eq "COCHE" -and $_.editorialStatus -eq "ACTIVE" -and
+            $families -contains "$($_.brandId)|$($_.modelId)"
+    })
+    if (@($activeTargets | Where-Object { (Get-Property $_ "remainingDenseCarNormalizationVersion") -ne 1 }).Count -eq 0) {
+        return 0
+    }
+
+    $cElysee = "https://manualzz.com/doc/67715122/citro%C3%ABn-c-elys%C3%A9e-01-06-2018---%E2%88%9E-el-manual-del-propietario"
+    $focus = "https://www.ford.es/content/dam/guxeu/es/documents/brochures/cars/new-focus/BRO-new_ford_focus.pdf"
+    $niroPhevGen1 = "https://press.kia.com/es/es/home/models/niro-phev/niro-phev-.html"
+    $niroGen2 = "https://www.kia.com/content/dam/kwcms/kme/es/es/assets/contents/catalogos/gama_niro/Niro_julio_22.pdf"
+    $classB = "https://www.mercedes-benz.es/passengercars/models/hatchback/b-class/overview.html"
+    $juke = "https://www.nissan.es/vehiculos/nuevos-vehiculos/juke/dimensiones.html"
+    $jukeHybrid = "https://www.nissan.es/propietarios/manuales-del-propietario/manual-del-propietario/iom/jukehybrid/hf16/e1/2024/capacidades-y-lubricantes-lquidos-recomendados-1.shtml"
+    $peugeot3008 = "https://www.peugeot.es/content/dam/peugeot/spain/pdf/equipamientos-y-caracteristicas/3008-equipamientos-caracteristicas.pdf"
+    $peugeotPhev = "https://www.media.stellantis.com/es-es/peugeot/press/la-nueva-motorizacion-hibrida-enchufable-e-dcs7-de-195-cv-llega-a-la-gama-peugeot"
+    $ibiza = "https://www.seat.es/coches/ibiza.html"
+    $grYaris = "https://www.toyota.es/coches/gr-yaris/caracteristicas"
+    $golf = "https://www.volkswagen.es/es/modelos/golf.html"
+    $golfGte = "https://www.km77.com/coches/volkswagen/golf/2020/5-puertas/gte/golf-gte-14-tsi-180-kw-245-cv-dsg-6-vel/datos"
+    $tiguan = "https://www.volkswagen.es/es/modelos/tiguan.html"
+
+    $specs = @(
+        # Citroën C-Elysée, sold in Spain from 2012; all supported engines use 50 L.
+        (New-AdditionalDenseCarSpec "citroen" "c-elysee" "first" "Primera generación" "gasolina" "Gasolina" 2012 2017 "ICE" "GASOLINA" "NONE" 50 $null $null $null $null "" @((New-DenseCarSource $cElysee @("yearFrom", "yearTo", "fuelTankLitres"))) "C-Elysée gasolina: depósito de 50 L." "SEDAN"),
+        (New-AdditionalDenseCarSpec "citroen" "c-elysee" "first" "Primera generación" "diesel" "Diésel" 2012 2017 "ICE" "DIESEL" "NONE" 50 $null $null $null $null "" @((New-DenseCarSource $cElysee @("yearFrom", "yearTo", "fuelTankLitres"))) "C-Elysée diésel: depósito de 50 L." "SEDAN"),
+
+        # Focus: keep the legacy Mk3 fuel capacity distinct from the Mk4 data.
+        (New-AdditionalDenseCarSpec "ford" "focus" "mk3" "Tercera generación" "gasolina" "Gasolina" 2011 2018 "ICE" "GASOLINA" "NONE" 55 $null $null $null $null "" @((New-DenseCarSource "https://www.km77.com/coches/ford/focus/2011/datos" @("yearFrom", "yearTo", "fuelTankLitres"))) "Focus gasolina de tercera generación: depósito de 55 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "ford" "focus" "mk4" "Cuarta generación" "gasolina" "Gasolina" 2019 2026 "ICE" "GASOLINA" "NONE" 52 $null $null $null $null "" @((New-DenseCarSource $focus @("yearFrom", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Focus gasolina de cuarta generación: depósito de 52 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "ford" "focus" "mk4" "Cuarta generación" "diesel" "Diésel" 2019 2026 "ICE" "DIESEL" "NONE" 47 $null $null $null $null "" @((New-DenseCarSource $focus @("yearFrom", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Focus diésel de cuarta generación: depósito de 47 L." "HATCHBACK"),
+
+        # Niro generations and powertrains stay separate: they are materially distinct.
+        (New-AdditionalDenseCarSpec "kia" "niro" "de" "Primera generación" "hybrid" "Híbrido" 2016 2021 "HEV" "" "FULL" 45 $null $null $null $null "" @((New-DenseCarSource "https://press.kia.com/es/es/home/models/niro/niro-hev.html" @("yearFrom", "yearTo", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Niro HEV de primera generación: depósito de 45 L." "SUV"),
+        (New-AdditionalDenseCarSpec "kia" "niro" "de" "Primera generación" "plug-in-hybrid" "Híbrido enchufable" 2017 2021 "PHEV" "GASOLINA" "PLUG_IN" 43 $null $null 8.9 "UNKNOWN" "" @((New-DenseCarSource $niroPhevGen1 @("yearFrom", "yearTo", "fuelTankLitres", "battery.declaredKwh") "OFFICIAL_MANUFACTURER")) "Niro PHEV de primera generación: 43 L y 8,9 kWh publicados sin clasificación bruto/útil." "SUV"),
+        (New-AdditionalDenseCarSpec "kia" "niro" "de" "Primera generación" "electric" "Eléctrico" 2019 2021 "BEV" "" "BATTERY_ELECTRIC" $null $null $null 64 "UNKNOWN" "" @((New-DenseCarSource "https://www.kia.com/es/modelos/e-niro/descubrelo/" @("yearFrom", "yearTo", "battery.declaredKwh") "OFFICIAL_MANUFACTURER")) "e-Niro: capacidad declarada de 64 kWh sin clasificación bruto/útil." "SUV"),
+        (New-AdditionalDenseCarSpec "kia" "niro" "sg2" "Segunda generación" "hybrid" "Híbrido" 2022 2026 "HEV" "" "FULL" 42 $null $null $null $null "" @((New-DenseCarSource $niroGen2 @("yearFrom", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Niro HEV de segunda generación: depósito de 42 L." "SUV"),
+        (New-AdditionalDenseCarSpec "kia" "niro" "sg2" "Segunda generación" "plug-in-hybrid" "Híbrido enchufable" 2022 2026 "PHEV" "GASOLINA" "PLUG_IN" 37 $null $null 11.1 "UNKNOWN" "" @((New-DenseCarSource $niroGen2 @("yearFrom", "fuelTankLitres", "battery.declaredKwh") "OFFICIAL_MANUFACTURER")) "Niro PHEV de segunda generación: 37 L y 11,1 kWh publicados sin clasificación bruto/útil." "SUV"),
+        (New-AdditionalDenseCarSpec "kia" "niro" "sg2" "Segunda generación" "electric" "Eléctrico" 2022 2026 "BEV" "" "BATTERY_ELECTRIC" $null $null $null 64.8 "UNKNOWN" "" @((New-DenseCarSource "https://press.kia.com/es/es/home/notas-de-prensa/press-releases/2022/el-nuevo-kia-niro-impulsa-la-movilidad-sostenible.html" @("yearFrom", "battery.declaredKwh") "OFFICIAL_MANUFACTURER")) "Niro EV de segunda generación: capacidad declarada de 64,8 kWh sin clasificación bruto/útil." "SUV"),
+
+        (New-AdditionalDenseCarSpec "mercedes-benz" "clase-b" "w245" "Primera generación" "diesel" "Diésel" 2005 2011 "ICE" "DIESEL" "NONE" 54 $null $null $null $null "" @((New-DenseCarSource "https://www.km77.com/coches/mercedes-benz/clase-b/2005/datos" @("yearFrom", "yearTo", "fuelTankLitres"))) "Clase B diésel de primera generación: depósito de 54 L." "MPV"),
+        (New-AdditionalDenseCarSpec "mercedes-benz" "clase-b" "w246" "Segunda generación" "gasolina" "Gasolina" 2011 2018 "ICE" "GASOLINA" "NONE" 50 $null $null $null $null "" @((New-DenseCarSource "https://www.km77.com/coches/mercedes-benz/clase-b/2012/datos" @("yearFrom", "yearTo", "fuelTankLitres"))) "Clase B gasolina de segunda generación: depósito de 50 L." "MPV"),
+        (New-AdditionalDenseCarSpec "mercedes-benz" "clase-b" "w246" "Segunda generación" "diesel" "Diésel" 2011 2018 "ICE" "DIESEL" "NONE" 50 $null $null $null $null "" @((New-DenseCarSource "https://www.km77.com/coches/mercedes-benz/clase-b/2012/datos" @("yearFrom", "yearTo", "fuelTankLitres"))) "Clase B diésel de segunda generación: depósito de 50 L." "MPV"),
+        (New-AdditionalDenseCarSpec "mercedes-benz" "clase-b" "w247" "Tercera generación" "plug-in-hybrid" "Híbrido enchufable" 2021 2021 "PHEV" "" "PLUG_IN" 35 $null $null 10.6 "UNKNOWN" "" @((New-DenseCarSource $classB @("fuelTankLitres", "battery.declaredKwh") "OFFICIAL_MANUFACTURER")) "Clase B 250 e legacy: 35 L y 10,6 kWh sin clasificación bruto/útil." "MPV" "FWD" "LEGACY_IMPORT"),
+
+        (New-AdditionalDenseCarSpec "nissan" "juke" "f15" "Primera generación" "gasolina" "Gasolina" 2010 2019 "ICE" "GASOLINA" "NONE" 46 $null $null $null $null "" @((New-DenseCarSource "https://www.km77.com/coches/nissan/juke/2010/datos" @("yearFrom", "yearTo", "fuelTankLitres"))) "Juke gasolina de primera generación: depósito de 46 L." "SUV"),
+        (New-AdditionalDenseCarSpec "nissan" "juke" "f15" "Primera generación" "diesel" "Diésel" 2010 2019 "ICE" "DIESEL" "NONE" 46 $null $null $null $null "" @((New-DenseCarSource "https://www.km77.com/coches/nissan/juke/2010/datos" @("yearFrom", "yearTo", "fuelTankLitres"))) "Juke diésel de primera generación: depósito de 46 L." "SUV"),
+        (New-AdditionalDenseCarSpec "nissan" "juke" "f16" "Segunda generación" "gasolina" "Gasolina" 2020 2026 "ICE" "GASOLINA" "NONE" 46 $null $null $null $null "" @((New-DenseCarSource $juke @("yearFrom", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Juke gasolina de segunda generación: depósito de 46 L." "SUV"),
+        (New-AdditionalDenseCarSpec "nissan" "juke" "f16" "Segunda generación" "hybrid" "Híbrido" 2022 2026 "HEV" "" "FULL" 46 $null $null $null $null "" @((New-DenseCarSource $jukeHybrid @("yearFrom", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Juke Hybrid: depósito de 46 L." "SUV"),
+
+        (New-AdditionalDenseCarSpec "peugeot" "3008" "p84" "Segunda generación" "diesel" "Diésel" 2023 2023 "ICE" "DIESEL" "NONE" 53 $null $null $null $null "" @((New-DenseCarSource "https://www.km77.com/coches/peugeot/3008/2023/datos" @("yearFrom", "yearTo", "fuelTankLitres"))) "3008 diésel: se conserva exclusivamente el año legacy 2023 con depósito de 53 L." "SUV"),
+        (New-AdditionalDenseCarSpec "peugeot" "3008" "p64" "Tercera generación" "plug-in-hybrid-195" "Híbrido enchufable" 2025 2026 "PHEV" "GASOLINA" "PLUG_IN" 55 21 17.8 $null $null "" @((New-DenseCarSource $peugeot3008 @("yearFrom", "fuelTankLitres", "battery.grossKwh") "OFFICIAL_MANUFACTURER"),(New-DenseCarSource $peugeotPhev @("fuelTankLitres", "battery.grossKwh", "battery.usableKwh") "OFFICIAL_MANUFACTURER")) "3008 Plug-in Hybrid 195: 55 L, 21 kWh brutos y 17,8 kWh utilizables." "SUV"),
+
+        (New-AdditionalDenseCarSpec "seat" "ibiza" "6j" "Cuarta generación" "gasolina" "Gasolina" 2008 2017 "ICE" "GASOLINA" "NONE" 45 $null $null $null $null "" @((New-DenseCarSource "https://www.km77.com/coches/seat/ibiza/2008/datos" @("yearFrom", "yearTo", "fuelTankLitres"))) "Ibiza gasolina de cuarta generación: depósito de 45 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "seat" "ibiza" "6j" "Cuarta generación" "diesel" "Diésel" 2008 2017 "ICE" "DIESEL" "NONE" 45 $null $null $null $null "" @((New-DenseCarSource "https://www.km77.com/coches/seat/ibiza/2008/datos" @("yearFrom", "yearTo", "fuelTankLitres"))) "Ibiza diésel de cuarta generación: depósito de 45 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "seat" "ibiza" "6f" "Quinta generación" "gasolina" "Gasolina" 2017 2026 "ICE" "GASOLINA" "NONE" 40 $null $null $null $null "" @((New-DenseCarSource $ibiza @("yearFrom", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Ibiza gasolina de quinta generación: depósito de 40 L." "HATCHBACK"),
+
+        (New-AdditionalDenseCarSpec "toyota" "gr-yaris" "xp210" "Primera generación" "gasolina" "Gasolina" 2020 2026 "ICE" "GASOLINA" "NONE" 50 $null $null $null $null "" @((New-DenseCarSource $grYaris @("yearFrom", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "GR Yaris: depósito de 50 L." "HATCHBACK" "AWD"),
+
+        (New-AdditionalDenseCarSpec "volkswagen" "golf" "vii" "Séptima generación" "gasolina" "Gasolina" 2013 2019 "ICE" "GASOLINA" "NONE" 50 $null $null $null $null "" @((New-DenseCarSource "https://www.km77.com/coches/volkswagen/golf/2013/datos" @("yearFrom", "yearTo", "fuelTankLitres"))) "Golf gasolina de séptima generación: depósito de 50 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "volkswagen" "golf" "vii" "Séptima generación" "diesel" "Diésel" 2013 2019 "ICE" "DIESEL" "NONE" 50 $null $null $null $null "" @((New-DenseCarSource "https://www.km77.com/coches/volkswagen/golf/2013/datos" @("yearFrom", "yearTo", "fuelTankLitres"))) "Golf diésel de séptima generación: depósito de 50 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "volkswagen" "golf" "vii" "Séptima generación" "gte" "Híbrido enchufable" 2014 2019 "PHEV" "GASOLINA" "PLUG_IN" 40 $null $null 8.8 "UNKNOWN" "" @((New-DenseCarSource "https://www.volkswagen-newsroom.com/en/golf-gte-2014-3803" @("yearFrom", "yearTo", "fuelTankLitres", "battery.declaredKwh") "OFFICIAL_MANUFACTURER")) "Golf GTE de séptima generación: 40 L y 8,8 kWh declarados sin clasificación bruto/útil." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "volkswagen" "golf" "viii" "Octava generación" "gasolina" "Gasolina" 2020 2026 "ICE" "GASOLINA" "NONE" 50 $null $null $null $null "" @((New-DenseCarSource $golf @("yearFrom", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Golf gasolina de octava generación: depósito de 50 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "volkswagen" "golf" "viii" "Octava generación" "diesel" "Diésel" 2020 2026 "ICE" "DIESEL" "NONE" 50 $null $null $null $null "" @((New-DenseCarSource $golf @("yearFrom", "fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Golf diésel de octava generación: depósito de 50 L." "HATCHBACK"),
+        (New-AdditionalDenseCarSpec "volkswagen" "golf" "viii" "Octava generación" "gte" "GTE" 2020 2024 "PHEV" "GASOLINA" "PLUG_IN" 39.5 $null $null 13 "UNKNOWN" "" @((New-DenseCarSource $golfGte @("yearFrom", "yearTo", "fuelTankLitres", "battery.declaredKwh"))) "Golf VIII GTE: 39,5 L y 13 kWh declarados sin clasificación bruto/útil." "HATCHBACK"),
+
+        (New-AdditionalDenseCarSpec "volkswagen" "tiguan" "ad1" "Segunda generación" "gasolina" "Gasolina" 2016 2023 "ICE" "GASOLINA" "NONE" 58 $null $null $null $null "" @((New-DenseCarSource "https://www.km77.com/coches/volkswagen/tiguan/2016/datos" @("yearFrom", "yearTo", "fuelTankLitres"))) "Tiguan gasolina de segunda generación: depósito de 58 L." "SUV"),
+        (New-AdditionalDenseCarSpec "volkswagen" "tiguan" "ad1" "Segunda generación" "diesel" "Diésel" 2016 2023 "ICE" "DIESEL" "NONE" 58 $null $null $null $null "" @((New-DenseCarSource "https://www.km77.com/coches/volkswagen/tiguan/2016/datos" @("yearFrom", "yearTo", "fuelTankLitres"))) "Tiguan diésel de segunda generación: depósito de 58 L." "SUV")
+    )
+
+    $activeTargets = @($Catalog.vehicles | Where-Object {
+        $_.category -eq "COCHE" -and $_.editorialStatus -eq "ACTIVE" -and
+            $families -contains "$($_.brandId)|$($_.modelId)"
+    })
+    $original = @($activeTargets | Where-Object { (Get-Property $_ "remainingDenseCarNormalizationVersion") -ne 1 })
+    $retiredCount = 0
+    foreach ($spec in $specs) {
+        Add-CatalogIdentity $Catalog "COCHE" $spec.brandId $spec.modelId $spec.generationId $spec.generationName $spec.variantId $spec.variantName
+        $matches = @($original | Where-Object {
+            $_.editorialStatus -eq "ACTIVE" -and $_.brandId -eq $spec.brandId -and $_.modelId -eq $spec.modelId -and
+                ($null -eq $_.generationId -or $_.generationId -eq $spec.generationId) -and (Test-DenseCarLegacyMatch $_ $spec)
+        } | Sort-Object yearFrom,catalogId)
+        $canonical = if ($matches.Count -gt 0) { $matches[0] } else { $null }
+        if ($null -eq $canonical) {
+            $canonical = New-Object @{ catalogId = "car-$($spec.brandId)-$($spec.modelId)-$($spec.generationId)-$($spec.variantId)"; editorialStatus = "ACTIVE"; provenance = $spec.provenance; category = "COCHE"; brandId = $spec.brandId; modelId = $spec.modelId; generationId = $spec.generationId; variantId = $spec.variantId; yearFrom = $spec.yearFrom; yearTo = $spec.yearTo; powertrain = $null; fuelTankLitres = $null; battery = $null; bodyStyle = $null; drivetrain = $null; marketCodes = @("ES"); aliases = @(); legacyKeys = @(); sources = @(); notes = ""; editorialRevision = 0 }
+            $Catalog.vehicles = @($Catalog.vehicles) + $canonical
+        }
+        Set-DenseCarRecord $canonical $spec @($matches | ForEach-Object { $_.legacyKeys })
+        Set-EditorialProperty $canonical "remainingDenseCarNormalizationVersion" 1
+        $retired = @($matches | Where-Object { $_.catalogId -ne $canonical.catalogId })
+        if ($retired.Count -gt 0) { Set-EditorialProperty $canonical "supersededCatalogIds" @($retired | ForEach-Object { $_.catalogId }) }
+        foreach ($entry in $retired) {
+            $entry.editorialStatus = "INACTIVE"
+            Set-EditorialProperty $entry "replacedByCatalogId" $canonical.catalogId
+            $entry.editorialRevision = [int]$entry.editorialRevision + 1
+            $entry.notes = "$($entry.notes) Consolidado en $($canonical.catalogId) mediante normalización editorial investigada."
+            $retiredCount++
+        }
+    }
+    $unresolved = @($original | Where-Object { $_.editorialStatus -eq "ACTIVE" -and (Get-Property $_ "remainingDenseCarNormalizationVersion") -ne 1 })
+    if ($unresolved.Count -gt 0) { throw "remaining dense normalization: registros legacy sin rango: $($unresolved.catalogId -join ', ')" }
+    return $retiredCount
+}
+
 function Test-EditorialCatalog {
     param($Catalog)
     if ($Catalog.schemaVersion -ne 1) { throw "catalog: schemaVersion no soportada '$($Catalog.schemaVersion)'" }
@@ -1058,6 +1174,7 @@ $editorialDirty = $false
 $retiredMotorcycles = $null
 $retiredCars = $null
 $retiredAdditionalCars = $null
+$retiredRemainingCars = $null
 if ($NormalizeLegacyModels) {
     Normalize-LegacyModelStructure $editorial
     $editorialDirty = $true
@@ -1069,6 +1186,7 @@ if ($ConsolidateMotorcycles) {
 if ($NormalizeDenseCarFamilies) {
     $retiredCars = Normalize-DenseCarFamilies $editorial
     $retiredAdditionalCars = Normalize-AdditionalDenseCarFamilies $editorial
+    $retiredRemainingCars = Normalize-RemainingDenseCarFamilies $editorial
     $editorialDirty = $true
 }
 Test-EditorialCatalog $editorial
@@ -1083,6 +1201,9 @@ if ($null -ne $retiredCars) {
 }
 if ($null -ne $retiredAdditionalCars) {
     Write-Output "Coches normalizados (RAV4/Yaris/León/ix35): $retiredAdditionalCars registros absorbidos"
+}
+if ($null -ne $retiredRemainingCars) {
+    Write-Output "Coches normalizados (familias restantes): $retiredRemainingCars registros absorbidos"
 }
 $runtime = New-RuntimeCatalog $editorial
 Write-DeterministicJson $runtime $RuntimePath

@@ -21,7 +21,7 @@ class VehicleRuntimeCatalogTest {
         readLegacy("vehicles.json", VehicleCategory.COCHE).plus(readLegacy("motorcycles.json", VehicleCategory.MOTO)).forEach { legacy ->
             assertTrue("legacy entry missing: $legacy", activeLegacyKeys.contains(legacy.key))
         }
-        assertEquals(205, runtime.vehicles.size)
+        assertEquals(212, runtime.vehicles.size)
         assertTrue(runtime.vehicles.any { it.catalogId == "car-seat-leon-kl-facelift-e-hybrid-1-5" })
         assertTrue(runtime.vehicles.any { it.catalogId == "car-bmw-x5-g05-lci-xdrive50e" })
     }
@@ -180,6 +180,41 @@ class VehicleRuntimeCatalogTest {
                 legacy.brand == "SEAT" && legacy.model == "León e-Hybrid" && legacy.year == 2025
             ) 19.7 else 0.0
             assertEquals(expectedOperationalBattery, snapshot.batteryCapacity, 0.0)
+        }
+    }
+
+    @Test
+    fun normalizedRemainingDenseFamiliesPreserveEveryLegacyFunctionalSnapshot() {
+        val runtime = parseRuntimeVehicleCatalog(readRuntime())
+        val targets = listOf(
+            "Citroën" to "C-Elysée",
+            "Ford" to "Focus",
+            "Kia" to "Niro",
+            "Mercedes-Benz" to "B ",
+            "Nissan" to "Juke",
+            "Peugeot" to "3008",
+            "SEAT" to "Ibiza",
+            "Toyota" to "GR Yaris",
+            "Volkswagen" to "Golf",
+            "Volkswagen" to "Tiguan"
+        )
+        val legacyCars = readLegacyCars().filter { legacy ->
+            targets.any { (brand, modelPrefix) ->
+                legacy.brand == brand && legacy.model.startsWith(modelPrefix)
+            }
+        }
+
+        assertEquals(23, legacyCars.size)
+        legacyCars.forEach { legacy ->
+            val vehicle = runtime.vehicles.single { candidate ->
+                candidate.legacyKeys.any { key ->
+                    key.brand == legacy.brand && key.model == legacy.model && key.year == legacy.year
+                }
+            }
+            val snapshot = vehicle.toVehicleInfo(legacy.year)
+            assertEquals(legacy.type, snapshot.type)
+            assertEquals(legacy.fuelTankCapacity ?: 0.0, snapshot.fuelTankCapacity, 0.0)
+            assertEquals(0.0, snapshot.batteryCapacity, 0.0)
         }
     }
 

@@ -1204,8 +1204,8 @@
     {
       "brandId": "kia",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 37,
+      "editorialRevision": 2,
+      "fuelTankLitres": 37.0,
       "provenance": "RESEARCH_READY",
       "catalogId": "car-kia-niro-sg2-phev",
       "drivetrain": "FWD",
@@ -1218,32 +1218,35 @@
       "generationId": "sg2",
       "powertrain": {
         "hybridSystem": "PLUG_IN",
-        "primaryFuel": "GASOLINA",
-        "kind": "PHEV"
+        "kind": "PHEV",
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "niro",
-      "notes": "",
-      "yearTo": null,
+      "notes": "Niro PHEV de segunda generación: 37 L y 11,1 kWh publicados sin clasificación bruto/útil.",
+      "yearTo": 2026,
       "battery": {
-        "declaredCapacityType": "UNKNOWN",
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": 11.1
+        "declaredKwh": 11.1,
+        "declaredCapacityType": "UNKNOWN",
+        "usableKwh": null
       },
       "legacyKeys": [],
       "sources": [
         {
           "url": "https://www.kia.com/content/dam/kwcms/kme/es/es/assets/contents/catalogos/gama_niro/Niro_julio_22.pdf",
           "fields": [
+            "yearFrom",
             "fuelTankLitres",
             "battery.declaredKwh"
           ],
-          "type": "OFFICIAL_MANUFACTURER",
-          "accessedAt": "2026-10-05"
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
         }
       ],
-      "variantId": "1-6-gdi-phev"
+      "variantId": "plug-in-hybrid",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "kia",
@@ -1299,8 +1302,8 @@
     {
       "brandId": "peugeot",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 55,
+      "editorialRevision": 2,
+      "fuelTankLitres": 55.0,
       "provenance": "RESEARCH_READY",
       "catalogId": "car-peugeot-3008-p64-plug-in-hybrid-195",
       "drivetrain": "FWD",
@@ -1313,33 +1316,45 @@
       "generationId": "p64",
       "powertrain": {
         "hybridSystem": "PLUG_IN",
-        "primaryFuel": "GASOLINA",
-        "kind": "PHEV"
+        "kind": "PHEV",
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "3008",
-      "notes": "",
+      "notes": "3008 Plug-in Hybrid 195: 55 L, 21 kWh brutos y 17,8 kWh utilizables.",
       "yearTo": 2026,
       "battery": {
+        "grossKwh": 21.0,
+        "declaredKwh": null,
         "declaredCapacityType": null,
-        "grossKwh": 21,
-        "usableKwh": 17.8,
-        "declaredKwh": null
+        "usableKwh": 17.8
       },
       "legacyKeys": [],
       "sources": [
         {
           "url": "https://www.peugeot.es/content/dam/peugeot/spain/pdf/equipamientos-y-caracteristicas/3008-equipamientos-caracteristicas.pdf",
           "fields": [
+            "yearFrom",
+            "fuelTankLitres",
+            "battery.grossKwh"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        },
+        {
+          "url": "https://www.media.stellantis.com/es-es/peugeot/press/la-nueva-motorizacion-hibrida-enchufable-e-dcs7-de-195-cv-llega-a-la-gama-peugeot",
+          "fields": [
             "fuelTankLitres",
             "battery.grossKwh",
             "battery.usableKwh"
           ],
-          "type": "OFFICIAL_MANUFACTURER",
-          "accessedAt": "2026-10-05"
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
         }
       ],
-      "variantId": "plug-in-hybrid-195"
+      "variantId": "plug-in-hybrid-195",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "seat",
@@ -1461,7 +1476,7 @@
     {
       "brandId": "volkswagen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 39.5,
       "provenance": "RESEARCH_READY",
       "catalogId": "car-volkswagen-golf-viii-gte",
@@ -1475,39 +1490,36 @@
       "generationId": "viii",
       "powertrain": {
         "hybridSystem": "PLUG_IN",
-        "primaryFuel": "GASOLINA",
-        "kind": "PHEV"
+        "kind": "PHEV",
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "golf",
-      "notes": "Capacidad declarada sin clasificaciÃ³n bruto/Ãºtil.",
+      "notes": "Golf VIII GTE: 39,5 L y 13 kWh declarados sin clasificación bruto/útil.",
       "yearTo": 2024,
       "battery": {
-        "declaredCapacityType": "UNKNOWN",
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": 13
+        "declaredKwh": 13.0,
+        "declaredCapacityType": "UNKNOWN",
+        "usableKwh": null
       },
       "legacyKeys": [],
       "sources": [
         {
-          "url": "https://www.volkswagen.es/comunicacion/modelo/golf-gte/",
+          "url": "https://www.km77.com/coches/volkswagen/golf/2020/5-puertas/gte/golf-gte-14-tsi-180-kw-245-cv-dsg-6-vel/datos",
           "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres",
             "battery.declaredKwh"
           ],
-          "type": "OFFICIAL_MANUFACTURER",
-          "accessedAt": "2026-10-05"
-        },
-        {
-          "url": "https://www.km77.com/coches/volkswagen/golf/2020/5-puertas/gte/golf-5p-gte/datos",
-          "fields": [
-            "fuelTankLitres"
-          ],
-          "type": "TECHNICAL_REFERENCE",
-          "accessedAt": "2026-10-05"
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
         }
       ],
-      "variantId": "gte-1-4-tsi"
+      "variantId": "gte",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "audi",
@@ -3823,12 +3835,12 @@
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 50,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-c-elysee-bluehdi-100-c6d2161dfd-2015-diesel-6c3a8e0ef3",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -3842,7 +3854,7 @@
       },
       "category": "COCHE",
       "modelId": "c-elysee",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-c-elysee-hdi-92-aaf5f80e24-2012-diesel-4b9642553f mediante normalización editorial investigada.",
       "yearTo": 2015,
       "battery": {
         "declaredCapacityType": null,
@@ -3872,39 +3884,46 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "bluehdi-100"
+      "variantId": "bluehdi-100",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-c-elysee-hdi-92-aaf5f80e24-2012-diesel-4b9642553f"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 50,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 50.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-citroen-legacy-c-elysee-hdi-92-aaf5f80e24-2012-diesel-4b9642553f",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SEDAN",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2012,
-      "generationId": null,
+      "generationId": "first",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "c-elysee",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2012,
+      "notes": "C-Elysée diésel: depósito de 50 L.",
+      "yearTo": 2017,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "C-Elysée BlueHDi 100",
+          "year": 2015
+        },
         {
           "brand": "Citroën",
           "category": "COCHE",
@@ -3912,31 +3931,34 @@
           "year": 2012
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "hdi-92"
+      "sources": [
+        {
+          "url": "https://manualzz.com/doc/67715122/citro%C3%ABn-c-elys%C3%A9e-01-06-2018---%E2%88%9E-el-manual-del-propietario",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-citroen-legacy-c-elysee-bluehdi-100-c6d2161dfd-2015-diesel-6c3a8e0ef3"
+      ]
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 50,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-c-elysee-puretech-82-07581cfba5-2015-gasolina-d9c3b1c8fc",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -3950,7 +3972,7 @@
       },
       "category": "COCHE",
       "modelId": "c-elysee",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-c-elysee-vti-115-f8383e89f4-2012-gasolina-b8e16e6c4e mediante normalización editorial investigada.",
       "yearTo": 2015,
       "battery": {
         "declaredCapacityType": null,
@@ -3980,71 +4002,88 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "puretech-82"
+      "variantId": "puretech-82",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-c-elysee-vti-115-f8383e89f4-2012-gasolina-b8e16e6c4e"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 50,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 50.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-citroen-legacy-c-elysee-vti-115-f8383e89f4-2012-gasolina-b8e16e6c4e",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SEDAN",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2012,
-      "generationId": null,
+      "generationId": "first",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "c-elysee",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2012,
+      "notes": "C-Elysée gasolina: depósito de 50 L.",
+      "yearTo": 2017,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
           "brand": "Citroën",
           "category": "COCHE",
+          "model": "C-Elysée PureTech 82",
+          "year": 2015
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
           "model": "C-Elysée VTi 115",
+          "year": 2012
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "C-Elysée VTi 72",
           "year": 2012
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "vti-115"
+      "sources": [
+        {
+          "url": "https://manualzz.com/doc/67715122/citro%C3%ABn-c-elys%C3%A9e-01-06-2018---%E2%88%9E-el-manual-del-propietario",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-citroen-legacy-c-elysee-vti-72-a40fdb024a-2012-gasolina-122b5ae0a9",
+        "legacy-coche-citroen-legacy-c-elysee-puretech-82-07581cfba5-2015-gasolina-d9c3b1c8fc"
+      ]
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 50,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-c-elysee-vti-72-a40fdb024a-2012-gasolina-122b5ae0a9",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -4058,7 +4097,7 @@
       },
       "category": "COCHE",
       "modelId": "c-elysee",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-c-elysee-vti-115-f8383e89f4-2012-gasolina-b8e16e6c4e mediante normalización editorial investigada.",
       "yearTo": 2012,
       "battery": {
         "declaredCapacityType": null,
@@ -4088,7 +4127,8 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "vti-72"
+      "variantId": "vti-72",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-c-elysee-vti-115-f8383e89f4-2012-gasolina-b8e16e6c4e"
     },
     {
       "brandId": "citroen",
@@ -4525,32 +4565,32 @@
     {
       "brandId": "ford",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 55,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 55.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-ford-legacy-focus-1-0-ecoboost-125cv-2c4cd67e0b-2016-gasolina-8e1c74143a",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2016,
-      "generationId": null,
+      "yearFrom": 2011,
+      "generationId": "mk3",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "focus",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2016,
+      "notes": "Focus gasolina de tercera generación: depósito de 55 L.",
+      "yearTo": 2018,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -4560,51 +4600,51 @@
           "year": 2016
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-0-ecoboost-125cv"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/ford/focus/2011/datos",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "ford",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 47,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 47.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-ford-legacy-focus-ecoblue-5fe41af98f-2024-diesel-ce95156b2c",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2024,
-      "generationId": null,
+      "yearFrom": 2019,
+      "generationId": "mk4",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "focus",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2024,
+      "notes": "Focus diésel de cuarta generación: depósito de 47 L.",
+      "yearTo": 2026,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -4614,21 +4654,20 @@
           "year": 2024
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "ecoblue"
+      "sources": [
+        {
+          "url": "https://www.ford.es/content/dam/guxeu/es/documents/brochures/cars/new-focus/BRO-new_ford_focus.pdf",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "ford",
@@ -5363,32 +5402,32 @@
     {
       "brandId": "kia",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 42,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 42.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-kia-legacy-niro-hybrid-edf15fff78-2025-hibrido-0c76dd365c",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2025,
-      "generationId": null,
+      "yearFrom": 2022,
+      "generationId": "sg2",
       "powertrain": {
         "hybridSystem": "FULL",
-        "primaryFuel": null,
-        "kind": "HEV"
+        "kind": "HEV",
+        "primaryFuel": null
       },
       "category": "COCHE",
       "modelId": "niro",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2025,
+      "notes": "Niro HEV de segunda generación: depósito de 42 L.",
+      "yearTo": 2026,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -5398,21 +5437,20 @@
           "year": 2025
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "hybrid"
+      "sources": [
+        {
+          "url": "https://www.kia.com/content/dam/kwcms/kme/es/es/assets/contents/catalogos/gama_niro/Niro_julio_22.pdf",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "variantId": "hybrid",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "kia",
@@ -5633,32 +5671,32 @@
     {
       "brandId": "mercedes-benz",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 50,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 50.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-mercedes-benz-legacy-b-180-43b5fc2332-2017-gasolina-dcddf052ad",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "MPV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2017,
-      "generationId": null,
+      "yearFrom": 2011,
+      "generationId": "w246",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "clase-b",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2017,
+      "notes": "Clase B gasolina de segunda generación: depósito de 50 L.",
+      "yearTo": 2018,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -5668,51 +5706,51 @@
           "year": 2017
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "b-180"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/mercedes-benz/clase-b/2012/datos",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "mercedes-benz",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 54,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 54.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-mercedes-benz-legacy-b-180-cdi-f364d782b9-2008-diesel-de57571468",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "MPV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2008,
-      "generationId": null,
+      "yearFrom": 2005,
+      "generationId": "w245",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "clase-b",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2008,
+      "notes": "Clase B diésel de primera generación: depósito de 54 L.",
+      "yearTo": 2011,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -5722,51 +5760,51 @@
           "year": 2008
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "b-180-cdi"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/mercedes-benz/clase-b/2005/datos",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "mercedes-benz",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 50,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 50.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-mercedes-benz-legacy-b-180-cdi-f364d782b9-2013-diesel-27ceb013e9",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "MPV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2013,
-      "generationId": null,
+      "yearFrom": 2011,
+      "generationId": "w246",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "clase-b",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2013,
+      "notes": "Clase B diésel de segunda generación: depósito de 50 L.",
+      "yearTo": 2018,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -5774,33 +5812,42 @@
           "category": "COCHE",
           "model": "B 180 CDI",
           "year": 2013
+        },
+        {
+          "brand": "Mercedes-Benz",
+          "category": "COCHE",
+          "model": "B 200 CDI",
+          "year": 2014
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "b-180-cdi"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/mercedes-benz/clase-b/2012/datos",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-mercedes-benz-legacy-b-200-cdi-a778dda232-2014-diesel-a73d316937"
+      ]
     },
     {
       "brandId": "mercedes-benz",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 50,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-mercedes-benz-legacy-b-200-cdi-a778dda232-2014-diesel-a73d316937",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -5814,7 +5861,7 @@
       },
       "category": "COCHE",
       "modelId": "clase-b",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-mercedes-benz-legacy-b-180-cdi-f364d782b9-2013-diesel-27ceb013e9 mediante normalización editorial investigada.",
       "yearTo": 2014,
       "battery": {
         "declaredCapacityType": null,
@@ -5844,37 +5891,38 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "b-200-cdi"
+      "variantId": "b-200-cdi",
+      "replacedByCatalogId": "legacy-coche-mercedes-benz-legacy-b-180-cdi-f364d782b9-2013-diesel-27ceb013e9"
     },
     {
       "brandId": "mercedes-benz",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 35,
+      "editorialRevision": 2,
+      "fuelTankLitres": 35.0,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-mercedes-benz-legacy-b-250-e-8318287922-2021-hibrido-enchufable-fea2805740",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "MPV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2021,
-      "generationId": null,
+      "generationId": "w247",
       "powertrain": {
         "hybridSystem": "PLUG_IN",
-        "primaryFuel": null,
-        "kind": "PHEV"
+        "kind": "PHEV",
+        "primaryFuel": null
       },
       "category": "COCHE",
       "modelId": "clase-b",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "Clase B 250 e legacy: 35 L y 10,6 kWh sin clasificación bruto/útil.",
       "yearTo": 2021,
       "battery": {
-        "declaredCapacityType": "UNKNOWN",
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": 10.6
+        "declaredKwh": 10.6,
+        "declaredCapacityType": "UNKNOWN",
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -5884,21 +5932,20 @@
           "year": 2021
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "b-250-e"
+      "sources": [
+        {
+          "url": "https://www.mercedes-benz.es/passengercars/models/hatchback/b-class/overview.html",
+          "fields": [
+            "fuelTankLitres",
+            "battery.declaredKwh"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "variantId": "plug-in-hybrid",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "mercedes-benz",
@@ -6227,32 +6274,32 @@
     {
       "brandId": "nissan",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 46,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 46.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-nissan-legacy-juke-1-5-dci-5efd98f228-2013-diesel-d75bcd4219",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2013,
-      "generationId": null,
+      "yearFrom": 2010,
+      "generationId": "f15",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "juke",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2013,
+      "notes": "Juke diésel de primera generación: depósito de 46 L.",
+      "yearTo": 2019,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -6262,51 +6309,51 @@
           "year": 2013
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-5-dci"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/nissan/juke/2010/datos",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "nissan",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 46,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 46.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-nissan-legacy-juke-1-6-143c5c82dc-2013-gasolina-c374ef3255",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2013,
-      "generationId": null,
+      "yearFrom": 2010,
+      "generationId": "f15",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "juke",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2013,
+      "notes": "Juke gasolina de primera generación: depósito de 46 L.",
+      "yearTo": 2019,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -6316,21 +6363,21 @@
           "year": 2013
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-6"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/nissan/juke/2010/datos",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "nissan",
@@ -8213,32 +8260,32 @@
     {
       "brandId": "peugeot",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 53,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 53.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-peugeot-legacy-3008-bluehdi-3be7b3d43b-2023-diesel-0e0bdf5120",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2023,
-      "generationId": null,
+      "generationId": "p84",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "3008",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "3008 diésel: se conserva exclusivamente el año legacy 2023 con depósito de 53 L.",
       "yearTo": 2023,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -8248,21 +8295,21 @@
           "year": 2023
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "bluehdi"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/peugeot/3008/2023/datos",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "renault",
@@ -8537,32 +8584,32 @@
     {
       "brandId": "seat",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 40,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 40.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-seat-legacy-ibiza-2af17bdd62-2024-gasolina-56d9e8e954",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2024,
-      "generationId": null,
+      "yearFrom": 2017,
+      "generationId": "6f",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "ibiza",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2024,
+      "notes": "Ibiza gasolina de quinta generación: depósito de 40 L.",
+      "yearTo": 2026,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -8572,51 +8619,50 @@
           "year": 2024
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": null
+      "sources": [
+        {
+          "url": "https://www.seat.es/coches/ibiza.html",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "seat",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 45,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 45.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-seat-legacy-ibiza-tsi-d4e4a66655-2016-gasolina-7fbd10e3e3",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2016,
-      "generationId": null,
+      "yearFrom": 2008,
+      "generationId": "6j",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "ibiza",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2016,
+      "notes": "Ibiza gasolina de cuarta generación: depósito de 45 L.",
+      "yearTo": 2017,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -8626,21 +8672,21 @@
           "year": 2016
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "tsi"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/seat/ibiza/2008/datos",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "seat",
@@ -8967,12 +9013,12 @@
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 50,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-toyota-legacy-gr-yaris-auto-89de2056dd-2025-gasolina-f2069a6e1a",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -8986,7 +9032,7 @@
       },
       "category": "COCHE",
       "modelId": "gr-yaris",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-toyota-legacy-gr-yaris-b19be7bde4-2021-gasolina-bf989b15cc mediante normalización editorial investigada.",
       "yearTo": 2025,
       "battery": {
         "declaredCapacityType": null,
@@ -9016,37 +9062,38 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "auto"
+      "variantId": "auto",
+      "replacedByCatalogId": "legacy-coche-toyota-legacy-gr-yaris-b19be7bde4-2021-gasolina-bf989b15cc"
     },
     {
       "brandId": "toyota",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 50,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 50.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-toyota-legacy-gr-yaris-b19be7bde4-2021-gasolina-bf989b15cc",
-      "drivetrain": null,
+      "drivetrain": "AWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2021,
-      "generationId": null,
+      "yearFrom": 2020,
+      "generationId": "xp210",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "gr-yaris",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2021,
+      "notes": "GR Yaris: depósito de 50 L.",
+      "yearTo": 2026,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -9054,23 +9101,31 @@
           "category": "COCHE",
           "model": "GR Yaris",
           "year": 2021
+        },
+        {
+          "brand": "Toyota",
+          "category": "COCHE",
+          "model": "GR Yaris Auto",
+          "year": 2025
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": null
+      "sources": [
+        {
+          "url": "https://www.toyota.es/coches/gr-yaris/caracteristicas",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-toyota-legacy-gr-yaris-auto-89de2056dd-2025-gasolina-f2069a6e1a"
+      ]
     },
     {
       "brandId": "toyota",
@@ -10160,32 +10215,32 @@
     {
       "brandId": "volkswagen",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 50,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 50.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-volkswagen-legacy-golf-tdi-abea8a451a-2023-diesel-8b34bdf688",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2023,
-      "generationId": null,
+      "yearFrom": 2020,
+      "generationId": "viii",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "golf",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2023,
+      "notes": "Golf diésel de octava generación: depósito de 50 L.",
+      "yearTo": 2026,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -10195,21 +10250,20 @@
           "year": 2023
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "tdi"
+      "sources": [
+        {
+          "url": "https://www.volkswagen.es/es/modelos/golf.html",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "volkswagen",
@@ -10322,32 +10376,32 @@
     {
       "brandId": "volkswagen",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 58,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 58.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-volkswagen-legacy-tiguan-tdi-9d0ddd7b04-2019-diesel-34be26e95c",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2019,
-      "generationId": null,
+      "yearFrom": 2016,
+      "generationId": "ad1",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "tiguan",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2019,
+      "notes": "Tiguan diésel de segunda generación: depósito de 58 L.",
+      "yearTo": 2023,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -10357,51 +10411,51 @@
           "year": 2019
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "tdi"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/volkswagen/tiguan/2016/datos",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "volkswagen",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 58,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 2,
+      "fuelTankLitres": 58.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-volkswagen-legacy-tiguan-tsi-16f4ae573a-2019-gasolina-02ce1acc4a",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2019,
-      "generationId": null,
+      "yearFrom": 2016,
+      "generationId": "ad1",
       "powertrain": {
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "kind": "ICE",
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "tiguan",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2019,
+      "notes": "Tiguan gasolina de segunda generación: depósito de 58 L.",
+      "yearTo": 2023,
       "battery": {
-        "declaredCapacityType": null,
         "grossKwh": null,
-        "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
       },
       "legacyKeys": [
         {
@@ -10411,21 +10465,21 @@
           "year": 2019
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "tsi"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/volkswagen/tiguan/2016/datos",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     },
     {
       "brandId": "volvo",
@@ -35781,6 +35835,567 @@
       "notes": "Yaris XP90 diésel: depósito de 42 L.",
       "denseCarNormalizationVersion": 1,
       "additionalDenseCarNormalizationVersion": 3
+    },
+    {
+      "notes": "Focus gasolina de cuarta generación: depósito de 52 L.",
+      "bodyStyle": "HATCHBACK",
+      "legacyKeys": [],
+      "aliases": [],
+      "variantId": "gasolina",
+      "editorialStatus": "ACTIVE",
+      "brandId": "ford",
+      "powertrain": {
+        "hybridSystem": "NONE",
+        "kind": "ICE",
+        "primaryFuel": "GASOLINA"
+      },
+      "battery": {
+        "grossKwh": null,
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
+      },
+      "drivetrain": "FWD",
+      "marketCodes": [
+        "ES"
+      ],
+      "yearFrom": 2019,
+      "category": "COCHE",
+      "sources": [
+        {
+          "url": "https://www.ford.es/content/dam/guxeu/es/documents/brochures/cars/new-focus/BRO-new_ford_focus.pdf",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "catalogId": "car-ford-focus-mk4-gasolina",
+      "provenance": "RESEARCH_READY",
+      "editorialRevision": 1,
+      "fuelTankLitres": 52.0,
+      "modelId": "focus",
+      "generationId": "mk4",
+      "yearTo": 2026,
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
+    },
+    {
+      "notes": "Niro HEV de primera generación: depósito de 45 L.",
+      "bodyStyle": "SUV",
+      "legacyKeys": [],
+      "aliases": [],
+      "variantId": "hybrid",
+      "editorialStatus": "ACTIVE",
+      "brandId": "kia",
+      "powertrain": {
+        "hybridSystem": "FULL",
+        "kind": "HEV",
+        "primaryFuel": null
+      },
+      "battery": {
+        "grossKwh": null,
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
+      },
+      "drivetrain": "FWD",
+      "marketCodes": [
+        "ES"
+      ],
+      "yearFrom": 2016,
+      "category": "COCHE",
+      "sources": [
+        {
+          "url": "https://press.kia.com/es/es/home/models/niro/niro-hev.html",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "catalogId": "car-kia-niro-de-hybrid",
+      "provenance": "RESEARCH_READY",
+      "editorialRevision": 1,
+      "fuelTankLitres": 45.0,
+      "modelId": "niro",
+      "generationId": "de",
+      "yearTo": 2021,
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
+    },
+    {
+      "notes": "Niro PHEV de primera generación: 43 L y 8,9 kWh publicados sin clasificación bruto/útil.",
+      "bodyStyle": "SUV",
+      "legacyKeys": [],
+      "aliases": [],
+      "variantId": "plug-in-hybrid",
+      "editorialStatus": "ACTIVE",
+      "brandId": "kia",
+      "powertrain": {
+        "hybridSystem": "PLUG_IN",
+        "kind": "PHEV",
+        "primaryFuel": "GASOLINA"
+      },
+      "battery": {
+        "grossKwh": null,
+        "declaredKwh": 8.9,
+        "declaredCapacityType": "UNKNOWN",
+        "usableKwh": null
+      },
+      "drivetrain": "FWD",
+      "marketCodes": [
+        "ES"
+      ],
+      "yearFrom": 2017,
+      "category": "COCHE",
+      "sources": [
+        {
+          "url": "https://press.kia.com/es/es/home/models/niro-phev/niro-phev-.html",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres",
+            "battery.declaredKwh"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "catalogId": "car-kia-niro-de-plug-in-hybrid",
+      "provenance": "RESEARCH_READY",
+      "editorialRevision": 1,
+      "fuelTankLitres": 43.0,
+      "modelId": "niro",
+      "generationId": "de",
+      "yearTo": 2021,
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
+    },
+    {
+      "notes": "e-Niro: capacidad declarada de 64 kWh sin clasificación bruto/útil.",
+      "bodyStyle": "SUV",
+      "legacyKeys": [],
+      "aliases": [],
+      "variantId": "electric",
+      "editorialStatus": "ACTIVE",
+      "brandId": "kia",
+      "powertrain": {
+        "hybridSystem": "BATTERY_ELECTRIC",
+        "kind": "BEV",
+        "primaryFuel": null
+      },
+      "battery": {
+        "grossKwh": null,
+        "declaredKwh": 64.0,
+        "declaredCapacityType": "UNKNOWN",
+        "usableKwh": null
+      },
+      "drivetrain": "FWD",
+      "marketCodes": [
+        "ES"
+      ],
+      "yearFrom": 2019,
+      "category": "COCHE",
+      "sources": [
+        {
+          "url": "https://www.kia.com/es/modelos/e-niro/descubrelo/",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery.declaredKwh"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "catalogId": "car-kia-niro-de-electric",
+      "provenance": "RESEARCH_READY",
+      "editorialRevision": 1,
+      "fuelTankLitres": null,
+      "modelId": "niro",
+      "generationId": "de",
+      "yearTo": 2021,
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
+    },
+    {
+      "notes": "Niro EV de segunda generación: capacidad declarada de 64,8 kWh sin clasificación bruto/útil.",
+      "bodyStyle": "SUV",
+      "legacyKeys": [],
+      "aliases": [],
+      "variantId": "electric",
+      "editorialStatus": "ACTIVE",
+      "brandId": "kia",
+      "powertrain": {
+        "hybridSystem": "BATTERY_ELECTRIC",
+        "kind": "BEV",
+        "primaryFuel": null
+      },
+      "battery": {
+        "grossKwh": null,
+        "declaredKwh": 64.8,
+        "declaredCapacityType": "UNKNOWN",
+        "usableKwh": null
+      },
+      "drivetrain": "FWD",
+      "marketCodes": [
+        "ES"
+      ],
+      "yearFrom": 2022,
+      "category": "COCHE",
+      "sources": [
+        {
+          "url": "https://press.kia.com/es/es/home/notas-de-prensa/press-releases/2022/el-nuevo-kia-niro-impulsa-la-movilidad-sostenible.html",
+          "fields": [
+            "yearFrom",
+            "battery.declaredKwh"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "catalogId": "car-kia-niro-sg2-electric",
+      "provenance": "RESEARCH_READY",
+      "editorialRevision": 1,
+      "fuelTankLitres": null,
+      "modelId": "niro",
+      "generationId": "sg2",
+      "yearTo": 2026,
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
+    },
+    {
+      "notes": "Juke gasolina de segunda generación: depósito de 46 L.",
+      "bodyStyle": "SUV",
+      "legacyKeys": [],
+      "aliases": [],
+      "variantId": "gasolina",
+      "editorialStatus": "ACTIVE",
+      "brandId": "nissan",
+      "powertrain": {
+        "hybridSystem": "NONE",
+        "kind": "ICE",
+        "primaryFuel": "GASOLINA"
+      },
+      "battery": {
+        "grossKwh": null,
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
+      },
+      "drivetrain": "FWD",
+      "marketCodes": [
+        "ES"
+      ],
+      "yearFrom": 2020,
+      "category": "COCHE",
+      "sources": [
+        {
+          "url": "https://www.nissan.es/vehiculos/nuevos-vehiculos/juke/dimensiones.html",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "catalogId": "car-nissan-juke-f16-gasolina",
+      "provenance": "RESEARCH_READY",
+      "editorialRevision": 1,
+      "fuelTankLitres": 46.0,
+      "modelId": "juke",
+      "generationId": "f16",
+      "yearTo": 2026,
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
+    },
+    {
+      "notes": "Juke Hybrid: depósito de 46 L.",
+      "bodyStyle": "SUV",
+      "legacyKeys": [],
+      "aliases": [],
+      "variantId": "hybrid",
+      "editorialStatus": "ACTIVE",
+      "brandId": "nissan",
+      "powertrain": {
+        "hybridSystem": "FULL",
+        "kind": "HEV",
+        "primaryFuel": null
+      },
+      "battery": {
+        "grossKwh": null,
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
+      },
+      "drivetrain": "FWD",
+      "marketCodes": [
+        "ES"
+      ],
+      "yearFrom": 2022,
+      "category": "COCHE",
+      "sources": [
+        {
+          "url": "https://www.nissan.es/propietarios/manuales-del-propietario/manual-del-propietario/iom/jukehybrid/hf16/e1/2024/capacidades-y-lubricantes-lquidos-recomendados-1.shtml",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "catalogId": "car-nissan-juke-f16-hybrid",
+      "provenance": "RESEARCH_READY",
+      "editorialRevision": 1,
+      "fuelTankLitres": 46.0,
+      "modelId": "juke",
+      "generationId": "f16",
+      "yearTo": 2026,
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
+    },
+    {
+      "notes": "Ibiza diésel de cuarta generación: depósito de 45 L.",
+      "bodyStyle": "HATCHBACK",
+      "legacyKeys": [],
+      "aliases": [],
+      "variantId": "diesel",
+      "editorialStatus": "ACTIVE",
+      "brandId": "seat",
+      "powertrain": {
+        "hybridSystem": "NONE",
+        "kind": "ICE",
+        "primaryFuel": "DIESEL"
+      },
+      "battery": {
+        "grossKwh": null,
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
+      },
+      "drivetrain": "FWD",
+      "marketCodes": [
+        "ES"
+      ],
+      "yearFrom": 2008,
+      "category": "COCHE",
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/seat/ibiza/2008/datos",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "catalogId": "car-seat-ibiza-6j-diesel",
+      "provenance": "RESEARCH_READY",
+      "editorialRevision": 1,
+      "fuelTankLitres": 45.0,
+      "modelId": "ibiza",
+      "generationId": "6j",
+      "yearTo": 2017,
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
+    },
+    {
+      "notes": "Golf gasolina de séptima generación: depósito de 50 L.",
+      "bodyStyle": "HATCHBACK",
+      "legacyKeys": [],
+      "aliases": [],
+      "variantId": "gasolina",
+      "editorialStatus": "ACTIVE",
+      "brandId": "volkswagen",
+      "powertrain": {
+        "hybridSystem": "NONE",
+        "kind": "ICE",
+        "primaryFuel": "GASOLINA"
+      },
+      "battery": {
+        "grossKwh": null,
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
+      },
+      "drivetrain": "FWD",
+      "marketCodes": [
+        "ES"
+      ],
+      "yearFrom": 2013,
+      "category": "COCHE",
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/volkswagen/golf/2013/datos",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "catalogId": "car-volkswagen-golf-vii-gasolina",
+      "provenance": "RESEARCH_READY",
+      "editorialRevision": 1,
+      "fuelTankLitres": 50.0,
+      "modelId": "golf",
+      "generationId": "vii",
+      "yearTo": 2019,
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
+    },
+    {
+      "notes": "Golf diésel de séptima generación: depósito de 50 L.",
+      "bodyStyle": "HATCHBACK",
+      "legacyKeys": [],
+      "aliases": [],
+      "variantId": "diesel",
+      "editorialStatus": "ACTIVE",
+      "brandId": "volkswagen",
+      "powertrain": {
+        "hybridSystem": "NONE",
+        "kind": "ICE",
+        "primaryFuel": "DIESEL"
+      },
+      "battery": {
+        "grossKwh": null,
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
+      },
+      "drivetrain": "FWD",
+      "marketCodes": [
+        "ES"
+      ],
+      "yearFrom": 2013,
+      "category": "COCHE",
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/volkswagen/golf/2013/datos",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "catalogId": "car-volkswagen-golf-vii-diesel",
+      "provenance": "RESEARCH_READY",
+      "editorialRevision": 1,
+      "fuelTankLitres": 50.0,
+      "modelId": "golf",
+      "generationId": "vii",
+      "yearTo": 2019,
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
+    },
+    {
+      "notes": "Golf GTE de séptima generación: 40 L y 8,8 kWh declarados sin clasificación bruto/útil.",
+      "bodyStyle": "HATCHBACK",
+      "legacyKeys": [],
+      "aliases": [],
+      "variantId": "gte",
+      "editorialStatus": "ACTIVE",
+      "brandId": "volkswagen",
+      "powertrain": {
+        "hybridSystem": "PLUG_IN",
+        "kind": "PHEV",
+        "primaryFuel": "GASOLINA"
+      },
+      "battery": {
+        "grossKwh": null,
+        "declaredKwh": 8.8,
+        "declaredCapacityType": "UNKNOWN",
+        "usableKwh": null
+      },
+      "drivetrain": "FWD",
+      "marketCodes": [
+        "ES"
+      ],
+      "yearFrom": 2014,
+      "category": "COCHE",
+      "sources": [
+        {
+          "url": "https://www.volkswagen-newsroom.com/en/golf-gte-2014-3803",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres",
+            "battery.declaredKwh"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "catalogId": "car-volkswagen-golf-vii-gte",
+      "provenance": "RESEARCH_READY",
+      "editorialRevision": 1,
+      "fuelTankLitres": 40.0,
+      "modelId": "golf",
+      "generationId": "vii",
+      "yearTo": 2019,
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
+    },
+    {
+      "notes": "Golf gasolina de octava generación: depósito de 50 L.",
+      "bodyStyle": "HATCHBACK",
+      "legacyKeys": [],
+      "aliases": [],
+      "variantId": "gasolina",
+      "editorialStatus": "ACTIVE",
+      "brandId": "volkswagen",
+      "powertrain": {
+        "hybridSystem": "NONE",
+        "kind": "ICE",
+        "primaryFuel": "GASOLINA"
+      },
+      "battery": {
+        "grossKwh": null,
+        "declaredKwh": null,
+        "declaredCapacityType": null,
+        "usableKwh": null
+      },
+      "drivetrain": "FWD",
+      "marketCodes": [
+        "ES"
+      ],
+      "yearFrom": 2020,
+      "category": "COCHE",
+      "sources": [
+        {
+          "url": "https://www.volkswagen.es/es/modelos/golf.html",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "accessedAt": "2026-10-06",
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "catalogId": "car-volkswagen-golf-viii-gasolina",
+      "provenance": "RESEARCH_READY",
+      "editorialRevision": 1,
+      "fuelTankLitres": 50.0,
+      "modelId": "golf",
+      "generationId": "viii",
+      "yearTo": 2026,
+      "denseCarNormalizationVersion": 1,
+      "remainingDenseCarNormalizationVersion": 1
     }
   ],
   "generations": [
@@ -36000,6 +36615,111 @@
       "brandId": "hyundai",
       "category": "COCHE",
       "id": "lm"
+    },
+    {
+      "category": "COCHE",
+      "id": "first",
+      "brandId": "citroen",
+      "modelId": "c-elysee",
+      "displayName": "Primera generación"
+    },
+    {
+      "category": "COCHE",
+      "id": "mk3",
+      "brandId": "ford",
+      "modelId": "focus",
+      "displayName": "Tercera generación"
+    },
+    {
+      "category": "COCHE",
+      "id": "mk4",
+      "brandId": "ford",
+      "modelId": "focus",
+      "displayName": "Cuarta generación"
+    },
+    {
+      "category": "COCHE",
+      "id": "de",
+      "brandId": "kia",
+      "modelId": "niro",
+      "displayName": "Primera generación"
+    },
+    {
+      "category": "COCHE",
+      "id": "w245",
+      "brandId": "mercedes-benz",
+      "modelId": "clase-b",
+      "displayName": "Primera generación"
+    },
+    {
+      "category": "COCHE",
+      "id": "w246",
+      "brandId": "mercedes-benz",
+      "modelId": "clase-b",
+      "displayName": "Segunda generación"
+    },
+    {
+      "category": "COCHE",
+      "id": "w247",
+      "brandId": "mercedes-benz",
+      "modelId": "clase-b",
+      "displayName": "Tercera generación"
+    },
+    {
+      "category": "COCHE",
+      "id": "f15",
+      "brandId": "nissan",
+      "modelId": "juke",
+      "displayName": "Primera generación"
+    },
+    {
+      "category": "COCHE",
+      "id": "f16",
+      "brandId": "nissan",
+      "modelId": "juke",
+      "displayName": "Segunda generación"
+    },
+    {
+      "category": "COCHE",
+      "id": "p84",
+      "brandId": "peugeot",
+      "modelId": "3008",
+      "displayName": "Segunda generación"
+    },
+    {
+      "category": "COCHE",
+      "id": "6j",
+      "brandId": "seat",
+      "modelId": "ibiza",
+      "displayName": "Cuarta generación"
+    },
+    {
+      "category": "COCHE",
+      "id": "6f",
+      "brandId": "seat",
+      "modelId": "ibiza",
+      "displayName": "Quinta generación"
+    },
+    {
+      "category": "COCHE",
+      "id": "xp210",
+      "brandId": "toyota",
+      "modelId": "gr-yaris",
+      "displayName": "Primera generación"
+    },
+    {
+      "category": "COCHE",
+      "id": "vii",
+      "brandId": "volkswagen",
+      "modelId": "golf",
+      "displayName": "Séptima generación"
+    },
+    {
+      "category": "COCHE",
+      "id": "ad1",
+      "brandId": "volkswagen",
+      "modelId": "tiguan",
+      "displayName": "Segunda generación"
     }
   ],
   "variants": [
@@ -37721,6 +38441,294 @@
       "modelId": "ix35",
       "displayName": "Diésel",
       "generationId": "lm"
+    },
+    {
+      "brandId": "citroen",
+      "generationId": "first",
+      "id": "gasolina",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Gasolina",
+      "modelId": "c-elysee"
+    },
+    {
+      "brandId": "citroen",
+      "generationId": "first",
+      "id": "diesel",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Diésel",
+      "modelId": "c-elysee"
+    },
+    {
+      "brandId": "ford",
+      "generationId": "mk3",
+      "id": "gasolina",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Gasolina",
+      "modelId": "focus"
+    },
+    {
+      "brandId": "ford",
+      "generationId": "mk4",
+      "id": "gasolina",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Gasolina",
+      "modelId": "focus"
+    },
+    {
+      "brandId": "ford",
+      "generationId": "mk4",
+      "id": "diesel",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Diésel",
+      "modelId": "focus"
+    },
+    {
+      "brandId": "kia",
+      "generationId": "de",
+      "id": "hybrid",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Híbrido",
+      "modelId": "niro"
+    },
+    {
+      "brandId": "kia",
+      "generationId": "de",
+      "id": "plug-in-hybrid",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Híbrido enchufable",
+      "modelId": "niro"
+    },
+    {
+      "brandId": "kia",
+      "generationId": "de",
+      "id": "electric",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Eléctrico",
+      "modelId": "niro"
+    },
+    {
+      "brandId": "kia",
+      "generationId": "sg2",
+      "id": "hybrid",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Híbrido",
+      "modelId": "niro"
+    },
+    {
+      "brandId": "kia",
+      "generationId": "sg2",
+      "id": "plug-in-hybrid",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Híbrido enchufable",
+      "modelId": "niro"
+    },
+    {
+      "brandId": "kia",
+      "generationId": "sg2",
+      "id": "electric",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Eléctrico",
+      "modelId": "niro"
+    },
+    {
+      "brandId": "mercedes-benz",
+      "generationId": "w245",
+      "id": "diesel",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Diésel",
+      "modelId": "clase-b"
+    },
+    {
+      "brandId": "mercedes-benz",
+      "generationId": "w246",
+      "id": "gasolina",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Gasolina",
+      "modelId": "clase-b"
+    },
+    {
+      "brandId": "mercedes-benz",
+      "generationId": "w246",
+      "id": "diesel",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Diésel",
+      "modelId": "clase-b"
+    },
+    {
+      "brandId": "mercedes-benz",
+      "generationId": "w247",
+      "id": "plug-in-hybrid",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Híbrido enchufable",
+      "modelId": "clase-b"
+    },
+    {
+      "brandId": "nissan",
+      "generationId": "f15",
+      "id": "gasolina",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Gasolina",
+      "modelId": "juke"
+    },
+    {
+      "brandId": "nissan",
+      "generationId": "f15",
+      "id": "diesel",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Diésel",
+      "modelId": "juke"
+    },
+    {
+      "brandId": "nissan",
+      "generationId": "f16",
+      "id": "gasolina",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Gasolina",
+      "modelId": "juke"
+    },
+    {
+      "brandId": "nissan",
+      "generationId": "f16",
+      "id": "hybrid",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Híbrido",
+      "modelId": "juke"
+    },
+    {
+      "brandId": "peugeot",
+      "generationId": "p84",
+      "id": "diesel",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Diésel",
+      "modelId": "3008"
+    },
+    {
+      "brandId": "seat",
+      "generationId": "6j",
+      "id": "gasolina",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Gasolina",
+      "modelId": "ibiza"
+    },
+    {
+      "brandId": "seat",
+      "generationId": "6j",
+      "id": "diesel",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Diésel",
+      "modelId": "ibiza"
+    },
+    {
+      "brandId": "seat",
+      "generationId": "6f",
+      "id": "gasolina",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Gasolina",
+      "modelId": "ibiza"
+    },
+    {
+      "brandId": "toyota",
+      "generationId": "xp210",
+      "id": "gasolina",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Gasolina",
+      "modelId": "gr-yaris"
+    },
+    {
+      "brandId": "volkswagen",
+      "generationId": "vii",
+      "id": "gasolina",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Gasolina",
+      "modelId": "golf"
+    },
+    {
+      "brandId": "volkswagen",
+      "generationId": "vii",
+      "id": "diesel",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Diésel",
+      "modelId": "golf"
+    },
+    {
+      "brandId": "volkswagen",
+      "generationId": "vii",
+      "id": "gte",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Híbrido enchufable",
+      "modelId": "golf"
+    },
+    {
+      "brandId": "volkswagen",
+      "generationId": "viii",
+      "id": "gasolina",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Gasolina",
+      "modelId": "golf"
+    },
+    {
+      "brandId": "volkswagen",
+      "generationId": "viii",
+      "id": "diesel",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Diésel",
+      "modelId": "golf"
+    },
+    {
+      "brandId": "volkswagen",
+      "generationId": "viii",
+      "id": "gte",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "GTE",
+      "modelId": "golf"
+    },
+    {
+      "brandId": "volkswagen",
+      "generationId": "ad1",
+      "id": "gasolina",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Gasolina",
+      "modelId": "tiguan"
+    },
+    {
+      "brandId": "volkswagen",
+      "generationId": "ad1",
+      "id": "diesel",
+      "aliases": [],
+      "category": "COCHE",
+      "displayName": "Diésel",
+      "modelId": "tiguan"
     }
   ],
   "schemaVersion": 1,

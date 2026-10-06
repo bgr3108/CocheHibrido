@@ -85,7 +85,7 @@ class VehicleSelectionCatalogTest {
         )
         val volkswagen = cars.brandId("Volkswagen")
         assertEquals(
-            listOf("Diésel", "Híbrido enchufable"),
+            listOf("Diésel", "Gasolina", "Híbrido enchufable"),
             cars.variantsFor(volkswagen, cars.modelId(volkswagen, "Golf"), 2023).map { it.displayName }
         )
     }
@@ -144,6 +144,77 @@ class VehicleSelectionCatalogTest {
                 val labels = cars.variantsFor(brandId, modelId, year).map { it.displayName }
                 assertTrue("$brandName $modelName $year", labels.none {
                     it.contains(Regex("(?i)\\b(xa20|xa30|xa40|xp10|xp90|xp130|xp210|1p|5f|kl|lm|facelift|my)\\b"))
+                })
+            }
+        }
+    }
+
+    @Test
+    fun remainingDenseFamiliesExposeHumanFunctionalChoices() {
+        val citroen = cars.brandId("Citroën")
+        assertVariants(citroen, "C-Elysée", 2015, "Diésel", "Gasolina")
+
+        val ford = cars.brandId("Ford")
+        assertVariants(ford, "Focus", 2016, "Gasolina")
+        assertVariants(ford, "Focus", 2024, "Diésel", "Gasolina")
+
+        val kia = cars.brandId("Kia")
+        assertVariants(kia, "Niro", 2025, "Eléctrico", "Híbrido", "Híbrido enchufable")
+
+        val mercedes = cars.brandId("Mercedes-Benz")
+        assertVariants(mercedes, "Clase B", 2017, "Diésel", "Gasolina")
+        assertVariants(mercedes, "Clase B", 2021, "Híbrido enchufable")
+
+        val nissan = cars.brandId("Nissan")
+        assertVariants(nissan, "Juke", 2013, "Diésel", "Gasolina")
+        assertVariants(nissan, "Juke", 2024, "Gasolina", "Híbrido")
+
+        val peugeot = cars.brandId("Peugeot")
+        assertVariants(peugeot, "3008", 2023, "Diésel")
+        assertVariants(peugeot, "3008", 2025, "Híbrido enchufable")
+
+        val seat = cars.brandId("SEAT")
+        assertVariants(seat, "Ibiza", 2016, "Diésel", "Gasolina")
+        assertVariants(seat, "Ibiza", 2024, "Gasolina")
+
+        val toyota = cars.brandId("Toyota")
+        assertVariants(toyota, "GR Yaris", 2021, "Gasolina")
+        assertVariants(toyota, "GR Yaris", 2025, "Gasolina")
+
+        val volkswagen = cars.brandId("Volkswagen")
+        assertVariants(volkswagen, "Golf", 2023, "Diésel", "Gasolina", "Híbrido enchufable")
+        assertVariants(volkswagen, "Tiguan", 2019, "Diésel", "Gasolina")
+    }
+
+    @Test
+    fun everySelectorLabelIsUniqueForDistinctFunctionalSnapshots() {
+        cars.brands().forEach { brand ->
+            cars.modelsFor(brand.id).forEach { model ->
+                cars.yearsFor(brand.id, model.id).forEach { year ->
+                    val variants = cars.variantsFor(brand.id, model.id, year)
+                    assertEquals(
+                        "${brand.displayName} ${model.displayName} $year",
+                        variants.size,
+                        variants.map { it.displayName }.distinct().size
+                    )
+                }
+            }
+        }
+    }
+
+    @Test
+    fun remainingDenseFamiliesKeepTechnicalCodesOutOfSelectorLabels() {
+        listOf(
+            "Citroën" to "C-Elysée", "Ford" to "Focus", "Kia" to "Niro",
+            "Mercedes-Benz" to "Clase B", "Nissan" to "Juke", "Peugeot" to "3008",
+            "SEAT" to "Ibiza", "Toyota" to "GR Yaris", "Volkswagen" to "Golf",
+            "Volkswagen" to "Tiguan"
+        ).forEach { (brandName, modelName) ->
+            val brandId = cars.brandId(brandName)
+            val modelId = cars.modelId(brandId, modelName)
+            cars.yearsFor(brandId, modelId).forEach { year ->
+                assertTrue("$brandName $modelName $year", cars.variantsFor(brandId, modelId, year).none {
+                    it.displayName.contains(Regex("(?i)\\b(w245|w246|w247|p84|p64|f15|f16|6j|6f|ad1|mk3|mk4|vii|viii|de|sg2|xp210|facelift|my)\\b"))
                 })
             }
         }
