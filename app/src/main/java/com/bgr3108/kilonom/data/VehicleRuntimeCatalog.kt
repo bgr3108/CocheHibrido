@@ -97,6 +97,7 @@ internal data class RuntimeVehicle(
             modelId = model.id,
             modelDisplayName = model.displayName,
             year = year,
+            rangeStartYear = yearFrom,
             generationId = generation?.id,
             variantDisplayName = variant?.displayName,
             variantId = variant?.id,
@@ -190,14 +191,29 @@ class VehicleSelectionCatalog internal constructor(
             .values
             .map { records -> records.sortedBy { it.catalogId }.first() }
 
-        val energyCounts = grouped.groupingBy { it.energyLabel() }.eachCount()
-        val labels = grouped.map { candidate ->
-            candidate.variantLabel(energyCounts.getValue(candidate.energyLabel()) > 1)
-        }
-        return grouped.mapIndexed { index, candidate ->
+        val labelsByFunctionalKey = grouped
+            .groupBy { it.energyLabel() }
+            .flatMap { (_, sameEnergy) ->
+                val hasGenerationalTransition = sameEnergy.size > 1 &&
+                    sameEnergy.all { it.hasGenericEnergyVariantLabel() } &&
+                    sameEnergy.mapNotNull { it.generationId }.distinct().size > 1
+                val ordered = sameEnergy.sortedWith(
+                    compareBy<VehicleSelectionCandidate> { it.rangeStartYear }
+                        .thenBy { it.catalogId }
+                )
+                ordered.mapIndexed { index, candidate ->
+                    candidate.functionalKey to if (hasGenerationalTransition) {
+                        candidate.generationTransitionLabel(index, ordered.size)
+                    } else {
+                        candidate.variantLabel(sameEnergy.size > 1)
+                    }
+                }
+            }
+            .toMap()
+        return grouped.map { candidate ->
             VehicleSelectionVariant(
                 id = candidate.functionalKey,
-                displayName = labels[index],
+                displayName = labelsByFunctionalKey.getValue(candidate.functionalKey),
                 automaticDisplayName = candidate.automaticDisplayName(),
                 vehicle = candidate.vehicleInfo
             )
@@ -246,6 +262,7 @@ internal data class VehicleSelectionCandidate(
     val modelId: String,
     val modelDisplayName: String,
     val year: Int,
+    val rangeStartYear: Int,
     val generationId: String?,
     val variantDisplayName: String?,
     val variantId: String?,
@@ -263,6 +280,10 @@ internal data class VehicleSelectionCandidate(
         category.name,
         vehicleInfo.type.name,
         powertrain.primaryFuel?.name.orEmpty(),
+        // HEV snapshots are otherwise identical, but Mild Hybrid and Nissan
+        // e-POWER describe materially different systems and must remain
+        // selectable as distinct human variants when they coexist in a year.
+        powertrain.hybridSystem?.name.orEmpty(),
         fuelTankLitres?.toString().orEmpty(),
         operationalBatteryKwh?.toString().orEmpty()
     ).joinToString("|")
@@ -286,6 +307,22 @@ internal data class VehicleSelectionCandidate(
             .trim(' ', '·', '-', '/')
         return if (cleaned.isBlank()) energyLabel()
         else "$cleaned ${energyLabel().lowercase()}"
+    }
+
+    fun hasGenericEnergyVariantLabel(): Boolean =
+        variantDisplayName?.trim()?.equals(energyLabel(), ignoreCase = true) == true
+
+    /**
+     * A year can include the outgoing and incoming generation. Their technical IDs stay
+     * internal; this gives people a short, recognisable distinction without exposing them.
+     */
+    fun generationTransitionLabel(index: Int, count: Int): String {
+        val position = when {
+            index == 0 -> "anterior"
+            index == count - 1 -> "nuevo"
+            else -> "intermedio"
+        }
+        return "${energyLabel()} · modelo $position"
     }
 
     fun automaticDisplayName(): String = variantDisplayName.orEmpty().ifBlank {

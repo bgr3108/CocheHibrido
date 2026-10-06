@@ -1842,32 +1842,32 @@
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 55,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 55.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-1i-7d4f7a3ce7-1996-gasolina-86715b579f",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "MPV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 1996,
-      "generationId": null,
+      "generationId": "m49",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 1996,
+      "notes": "Berlingo de primera generación: gasolina con depósito de 55 L.",
+      "yearTo": 2007,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -1875,33 +1875,53 @@
           "category": "COCHE",
           "model": "Berlingo 1.1i",
           "year": 1996
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.4i",
+          "year": 1996
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.6 16V",
+          "year": 2000
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.8i",
+          "year": 1997
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-1i"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/citroen/berlingo/2003/estandar/xtr/berlingo-hdi-92-xtr/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-citroen-legacy-berlingo-1-4i-7d47af0738-1996-gasolina-fe0ceafbca",
+        "legacy-coche-citroen-legacy-berlingo-1-8i-c8eece8c57-1997-gasolina-ba39eb60f8",
+        "legacy-coche-citroen-legacy-berlingo-1-6-16v-e9190a2fef-2000-gasolina-3d88dd922d"
+      ]
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 60,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-2-puretech-110-1d7a79ca1e-2018-gasolina-f56a0ad5eb",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -1915,7 +1935,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-6-vti-120-db6ad4381b-2010-gasolina-938eff36e6 mediante normalización editorial investigada.",
       "yearTo": 2018,
       "battery": {
         "declaredCapacityType": null,
@@ -1945,37 +1965,38 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-2-puretech-110"
+      "variantId": "1-2-puretech-110",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-6-vti-120-db6ad4381b-2010-gasolina-938eff36e6"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 50,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 50.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-2-puretech-110-1d7a79ca1e-2022-gasolina-3ed3356cd5",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "MPV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2022,
-      "generationId": null,
+      "generationId": "k9",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "Berlingo K9 gasolina: solo se conserva el año legado 2022 con depósito de 50 L; no se amplía sin fuente concluyente.",
       "yearTo": 2022,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -1985,31 +2006,28 @@
           "year": 2022
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-2-puretech-110"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/citroen/berlingo/2019/talla-m/datos?market%5B%5D=discontinued",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 60,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-2-puretech-130-0fa078fce9-2019-gasolina-2b655db06c",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2023,7 +2041,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-6-vti-120-db6ad4381b-2010-gasolina-938eff36e6 mediante normalización editorial investigada.",
       "yearTo": 2019,
       "battery": {
         "declaredCapacityType": null,
@@ -2053,17 +2071,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-2-puretech-130"
+      "variantId": "1-2-puretech-130",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-6-vti-120-db6ad4381b-2010-gasolina-938eff36e6"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 55,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-4i-7d47af0738-1996-gasolina-fe0ceafbca",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2077,7 +2096,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-1i-7d4f7a3ce7-1996-gasolina-86715b579f mediante normalización editorial investigada.",
       "yearTo": 1996,
       "battery": {
         "declaredCapacityType": null,
@@ -2107,37 +2126,38 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-4i"
+      "variantId": "1-4i",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-1i-7d4f7a3ce7-1996-gasolina-86715b579f"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 50,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 50.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2018-diesel-f56affb015",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "MPV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2018,
-      "generationId": null,
+      "generationId": "k9",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2018,
+      "notes": "Berlingo K9 diésel: depósito de 50 L.",
+      "yearTo": 2025,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -2145,33 +2165,91 @@
           "category": "COCHE",
           "model": "Berlingo 1.5 BlueHDi 100",
           "year": 2018
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.5 BlueHDi 100",
+          "year": 2022
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.5 BlueHDi 100",
+          "year": 2024
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.5 BlueHDi 130",
+          "year": 2018
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.5 BlueHDi 130",
+          "year": 2022
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.5 BlueHDi 75",
+          "year": 2018
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.6 BlueHDi 100",
+          "year": 2018
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.6 BlueHDi 75",
+          "year": 2018
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-5-bluehdi-100"
+      "sources": [
+        {
+          "url": "https://www.autobild.es/coches/citroen/berlingo/berlingo-5-2018/talla-m-bluehdi-130-feel-7p/ficha-tecnica",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        },
+        {
+          "url": "https://www.km77.com/coches/citroen/berlingo/2019/talla-m/datos?market%5B%5D=discontinued",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-130-e8cef25727-2018-diesel-4393178ecb",
+        "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-75-70e8de08c5-2018-diesel-511ac01ea0",
+        "legacy-coche-citroen-legacy-berlingo-1-6-bluehdi-100-0d711b76c8-2018-diesel-5ba3cb890c",
+        "legacy-coche-citroen-legacy-berlingo-1-6-bluehdi-75-f1bc25bfd8-2018-diesel-99134db7f1",
+        "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2022-diesel-9c0a0419d8",
+        "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-130-e8cef25727-2022-diesel-fc13d92bb5",
+        "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2024-diesel-7cfd46b8fa"
+      ]
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 50,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2022-diesel-9c0a0419d8",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2185,7 +2263,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2018-diesel-f56affb015 mediante normalización editorial investigada.",
       "yearTo": 2022,
       "battery": {
         "declaredCapacityType": null,
@@ -2215,17 +2293,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-5-bluehdi-100"
+      "variantId": "1-5-bluehdi-100",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2018-diesel-f56affb015"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 50,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2024-diesel-7cfd46b8fa",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2239,7 +2318,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2018-diesel-f56affb015 mediante normalización editorial investigada.",
       "yearTo": 2024,
       "battery": {
         "declaredCapacityType": null,
@@ -2269,17 +2348,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-5-bluehdi-100"
+      "variantId": "1-5-bluehdi-100",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2018-diesel-f56affb015"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 50,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-130-e8cef25727-2018-diesel-4393178ecb",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2293,7 +2373,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2018-diesel-f56affb015 mediante normalización editorial investigada.",
       "yearTo": 2018,
       "battery": {
         "declaredCapacityType": null,
@@ -2323,17 +2403,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-5-bluehdi-130"
+      "variantId": "1-5-bluehdi-130",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2018-diesel-f56affb015"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 50,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-130-e8cef25727-2022-diesel-fc13d92bb5",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2347,7 +2428,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2018-diesel-f56affb015 mediante normalización editorial investigada.",
       "yearTo": 2022,
       "battery": {
         "declaredCapacityType": null,
@@ -2377,17 +2458,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-5-bluehdi-130"
+      "variantId": "1-5-bluehdi-130",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2018-diesel-f56affb015"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 50,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-75-70e8de08c5-2018-diesel-511ac01ea0",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2401,7 +2483,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2018-diesel-f56affb015 mediante normalización editorial investigada.",
       "yearTo": 2018,
       "battery": {
         "declaredCapacityType": null,
@@ -2431,17 +2513,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-5-bluehdi-75"
+      "variantId": "1-5-bluehdi-75",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2018-diesel-f56affb015"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 55,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-6-16v-e9190a2fef-2000-gasolina-3d88dd922d",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2455,7 +2538,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-1i-7d4f7a3ce7-1996-gasolina-86715b579f mediante normalización editorial investigada.",
       "yearTo": 2000,
       "battery": {
         "declaredCapacityType": null,
@@ -2485,17 +2568,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-16v"
+      "variantId": "1-6-16v",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-1i-7d4f7a3ce7-1996-gasolina-86715b579f"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 60,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-6-bluehdi-100-0d711b76c8-2015-diesel-d5b3f11e17",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2509,7 +2593,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-6-hdi-110-0f9990a0a3-2008-diesel-0a87465ca7 mediante normalización editorial investigada.",
       "yearTo": 2015,
       "battery": {
         "declaredCapacityType": null,
@@ -2539,17 +2623,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-bluehdi-100"
+      "variantId": "1-6-bluehdi-100",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-6-hdi-110-0f9990a0a3-2008-diesel-0a87465ca7"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 50,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-6-bluehdi-100-0d711b76c8-2018-diesel-5ba3cb890c",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2563,7 +2648,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2018-diesel-f56affb015 mediante normalización editorial investigada.",
       "yearTo": 2018,
       "battery": {
         "declaredCapacityType": null,
@@ -2593,17 +2678,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-bluehdi-100"
+      "variantId": "1-6-bluehdi-100",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2018-diesel-f56affb015"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 60,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-6-bluehdi-120-ba82b1bf4b-2015-diesel-fdf1ad3eb7",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2617,7 +2703,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-6-hdi-110-0f9990a0a3-2008-diesel-0a87465ca7 mediante normalización editorial investigada.",
       "yearTo": 2015,
       "battery": {
         "declaredCapacityType": null,
@@ -2647,17 +2733,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-bluehdi-120"
+      "variantId": "1-6-bluehdi-120",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-6-hdi-110-0f9990a0a3-2008-diesel-0a87465ca7"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 60,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-6-bluehdi-75-f1bc25bfd8-2015-diesel-88a52643e1",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2671,7 +2758,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-6-hdi-110-0f9990a0a3-2008-diesel-0a87465ca7 mediante normalización editorial investigada.",
       "yearTo": 2015,
       "battery": {
         "declaredCapacityType": null,
@@ -2701,17 +2788,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-bluehdi-75"
+      "variantId": "1-6-bluehdi-75",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-6-hdi-110-0f9990a0a3-2008-diesel-0a87465ca7"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 50,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-6-bluehdi-75-f1bc25bfd8-2018-diesel-99134db7f1",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2725,7 +2813,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2018-diesel-f56affb015 mediante normalización editorial investigada.",
       "yearTo": 2018,
       "battery": {
         "declaredCapacityType": null,
@@ -2755,17 +2843,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-bluehdi-75"
+      "variantId": "1-6-bluehdi-75",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-5-bluehdi-100-679b6c6085-2018-diesel-f56affb015"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 60,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-6-e-hdi-90-2d76888cbe-2011-diesel-cdca7d8d80",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2779,7 +2868,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-6-hdi-110-0f9990a0a3-2008-diesel-0a87465ca7 mediante normalización editorial investigada.",
       "yearTo": 2011,
       "battery": {
         "declaredCapacityType": null,
@@ -2809,71 +2898,121 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-e-hdi-90"
+      "variantId": "1-6-e-hdi-90",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-6-hdi-110-0f9990a0a3-2008-diesel-0a87465ca7"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 60,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 60.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-6-hdi-110-0f9990a0a3-2008-diesel-0a87465ca7",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "MPV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2008,
-      "generationId": null,
+      "generationId": "b9",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2008,
+      "notes": "Berlingo B9 diésel: depósito de 60 L.",
+      "yearTo": 2017,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
           "brand": "Citroën",
           "category": "COCHE",
+          "model": "Berlingo 1.6 BlueHDi 100",
+          "year": 2015
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.6 BlueHDi 120",
+          "year": 2015
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.6 BlueHDi 75",
+          "year": 2015
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.6 e-HDi 90",
+          "year": 2011
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
           "model": "Berlingo 1.6 HDi 110",
+          "year": 2008
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.6 HDi 115",
+          "year": 2012
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.6 HDi 75",
+          "year": 2008
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.6 HDi 90",
           "year": 2008
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-6-hdi-110"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/citroen/berlingo/2008/estandar/xtr/nuevo-berlingo-xtr-16-hdi-90/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-citroen-legacy-berlingo-1-6-hdi-75-d1c0037f07-2008-diesel-8153565480",
+        "legacy-coche-citroen-legacy-berlingo-1-6-hdi-90-7ece9cb492-2008-diesel-ba10872256",
+        "legacy-coche-citroen-legacy-berlingo-1-6-e-hdi-90-2d76888cbe-2011-diesel-cdca7d8d80",
+        "legacy-coche-citroen-legacy-berlingo-1-6-hdi-115-4e397b321c-2012-diesel-e38d56f32b",
+        "legacy-coche-citroen-legacy-berlingo-1-6-bluehdi-100-0d711b76c8-2015-diesel-d5b3f11e17",
+        "legacy-coche-citroen-legacy-berlingo-1-6-bluehdi-120-ba82b1bf4b-2015-diesel-fdf1ad3eb7",
+        "legacy-coche-citroen-legacy-berlingo-1-6-bluehdi-75-f1bc25bfd8-2015-diesel-88a52643e1"
+      ]
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 60,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-6-hdi-115-4e397b321c-2012-diesel-e38d56f32b",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2887,7 +3026,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-6-hdi-110-0f9990a0a3-2008-diesel-0a87465ca7 mediante normalización editorial investigada.",
       "yearTo": 2012,
       "battery": {
         "declaredCapacityType": null,
@@ -2917,17 +3056,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-hdi-115"
+      "variantId": "1-6-hdi-115",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-6-hdi-110-0f9990a0a3-2008-diesel-0a87465ca7"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 55,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-6-hdi-75-d1c0037f07-2005-diesel-37790b539f",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2941,7 +3081,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-8-d-d9f3697f86-1996-diesel-155f57d0a0 mediante normalización editorial investigada.",
       "yearTo": 2005,
       "battery": {
         "declaredCapacityType": null,
@@ -2971,17 +3111,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-hdi-75"
+      "variantId": "1-6-hdi-75",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-8-d-d9f3697f86-1996-diesel-155f57d0a0"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 60,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-6-hdi-75-d1c0037f07-2008-diesel-8153565480",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -2995,7 +3136,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-6-hdi-110-0f9990a0a3-2008-diesel-0a87465ca7 mediante normalización editorial investigada.",
       "yearTo": 2008,
       "battery": {
         "declaredCapacityType": null,
@@ -3025,17 +3166,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-hdi-75"
+      "variantId": "1-6-hdi-75",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-6-hdi-110-0f9990a0a3-2008-diesel-0a87465ca7"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 55,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-6-hdi-90-7ece9cb492-2005-diesel-3193c62efd",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -3049,7 +3191,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-8-d-d9f3697f86-1996-diesel-155f57d0a0 mediante normalización editorial investigada.",
       "yearTo": 2005,
       "battery": {
         "declaredCapacityType": null,
@@ -3079,17 +3221,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-hdi-90"
+      "variantId": "1-6-hdi-90",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-8-d-d9f3697f86-1996-diesel-155f57d0a0"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 60,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-6-hdi-90-7ece9cb492-2008-diesel-ba10872256",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -3103,7 +3246,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-6-hdi-110-0f9990a0a3-2008-diesel-0a87465ca7 mediante normalización editorial investigada.",
       "yearTo": 2008,
       "battery": {
         "declaredCapacityType": null,
@@ -3133,71 +3276,103 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-hdi-90"
+      "variantId": "1-6-hdi-90",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-6-hdi-110-0f9990a0a3-2008-diesel-0a87465ca7"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 60,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 60.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-6-vti-120-db6ad4381b-2010-gasolina-938eff36e6",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "MPV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2010,
-      "generationId": null,
+      "yearFrom": 2008,
+      "generationId": "b9",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2010,
+      "notes": "Berlingo térmica gasolina: depósito de 60 L documentado hasta 2021.",
+      "yearTo": 2021,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.2 PureTech 110",
+          "year": 2018
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.2 PureTech 130",
+          "year": 2019
+        },
         {
           "brand": "Citroën",
           "category": "COCHE",
           "model": "Berlingo 1.6 VTi 120",
           "year": 2010
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.6 VTi 95",
+          "year": 2010
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-6-vti-120"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/citroen/berlingo/2008/estandar/xtr/nuevo-berlingo-xtr-16-hdi-90/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        },
+        {
+          "url": "https://www.coches.net/fichas_tecnicas/citroen/berlingo/industriales/4-puertas/talla_m_puretech_110_ss_live_110cv_gasolina/86136/799230120180604/",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-citroen-legacy-berlingo-1-6-vti-95-224267afea-2010-gasolina-955d2de548",
+        "legacy-coche-citroen-legacy-berlingo-1-2-puretech-110-1d7a79ca1e-2018-gasolina-f56a0ad5eb",
+        "legacy-coche-citroen-legacy-berlingo-1-2-puretech-130-0fa078fce9-2019-gasolina-2b655db06c"
+      ]
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 60,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-6-vti-95-224267afea-2010-gasolina-955d2de548",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -3211,7 +3386,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-6-vti-120-db6ad4381b-2010-gasolina-938eff36e6 mediante normalización editorial investigada.",
       "yearTo": 2010,
       "battery": {
         "declaredCapacityType": null,
@@ -3241,71 +3416,99 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-vti-95"
+      "variantId": "1-6-vti-95",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-6-vti-120-db6ad4381b-2010-gasolina-938eff36e6"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 55,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 55.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-8-d-d9f3697f86-1996-diesel-155f57d0a0",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "MPV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 1996,
-      "generationId": null,
+      "generationId": "m49",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 1996,
+      "notes": "Berlingo de primera generación: diésel con depósito de 55 L.",
+      "yearTo": 2007,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
           "brand": "Citroën",
           "category": "COCHE",
+          "model": "Berlingo 1.6 HDi 75",
+          "year": 2005
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.6 HDi 90",
+          "year": 2005
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
           "model": "Berlingo 1.8 D",
           "year": 1996
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 1.9 D",
+          "year": 1998
+        },
+        {
+          "brand": "Citroën",
+          "category": "COCHE",
+          "model": "Berlingo 2.0 HDi",
+          "year": 1999
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-8-d"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/citroen/berlingo/2003/estandar/xtr/berlingo-hdi-92-xtr/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-citroen-legacy-berlingo-1-9-d-171434c8d6-1998-diesel-ff0ffed449",
+        "legacy-coche-citroen-legacy-berlingo-2-0-hdi-114e2d0a80-1999-diesel-878d8ac015",
+        "legacy-coche-citroen-legacy-berlingo-1-6-hdi-75-d1c0037f07-2005-diesel-37790b539f",
+        "legacy-coche-citroen-legacy-berlingo-1-6-hdi-90-7ece9cb492-2005-diesel-3193c62efd"
+      ]
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 55,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-8i-c8eece8c57-1997-gasolina-ba39eb60f8",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -3319,7 +3522,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-1i-7d4f7a3ce7-1996-gasolina-86715b579f mediante normalización editorial investigada.",
       "yearTo": 1997,
       "battery": {
         "declaredCapacityType": null,
@@ -3349,17 +3552,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-8i"
+      "variantId": "1-8i",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-1i-7d4f7a3ce7-1996-gasolina-86715b579f"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 55,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-1-9-d-171434c8d6-1998-diesel-ff0ffed449",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -3373,7 +3577,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-8-d-d9f3697f86-1996-diesel-155f57d0a0 mediante normalización editorial investigada.",
       "yearTo": 1998,
       "battery": {
         "declaredCapacityType": null,
@@ -3403,17 +3607,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-9-d"
+      "variantId": "1-9-d",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-8-d-d9f3697f86-1996-diesel-155f57d0a0"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 55,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-2-0-hdi-114e2d0a80-1999-diesel-878d8ac015",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -3427,7 +3632,7 @@
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-citroen-legacy-berlingo-1-8-d-d9f3697f86-1996-diesel-155f57d0a0 mediante normalización editorial investigada.",
       "yearTo": 1999,
       "battery": {
         "declaredCapacityType": null,
@@ -3457,37 +3662,38 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "2-0-hdi"
+      "variantId": "2-0-hdi",
+      "replacedByCatalogId": "legacy-coche-citroen-legacy-berlingo-1-8-d-d9f3697f86-1996-diesel-155f57d0a0"
     },
     {
       "brandId": "citroen",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 3,
       "fuelTankLitres": null,
-      "provenance": "LEGACY_IMPORT",
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-citroen-legacy-berlingo-electric-3f70b3740f-2013-electrico-f446816b95",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "MPV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2013,
-      "generationId": null,
+      "generationId": "b9",
       "powertrain": {
+        "kind": "BEV",
         "hybridSystem": "BATTERY_ELECTRIC",
-        "primaryFuel": null,
-        "kind": "BEV"
+        "primaryFuel": null
       },
       "category": "COCHE",
       "modelId": "berlingo",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2013,
+      "notes": "E-Berlingo Multispace: capacidad publicada de 22,5 kWh sin clasificación bruto/útil.",
+      "yearTo": 2018,
       "battery": {
-        "declaredCapacityType": "UNKNOWN",
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": 22.5
+        "declaredKwh": 22.5,
+        "grossKwh": null,
+        "declaredCapacityType": "UNKNOWN"
       },
       "legacyKeys": [
         {
@@ -3497,21 +3703,20 @@
           "year": 2013
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "electric"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/citroen/berlingo/2015/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery.declaredKwh"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "electric",
+      "denseCarNormalizationVersion": 1
     },
     {
       "brandId": "citroen",
@@ -6162,32 +6367,32 @@
     {
       "brandId": "nissan",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 55,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 55.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-nissan-legacy-qashqai-1-2-dig-t-215a464dee-2014-gasolina-3bdc4a3418",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2014,
-      "generationId": null,
+      "generationId": "j11",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "qashqai",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2014,
+      "notes": "Qashqai J11 gasolina con depósito de 55 L.",
+      "yearTo": 2020,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -6195,33 +6400,47 @@
           "category": "COCHE",
           "model": "Qashqai 1.2 DIG-T",
           "year": 2014
+        },
+        {
+          "brand": "Nissan",
+          "category": "COCHE",
+          "model": "Qashqai 1.3 DIG-T",
+          "year": 2019
+        },
+        {
+          "brand": "Nissan",
+          "category": "COCHE",
+          "model": "Qashqai 1.6 DIG-T",
+          "year": 2015
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-2-dig-t"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/nissan/qashqai/2014/estandar/n-tec/qashqai-12i-dig-t-115cv-stopstart-4x2-n-tec/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-nissan-legacy-qashqai-1-6-dig-t-ee1161be57-2015-gasolina-625cb11646",
+        "legacy-coche-nissan-legacy-qashqai-1-3-dig-t-a034de41ca-2019-gasolina-c60855325b"
+      ]
     },
     {
       "brandId": "nissan",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 55,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-nissan-legacy-qashqai-1-3-dig-t-a034de41ca-2019-gasolina-c60855325b",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -6235,7 +6454,7 @@
       },
       "category": "COCHE",
       "modelId": "qashqai",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-nissan-legacy-qashqai-1-2-dig-t-215a464dee-2014-gasolina-3bdc4a3418 mediante normalización editorial investigada.",
       "yearTo": 2019,
       "battery": {
         "declaredCapacityType": null,
@@ -6265,37 +6484,38 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-3-dig-t"
+      "variantId": "1-3-dig-t",
+      "replacedByCatalogId": "legacy-coche-nissan-legacy-qashqai-1-2-dig-t-215a464dee-2014-gasolina-3bdc4a3418"
     },
     {
       "brandId": "nissan",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 55,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 55.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-nissan-legacy-qashqai-1-3-dig-t-mhev-13b36e3025-2021-hibrido-c38f391d69",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2021,
-      "generationId": null,
+      "generationId": "j12",
       "powertrain": {
-        "hybridSystem": "FULL",
-        "primaryFuel": null,
-        "kind": "HEV"
+        "kind": "HEV",
+        "hybridSystem": "MILD",
+        "primaryFuel": null
       },
       "category": "COCHE",
       "modelId": "qashqai",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2021,
+      "notes": "Qashqai J12 Mild Hybrid 12 V; se mantiene distinto de e-POWER.",
+      "yearTo": 2026,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -6305,51 +6525,49 @@
           "year": 2021
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-3-dig-t-mhev"
+      "sources": [
+        {
+          "url": "https://www.nissan.es/content/dam/Nissan/es/brochures/E-Catalogo_Nissan_Qashqai_ES.pdf",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "variantId": "mild-hybrid",
+      "denseCarNormalizationVersion": 1
     },
     {
       "brandId": "nissan",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 65,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 65.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-nissan-legacy-qashqai-1-5-dci-85f4eb2c54-2008-diesel-dbc80f1093",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2008,
-      "generationId": null,
+      "yearFrom": 2007,
+      "generationId": "j10",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "qashqai",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2008,
+      "notes": "Qashqai J10: diésel con depósito de 65 L.",
+      "yearTo": 2013,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -6357,53 +6575,68 @@
           "category": "COCHE",
           "model": "Qashqai 1.5 dCi",
           "year": 2008
+        },
+        {
+          "brand": "Nissan",
+          "category": "COCHE",
+          "model": "Qashqai 1.6 dCi",
+          "year": 2011
+        },
+        {
+          "brand": "Nissan",
+          "category": "COCHE",
+          "model": "Qashqai 2.0 dCi",
+          "year": 2009
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-5-dci"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/nissan/qashqai/2007/datos?hp=1",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-nissan-legacy-qashqai-2-0-dci-0a42715d07-2009-diesel-a96efa83bb",
+        "legacy-coche-nissan-legacy-qashqai-1-6-dci-05d5dc6b34-2011-diesel-6d2e9147a7"
+      ]
     },
     {
       "brandId": "nissan",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 55,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 55.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-nissan-legacy-qashqai-1-5-dci-85f4eb2c54-2015-diesel-88b899ad02",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2015,
-      "generationId": null,
+      "yearFrom": 2014,
+      "generationId": "j11",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "qashqai",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2015,
+      "notes": "Qashqai J11 diésel 4x2 con depósito de 55 L.",
+      "yearTo": 2018,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -6411,53 +6644,60 @@
           "category": "COCHE",
           "model": "Qashqai 1.5 dCi",
           "year": 2015
+        },
+        {
+          "brand": "Nissan",
+          "category": "COCHE",
+          "model": "Qashqai 1.6 dCi",
+          "year": 2016
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-5-dci"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/nissan/qashqai/2014/estandar/n-tec/qashqai-12i-dig-t-115cv-stopstart-4x2-n-tec/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel-4x2",
+      "denseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-nissan-legacy-qashqai-1-6-dci-05d5dc6b34-2016-diesel-b5411e7c42"
+      ]
     },
     {
       "brandId": "nissan",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 65,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 65.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-nissan-legacy-qashqai-1-6-656a3a28f3-2007-gasolina-02223ccf6b",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2007,
-      "generationId": null,
+      "generationId": "j10",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "qashqai",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2007,
+      "notes": "Qashqai J10: gasolina con depósito de 65 L.",
+      "yearTo": 2013,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -6465,33 +6705,41 @@
           "category": "COCHE",
           "model": "Qashqai 1.6",
           "year": 2007
+        },
+        {
+          "brand": "Nissan",
+          "category": "COCHE",
+          "model": "Qashqai 2.0",
+          "year": 2008
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-6"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/nissan/qashqai/2007/datos?hp=1",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-nissan-legacy-qashqai-2-0-83e8f8ae50-2008-gasolina-a8095af039"
+      ]
     },
     {
       "brandId": "nissan",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 65,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-nissan-legacy-qashqai-1-6-dci-05d5dc6b34-2011-diesel-6d2e9147a7",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -6505,7 +6753,7 @@
       },
       "category": "COCHE",
       "modelId": "qashqai",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-nissan-legacy-qashqai-1-5-dci-85f4eb2c54-2008-diesel-dbc80f1093 mediante normalización editorial investigada.",
       "yearTo": 2011,
       "battery": {
         "declaredCapacityType": null,
@@ -6535,17 +6783,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-dci"
+      "variantId": "1-6-dci",
+      "replacedByCatalogId": "legacy-coche-nissan-legacy-qashqai-1-5-dci-85f4eb2c54-2008-diesel-dbc80f1093"
     },
     {
       "brandId": "nissan",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 55,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-nissan-legacy-qashqai-1-6-dci-05d5dc6b34-2016-diesel-b5411e7c42",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -6559,7 +6808,7 @@
       },
       "category": "COCHE",
       "modelId": "qashqai",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-nissan-legacy-qashqai-1-5-dci-85f4eb2c54-2015-diesel-88b899ad02 mediante normalización editorial investigada.",
       "yearTo": 2016,
       "battery": {
         "declaredCapacityType": null,
@@ -6589,17 +6838,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-dci"
+      "variantId": "1-6-dci",
+      "replacedByCatalogId": "legacy-coche-nissan-legacy-qashqai-1-5-dci-85f4eb2c54-2015-diesel-88b899ad02"
     },
     {
       "brandId": "nissan",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 55,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-nissan-legacy-qashqai-1-6-dig-t-ee1161be57-2015-gasolina-625cb11646",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -6613,7 +6863,7 @@
       },
       "category": "COCHE",
       "modelId": "qashqai",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-nissan-legacy-qashqai-1-2-dig-t-215a464dee-2014-gasolina-3bdc4a3418 mediante normalización editorial investigada.",
       "yearTo": 2015,
       "battery": {
         "declaredCapacityType": null,
@@ -6643,37 +6893,38 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-6-dig-t"
+      "variantId": "1-6-dig-t",
+      "replacedByCatalogId": "legacy-coche-nissan-legacy-qashqai-1-2-dig-t-215a464dee-2014-gasolina-3bdc4a3418"
     },
     {
       "brandId": "nissan",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 65,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 65.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-nissan-legacy-qashqai-1-7-dci-b36c90123d-2019-diesel-a29eb5d264",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2019,
-      "generationId": null,
+      "generationId": "j11",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "qashqai",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2019,
+      "notes": "Qashqai J11 1.7 dCi: depósito de 65 L; se mantiene separado por capacidad.",
+      "yearTo": 2020,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -6683,31 +6934,30 @@
           "year": 2019
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-7-dci"
+      "sources": [
+        {
+          "url": "https://www.autohints.com/es/nissan-qashqai-ii-j11-facelift-2017-1.7-dci-150-hp-4x4-version-28140",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel-65l",
+      "denseCarNormalizationVersion": 1
     },
     {
       "brandId": "nissan",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 65,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-nissan-legacy-qashqai-2-0-83e8f8ae50-2008-gasolina-a8095af039",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -6721,7 +6971,7 @@
       },
       "category": "COCHE",
       "modelId": "qashqai",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-nissan-legacy-qashqai-1-6-656a3a28f3-2007-gasolina-02223ccf6b mediante normalización editorial investigada.",
       "yearTo": 2008,
       "battery": {
         "declaredCapacityType": null,
@@ -6751,17 +7001,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "2-0"
+      "variantId": "2-0",
+      "replacedByCatalogId": "legacy-coche-nissan-legacy-qashqai-1-6-656a3a28f3-2007-gasolina-02223ccf6b"
     },
     {
       "brandId": "nissan",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 65,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-nissan-legacy-qashqai-2-0-dci-0a42715d07-2009-diesel-a96efa83bb",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -6775,7 +7026,7 @@
       },
       "category": "COCHE",
       "modelId": "qashqai",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-nissan-legacy-qashqai-1-5-dci-85f4eb2c54-2008-diesel-dbc80f1093 mediante normalización editorial investigada.",
       "yearTo": 2009,
       "battery": {
         "declaredCapacityType": null,
@@ -6805,37 +7056,38 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "2-0-dci"
+      "variantId": "2-0-dci",
+      "replacedByCatalogId": "legacy-coche-nissan-legacy-qashqai-1-5-dci-85f4eb2c54-2008-diesel-dbc80f1093"
     },
     {
       "brandId": "nissan",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 55,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 55.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-nissan-legacy-qashqai-e-power-02da7f1da5-2022-hibrido-3406b5d2f3",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "SUV",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2022,
-      "generationId": null,
+      "generationId": "j12",
       "powertrain": {
+        "kind": "HEV",
         "hybridSystem": "FULL",
-        "primaryFuel": null,
-        "kind": "HEV"
+        "primaryFuel": null
       },
       "category": "COCHE",
       "modelId": "qashqai",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2022,
+      "notes": "Qashqai J12 e-POWER: híbrido de serie, separado del Mild Hybrid.",
+      "yearTo": 2026,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -6845,21 +7097,19 @@
           "year": 2022
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "e-power"
+      "sources": [
+        {
+          "url": "https://www.nissan.es/content/dam/Nissan/es/brochures/E-Catalogo_Nissan_Qashqai_ES.pdf",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "variantId": "e-power",
+      "denseCarNormalizationVersion": 1
     },
     {
       "brandId": "omoda",
@@ -6972,32 +7222,32 @@
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 44,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 44.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-opel-legacy-corsa-1-0-12v-f80118a92b-2001-gasolina-fd1f96c5e7",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2001,
-      "generationId": null,
+      "generationId": "c",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2001,
+      "notes": "Corsa C: gasolina con depósito de 44 L.",
+      "yearTo": 2006,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -7005,33 +7255,46 @@
           "category": "COCHE",
           "model": "Corsa 1.0 12V",
           "year": 2001
+        },
+        {
+          "brand": "Opel",
+          "category": "COCHE",
+          "model": "Corsa 1.2 16V",
+          "year": 2002
+        },
+        {
+          "brand": "Opel",
+          "category": "COCHE",
+          "model": "Corsa 1.8 GSI",
+          "year": 2003
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-0-12v"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/opel/corsa/2001/5-puertas/elegance/corsa-5p-elegance-14-16v-aut/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-opel-legacy-corsa-1-2-16v-062a15120f-2002-gasolina-67010e9d1c",
+        "legacy-coche-opel-legacy-corsa-1-8-gsi-0f9e98aa2e-2003-gasolina-23a74f3e40"
+      ]
     },
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 44,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-opel-legacy-corsa-1-2-16v-062a15120f-2002-gasolina-67010e9d1c",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -7045,7 +7308,7 @@
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-opel-legacy-corsa-1-0-12v-f80118a92b-2001-gasolina-fd1f96c5e7 mediante normalización editorial investigada.",
       "yearTo": 2002,
       "battery": {
         "declaredCapacityType": null,
@@ -7075,37 +7338,38 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-2-16v"
+      "variantId": "1-2-16v",
+      "replacedByCatalogId": "legacy-coche-opel-legacy-corsa-1-0-12v-f80118a92b-2001-gasolina-fd1f96c5e7"
     },
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 44,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 44.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-opel-legacy-corsa-1-2-8087c1f2b2-2020-gasolina-6db1596741",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2020,
-      "generationId": null,
+      "yearFrom": 2019,
+      "generationId": "f",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2020,
+      "notes": "Corsa F: gasolina con depósito de 44 L.",
+      "yearTo": 2026,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -7113,53 +7377,68 @@
           "category": "COCHE",
           "model": "Corsa 1.2",
           "year": 2020
+        },
+        {
+          "brand": "Opel",
+          "category": "COCHE",
+          "model": "Corsa 1.2 Turbo",
+          "year": 2020
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-2"
+      "sources": [
+        {
+          "url": "https://www.opel.es/hub/datasheet/corsa-my26-es.html",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "fuelTankLitres"
+          ],
+          "type": "OFFICIAL_MANUFACTURER"
+        },
+        {
+          "url": "https://www.km77.com/coches/opel/corsa/2020/5-puertas/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-opel-legacy-corsa-1-2-turbo-af3f238e85-2020-gasolina-df653ed850"
+      ]
     },
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 44,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 44.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-opel-legacy-corsa-1-2-hybrid-3d4e856e0e-2024-hibrido-e314a74b3c",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
       "yearFrom": 2024,
-      "generationId": null,
+      "generationId": "f",
       "powertrain": {
-        "hybridSystem": "FULL",
-        "primaryFuel": null,
-        "kind": "HEV"
+        "kind": "HEV",
+        "hybridSystem": "MILD",
+        "primaryFuel": null
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2024,
+      "notes": "Corsa F: sistema mild-hybrid de 48 V, separado del híbrido e-POWER de Nissan.",
+      "yearTo": 2026,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -7169,31 +7448,29 @@
           "year": 2024
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-2-hybrid"
+      "sources": [
+        {
+          "url": "https://www.opel.es/hub/datasheet/corsa-my26-es.html",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "fuelTankLitres"
+          ],
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "variantId": "hybrid",
+      "denseCarNormalizationVersion": 1
     },
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 44,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-opel-legacy-corsa-1-2-turbo-af3f238e85-2020-gasolina-df653ed850",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -7207,7 +7484,7 @@
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-opel-legacy-corsa-1-2-8087c1f2b2-2020-gasolina-6db1596741 mediante normalización editorial investigada.",
       "yearTo": 2020,
       "battery": {
         "declaredCapacityType": null,
@@ -7237,37 +7514,38 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-2-turbo"
+      "variantId": "1-2-turbo",
+      "replacedByCatalogId": "legacy-coche-opel-legacy-corsa-1-2-8087c1f2b2-2020-gasolina-6db1596741"
     },
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 45,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 45.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-opel-legacy-corsa-1-2-twinport-f080598fa7-2007-gasolina-d8bbd81226",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2007,
-      "generationId": null,
+      "yearFrom": 2006,
+      "generationId": "d",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2007,
+      "notes": "Corsa D: gasolina con depósito de 45 L.",
+      "yearTo": 2014,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -7275,33 +7553,46 @@
           "category": "COCHE",
           "model": "Corsa 1.2 Twinport",
           "year": 2007
+        },
+        {
+          "brand": "Opel",
+          "category": "COCHE",
+          "model": "Corsa 1.4 Twinport",
+          "year": 2008
+        },
+        {
+          "brand": "Opel",
+          "category": "COCHE",
+          "model": "Corsa OPC 1.6 Turbo",
+          "year": 2008
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-2-twinport"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/opel/corsa/2006/5-puertas/enjoy/corsa-5p-enjoy-12/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-opel-legacy-corsa-1-4-twinport-b1e7625dac-2008-gasolina-421c2961e8",
+        "legacy-coche-opel-legacy-corsa-opc-1-6-turbo-459ec1b188-2008-gasolina-6b0e3cdc7e"
+      ]
     },
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 44,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-opel-legacy-corsa-1-3-cdti-269f39a678-2004-diesel-e5f2e082f7",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -7315,7 +7606,7 @@
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-opel-legacy-corsa-1-7-dti-0c128f2612-2002-diesel-d47e5be5af mediante normalización editorial investigada.",
       "yearTo": 2004,
       "battery": {
         "declaredCapacityType": null,
@@ -7345,37 +7636,38 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-3-cdti"
+      "variantId": "1-3-cdti",
+      "replacedByCatalogId": "legacy-coche-opel-legacy-corsa-1-7-dti-0c128f2612-2002-diesel-d47e5be5af"
     },
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 45,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 45.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-opel-legacy-corsa-1-3-cdti-269f39a678-2008-diesel-01f77f106f",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2008,
-      "generationId": null,
+      "yearFrom": 2006,
+      "generationId": "d",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2008,
+      "notes": "Corsa D: diésel con depósito de 45 L.",
+      "yearTo": 2014,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -7383,53 +7675,59 @@
           "category": "COCHE",
           "model": "Corsa 1.3 CDTI",
           "year": 2008
+        },
+        {
+          "brand": "Opel",
+          "category": "COCHE",
+          "model": "Corsa 1.7 CDTI",
+          "year": 2009
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-3-cdti"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/opel/corsa/2006/5-puertas/enjoy/corsa-5p-enjoy-12/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-opel-legacy-corsa-1-7-cdti-c969aacab5-2009-diesel-1b85eb2bda"
+      ]
     },
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 45,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 45.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-opel-legacy-corsa-1-3-cdti-ecoflex-7168a69e65-2016-diesel-c8c74c0459",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2016,
-      "generationId": null,
+      "yearFrom": 2015,
+      "generationId": "e",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2016,
+      "notes": "Corsa E: diésel con depósito de 45 L.",
+      "yearTo": 2019,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -7439,51 +7737,48 @@
           "year": 2016
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-3-cdti-ecoflex"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/opel/corsa/2011/5-puertas/selective/corsa-5p-selective-14-100-cv-startstop/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1
     },
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 45,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 45.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-opel-legacy-corsa-1-4-turbo-13fa96b671-2016-gasolina-290bc3823f",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2016,
-      "generationId": null,
+      "yearFrom": 2015,
+      "generationId": "e",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "GASOLINA",
-        "kind": "ICE"
+        "primaryFuel": "GASOLINA"
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2016,
+      "notes": "Corsa E: gasolina con depósito de 45 L.",
+      "yearTo": 2019,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -7493,31 +7788,28 @@
           "year": 2016
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-4-turbo"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/opel/corsa/2011/5-puertas/selective/corsa-5p-selective-14-100-cv-startstop/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "gasolina",
+      "denseCarNormalizationVersion": 1
     },
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 45,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-opel-legacy-corsa-1-4-twinport-b1e7625dac-2008-gasolina-421c2961e8",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -7531,7 +7823,7 @@
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-opel-legacy-corsa-1-2-twinport-f080598fa7-2007-gasolina-d8bbd81226 mediante normalización editorial investigada.",
       "yearTo": 2008,
       "battery": {
         "declaredCapacityType": null,
@@ -7561,37 +7853,38 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-4-twinport"
+      "variantId": "1-4-twinport",
+      "replacedByCatalogId": "legacy-coche-opel-legacy-corsa-1-2-twinport-f080598fa7-2007-gasolina-d8bbd81226"
     },
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 41,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 41.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-opel-legacy-corsa-1-5-d-00b64aa28c-2020-diesel-3606ed1243",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2020,
-      "generationId": null,
+      "yearFrom": 2019,
+      "generationId": "f",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2020,
+      "notes": "Corsa F: diésel con depósito de 41 L.",
+      "yearTo": 2023,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
         {
@@ -7601,31 +7894,30 @@
           "year": 2020
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-5-d"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/opel/corsa/2020/5-puertas/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1
     },
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 45,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-opel-legacy-corsa-1-7-cdti-c969aacab5-2009-diesel-1b85eb2bda",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -7639,7 +7931,7 @@
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-opel-legacy-corsa-1-3-cdti-269f39a678-2008-diesel-01f77f106f mediante normalización editorial investigada.",
       "yearTo": 2009,
       "battery": {
         "declaredCapacityType": null,
@@ -7669,39 +7961,46 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-7-cdti"
+      "variantId": "1-7-cdti",
+      "replacedByCatalogId": "legacy-coche-opel-legacy-corsa-1-3-cdti-269f39a678-2008-diesel-01f77f106f"
     },
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
-      "fuelTankLitres": 44,
-      "provenance": "LEGACY_IMPORT",
+      "editorialRevision": 3,
+      "fuelTankLitres": 44.0,
+      "provenance": "RESEARCH_READY",
       "catalogId": "legacy-coche-opel-legacy-corsa-1-7-dti-0c128f2612-2002-diesel-d47e5be5af",
-      "drivetrain": null,
+      "drivetrain": "FWD",
       "editorialStatus": "ACTIVE",
-      "bodyStyle": null,
+      "bodyStyle": "HATCHBACK",
       "marketCodes": [
         "ES"
       ],
-      "yearFrom": 2002,
-      "generationId": null,
+      "yearFrom": 2001,
+      "generationId": "c",
       "powertrain": {
+        "kind": "ICE",
         "hybridSystem": "NONE",
-        "primaryFuel": "DIESEL",
-        "kind": "ICE"
+        "primaryFuel": "DIESEL"
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
-      "yearTo": 2002,
+      "notes": "Corsa C: diésel con depósito de 44 L.",
+      "yearTo": 2006,
       "battery": {
-        "declaredCapacityType": null,
-        "grossKwh": null,
         "usableKwh": null,
-        "declaredKwh": null
+        "declaredKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": null
       },
       "legacyKeys": [
+        {
+          "brand": "Opel",
+          "category": "COCHE",
+          "model": "Corsa 1.3 CDTI",
+          "year": 2004
+        },
         {
           "brand": "Opel",
           "category": "COCHE",
@@ -7709,31 +8008,31 @@
           "year": 2002
         }
       ],
-      "sources": {
-        "reference": "app/src/main/assets/vehicles.json",
-        "url": null,
-        "fields": [
-          "brand",
-          "model",
-          "year",
-          "type",
-          "fuelTankLitres",
-          "battery"
-        ],
-        "type": "LEGACY_BUNDLED_CATALOG",
-        "accessedAt": "2026-10-05"
-      },
-      "variantId": "1-7-dti"
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/opel/corsa/2001/5-puertas/elegance/corsa-5p-elegance-14-16v-aut/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "fuelTankLitres"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "variantId": "diesel",
+      "denseCarNormalizationVersion": 1,
+      "supersededCatalogIds": [
+        "legacy-coche-opel-legacy-corsa-1-3-cdti-269f39a678-2004-diesel-e5f2e082f7"
+      ]
     },
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 44,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-opel-legacy-corsa-1-8-gsi-0f9e98aa2e-2003-gasolina-23a74f3e40",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -7747,7 +8046,7 @@
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-opel-legacy-corsa-1-0-12v-f80118a92b-2001-gasolina-fd1f96c5e7 mediante normalización editorial investigada.",
       "yearTo": 2003,
       "battery": {
         "declaredCapacityType": null,
@@ -7777,17 +8076,18 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "1-8-gsi"
+      "variantId": "1-8-gsi",
+      "replacedByCatalogId": "legacy-coche-opel-legacy-corsa-1-0-12v-f80118a92b-2001-gasolina-fd1f96c5e7"
     },
     {
       "brandId": "opel",
       "aliases": [],
-      "editorialRevision": 1,
+      "editorialRevision": 2,
       "fuelTankLitres": 45,
       "provenance": "LEGACY_IMPORT",
       "catalogId": "legacy-coche-opel-legacy-corsa-opc-1-6-turbo-459ec1b188-2008-gasolina-6b0e3cdc7e",
       "drivetrain": null,
-      "editorialStatus": "ACTIVE",
+      "editorialStatus": "INACTIVE",
       "bodyStyle": null,
       "marketCodes": [
         "ES"
@@ -7801,7 +8101,7 @@
       },
       "category": "COCHE",
       "modelId": "corsa",
-      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
+      "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial. Consolidado en legacy-coche-opel-legacy-corsa-1-2-twinport-f080598fa7-2007-gasolina-d8bbd81226 mediante normalización editorial investigada.",
       "yearTo": 2008,
       "battery": {
         "declaredCapacityType": null,
@@ -7831,7 +8131,8 @@
         "type": "LEGACY_BUNDLED_CATALOG",
         "accessedAt": "2026-10-05"
       },
-      "variantId": "opc-1-6-turbo"
+      "variantId": "opc-1-6-turbo",
+      "replacedByCatalogId": "legacy-coche-opel-legacy-corsa-1-2-twinport-f080598fa7-2007-gasolina-d8bbd81226"
     },
     {
       "brandId": "peugeot",
@@ -34836,6 +35137,189 @@
       },
       "variantId": null,
       "replacedByCatalogId": "legacy-moto-zero-legacy-sr-f-dfb36115df-2024-electrico-b2c46f3125"
+    },
+    {
+      "yearTo": 2023,
+      "aliases": [],
+      "generationId": "f",
+      "marketCodes": [
+        "ES"
+      ],
+      "drivetrain": "FWD",
+      "category": "COCHE",
+      "battery": {
+        "usableKwh": 46.0,
+        "declaredKwh": null,
+        "grossKwh": 50.0,
+        "declaredCapacityType": null
+      },
+      "powertrain": {
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC",
+        "primaryFuel": null
+      },
+      "legacyKeys": [],
+      "yearFrom": 2020,
+      "sources": [
+        {
+          "url": "https://www.km77.com/coches/opel/corsa/2020/5-puertas/corsa-e/corsa-e/datos",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery.grossKwh",
+            "battery.usableKwh"
+          ],
+          "type": "TECHNICAL_REFERENCE"
+        }
+      ],
+      "catalogId": "car-opel-corsa-f-electric-50",
+      "bodyStyle": "HATCHBACK",
+      "brandId": "opel",
+      "provenance": "RESEARCH_READY",
+      "modelId": "corsa",
+      "variantId": "electric-50",
+      "fuelTankLitres": null,
+      "editorialRevision": 2,
+      "notes": "Corsa-e: 50 kWh brutos y 46 kWh utilizables.",
+      "editorialStatus": "ACTIVE",
+      "denseCarNormalizationVersion": 1
+    },
+    {
+      "yearTo": 2026,
+      "aliases": [],
+      "generationId": "f",
+      "marketCodes": [
+        "ES"
+      ],
+      "drivetrain": "FWD",
+      "category": "COCHE",
+      "battery": {
+        "usableKwh": null,
+        "declaredKwh": 51.0,
+        "grossKwh": null,
+        "declaredCapacityType": "UNKNOWN"
+      },
+      "powertrain": {
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC",
+        "primaryFuel": null
+      },
+      "legacyKeys": [],
+      "yearFrom": 2024,
+      "sources": [
+        {
+          "url": "https://www.opel.es/hub/datasheet/corsa-my26-es.html",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "battery.declaredKwh"
+          ],
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "catalogId": "car-opel-corsa-f-electric-51",
+      "bodyStyle": "HATCHBACK",
+      "brandId": "opel",
+      "provenance": "RESEARCH_READY",
+      "modelId": "corsa",
+      "variantId": "electric-51",
+      "fuelTankLitres": null,
+      "editorialRevision": 2,
+      "notes": "Opel publica 51 kWh sin especificar capacidad bruta o útil; no se usa para cálculos automáticos.",
+      "editorialStatus": "ACTIVE",
+      "denseCarNormalizationVersion": 1
+    },
+    {
+      "yearTo": 2024,
+      "aliases": [],
+      "generationId": "k9",
+      "marketCodes": [
+        "ES"
+      ],
+      "drivetrain": "FWD",
+      "category": "COCHE",
+      "battery": {
+        "usableKwh": null,
+        "declaredKwh": 50.0,
+        "grossKwh": null,
+        "declaredCapacityType": "UNKNOWN"
+      },
+      "powertrain": {
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC",
+        "primaryFuel": null
+      },
+      "legacyKeys": [],
+      "yearFrom": 2021,
+      "sources": [
+        {
+          "url": "https://www.citroen.es/content/dam/citroen/spain/pdf/catalogos/C_BERLINGO_MULTI.pdf",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery.declaredKwh"
+          ],
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "catalogId": "car-citroen-berlingo-k9-electric-50",
+      "bodyStyle": "MPV",
+      "brandId": "citroen",
+      "provenance": "RESEARCH_READY",
+      "modelId": "berlingo",
+      "variantId": "electric-50",
+      "fuelTankLitres": null,
+      "editorialRevision": 2,
+      "notes": "ë-Berlingo: Citroën publica 50 kWh sin clasificación bruto/útil.",
+      "editorialStatus": "ACTIVE",
+      "denseCarNormalizationVersion": 1
+    },
+    {
+      "yearTo": 2026,
+      "aliases": [],
+      "generationId": "k9-facelift",
+      "marketCodes": [
+        "ES"
+      ],
+      "drivetrain": "FWD",
+      "category": "COCHE",
+      "battery": {
+        "usableKwh": null,
+        "declaredKwh": 54.0,
+        "grossKwh": null,
+        "declaredCapacityType": "UNKNOWN"
+      },
+      "powertrain": {
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC",
+        "primaryFuel": null
+      },
+      "legacyKeys": [],
+      "yearFrom": 2025,
+      "sources": [
+        {
+          "url": "https://www.citroen.es/vehiculos-citroen/e-berlingo.html",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "battery.declaredKwh"
+          ],
+          "type": "OFFICIAL_MANUFACTURER"
+        }
+      ],
+      "catalogId": "car-citroen-berlingo-k9-electric-54",
+      "bodyStyle": "MPV",
+      "brandId": "citroen",
+      "provenance": "RESEARCH_READY",
+      "modelId": "berlingo",
+      "variantId": "electric-54",
+      "fuelTankLitres": null,
+      "editorialRevision": 2,
+      "notes": "ë-Berlingo actual: Citroën publica 54 kWh sin clasificación bruto/útil.",
+      "editorialStatus": "ACTIVE",
+      "denseCarNormalizationVersion": 1
     }
   ],
   "generations": [
@@ -34901,6 +35385,83 @@
       "displayName": "VIII",
       "modelId": "golf",
       "category": "COCHE"
+    },
+    {
+      "id": "c",
+      "category": "COCHE",
+      "modelId": "corsa",
+      "brandId": "opel",
+      "displayName": "C"
+    },
+    {
+      "id": "d",
+      "category": "COCHE",
+      "modelId": "corsa",
+      "brandId": "opel",
+      "displayName": "D"
+    },
+    {
+      "id": "e",
+      "category": "COCHE",
+      "modelId": "corsa",
+      "brandId": "opel",
+      "displayName": "E"
+    },
+    {
+      "id": "f",
+      "category": "COCHE",
+      "modelId": "corsa",
+      "brandId": "opel",
+      "displayName": "F"
+    },
+    {
+      "id": "m49",
+      "category": "COCHE",
+      "modelId": "berlingo",
+      "brandId": "citroen",
+      "displayName": "M49"
+    },
+    {
+      "id": "b9",
+      "category": "COCHE",
+      "modelId": "berlingo",
+      "brandId": "citroen",
+      "displayName": "B9"
+    },
+    {
+      "id": "k9",
+      "category": "COCHE",
+      "modelId": "berlingo",
+      "brandId": "citroen",
+      "displayName": "K9"
+    },
+    {
+      "id": "k9-facelift",
+      "category": "COCHE",
+      "modelId": "berlingo",
+      "brandId": "citroen",
+      "displayName": "K9 facelift"
+    },
+    {
+      "id": "j10",
+      "category": "COCHE",
+      "modelId": "qashqai",
+      "brandId": "nissan",
+      "displayName": "J10"
+    },
+    {
+      "id": "j11",
+      "category": "COCHE",
+      "modelId": "qashqai",
+      "brandId": "nissan",
+      "displayName": "J11"
+    },
+    {
+      "id": "j12",
+      "category": "COCHE",
+      "modelId": "qashqai",
+      "brandId": "nissan",
+      "displayName": "J12"
     }
   ],
   "variants": [
@@ -36136,6 +36697,249 @@
       "displayName": "T6 PHEV",
       "aliases": [],
       "modelId": "xc60"
+    },
+    {
+      "modelId": "corsa",
+      "displayName": "Gasolina",
+      "brandId": "opel",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "c",
+      "id": "gasolina"
+    },
+    {
+      "modelId": "corsa",
+      "displayName": "Diésel",
+      "brandId": "opel",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "c",
+      "id": "diesel"
+    },
+    {
+      "modelId": "corsa",
+      "displayName": "Gasolina",
+      "brandId": "opel",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "d",
+      "id": "gasolina"
+    },
+    {
+      "modelId": "corsa",
+      "displayName": "Diésel",
+      "brandId": "opel",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "d",
+      "id": "diesel"
+    },
+    {
+      "modelId": "corsa",
+      "displayName": "Gasolina",
+      "brandId": "opel",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "e",
+      "id": "gasolina"
+    },
+    {
+      "modelId": "corsa",
+      "displayName": "Diésel",
+      "brandId": "opel",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "e",
+      "id": "diesel"
+    },
+    {
+      "modelId": "corsa",
+      "displayName": "Gasolina",
+      "brandId": "opel",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "f",
+      "id": "gasolina"
+    },
+    {
+      "modelId": "corsa",
+      "displayName": "Diésel",
+      "brandId": "opel",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "f",
+      "id": "diesel"
+    },
+    {
+      "modelId": "corsa",
+      "displayName": "Hybrid",
+      "brandId": "opel",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "f",
+      "id": "hybrid"
+    },
+    {
+      "modelId": "corsa",
+      "displayName": "Electric 50 kWh",
+      "brandId": "opel",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "f",
+      "id": "electric-50"
+    },
+    {
+      "modelId": "corsa",
+      "displayName": "Electric 51 kWh",
+      "brandId": "opel",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "f",
+      "id": "electric-51"
+    },
+    {
+      "modelId": "berlingo",
+      "displayName": "Gasolina",
+      "brandId": "citroen",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "m49",
+      "id": "gasolina"
+    },
+    {
+      "modelId": "berlingo",
+      "displayName": "Diésel",
+      "brandId": "citroen",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "m49",
+      "id": "diesel"
+    },
+    {
+      "modelId": "berlingo",
+      "displayName": "Gasolina",
+      "brandId": "citroen",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "b9",
+      "id": "gasolina"
+    },
+    {
+      "modelId": "berlingo",
+      "displayName": "Diésel",
+      "brandId": "citroen",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "b9",
+      "id": "diesel"
+    },
+    {
+      "modelId": "berlingo",
+      "displayName": "Electric",
+      "brandId": "citroen",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "b9",
+      "id": "electric"
+    },
+    {
+      "modelId": "berlingo",
+      "displayName": "Gasolina",
+      "brandId": "citroen",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "k9",
+      "id": "gasolina"
+    },
+    {
+      "modelId": "berlingo",
+      "displayName": "Diésel",
+      "brandId": "citroen",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "k9",
+      "id": "diesel"
+    },
+    {
+      "modelId": "berlingo",
+      "displayName": "Electric 50 kWh",
+      "brandId": "citroen",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "k9",
+      "id": "electric-50"
+    },
+    {
+      "modelId": "berlingo",
+      "displayName": "Electric 54 kWh",
+      "brandId": "citroen",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "k9-facelift",
+      "id": "electric-54"
+    },
+    {
+      "modelId": "qashqai",
+      "displayName": "Gasolina",
+      "brandId": "nissan",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "j10",
+      "id": "gasolina"
+    },
+    {
+      "modelId": "qashqai",
+      "displayName": "Diésel",
+      "brandId": "nissan",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "j10",
+      "id": "diesel"
+    },
+    {
+      "modelId": "qashqai",
+      "displayName": "Gasolina",
+      "brandId": "nissan",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "j11",
+      "id": "gasolina"
+    },
+    {
+      "modelId": "qashqai",
+      "displayName": "Diésel 4x2",
+      "brandId": "nissan",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "j11",
+      "id": "diesel-4x2"
+    },
+    {
+      "modelId": "qashqai",
+      "displayName": "Diésel 65 L",
+      "brandId": "nissan",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "j11",
+      "id": "diesel-65l"
+    },
+    {
+      "modelId": "qashqai",
+      "displayName": "Mild Hybrid",
+      "brandId": "nissan",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "j12",
+      "id": "mild-hybrid"
+    },
+    {
+      "modelId": "qashqai",
+      "displayName": "e-POWER",
+      "brandId": "nissan",
+      "category": "COCHE",
+      "aliases": [],
+      "generationId": "j12",
+      "id": "e-power"
     }
   ],
   "schemaVersion": 1,

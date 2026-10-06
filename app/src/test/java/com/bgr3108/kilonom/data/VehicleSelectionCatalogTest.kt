@@ -19,10 +19,30 @@ class VehicleSelectionCatalogTest {
         assertTrue(2008 in cars.yearsFor(opel.id, corsa.id))
         assertTrue(2012 in cars.yearsFor(opel.id, corsa.id))
         assertTrue(2024 in cars.yearsFor(opel.id, corsa.id))
+        assertEquals(
+            listOf(
+                "Diésel · modelo anterior",
+                "Diésel · modelo nuevo",
+                "Gasolina · modelo anterior",
+                "Gasolina · modelo nuevo"
+            ),
+            cars.variantsFor(opel.id, corsa.id, 2006).map { it.displayName }
+        )
         assertEquals(listOf("Diésel", "Gasolina"), cars.variantsFor(opel.id, corsa.id, 2008).map { it.displayName })
-        assertEquals(listOf("Diésel", "Gasolina"), cars.variantsFor(opel.id, corsa.id, 2020).map { it.displayName })
-        assertEquals(listOf("Híbrido"), cars.variantsFor(opel.id, corsa.id, 2024).map { it.displayName })
-        assertTrue(cars.variantsFor(opel.id, corsa.id, 2012).isEmpty())
+        assertEquals(listOf("Diésel", "Gasolina"), cars.variantsFor(opel.id, corsa.id, 2012).map { it.displayName })
+        assertEquals(listOf("Diésel", "Gasolina"), cars.variantsFor(opel.id, corsa.id, 2016).map { it.displayName })
+        assertEquals(
+            listOf(
+                "Diésel · modelo anterior",
+                "Diésel · modelo nuevo",
+                "Gasolina · modelo anterior",
+                "Gasolina · modelo nuevo"
+            ),
+            cars.variantsFor(opel.id, corsa.id, 2019).map { it.displayName }
+        )
+        assertEquals(listOf("Diésel", "Eléctrico", "Gasolina"), cars.variantsFor(opel.id, corsa.id, 2020).map { it.displayName })
+        assertEquals(listOf("Eléctrico", "Gasolina", "Híbrido"), cars.variantsFor(opel.id, corsa.id, 2024).map { it.displayName })
+        assertEquals(listOf("Eléctrico", "Gasolina", "Híbrido"), cars.variantsFor(opel.id, corsa.id, 2026).map { it.displayName })
     }
 
     @Test
@@ -43,8 +63,20 @@ class VehicleSelectionCatalogTest {
         )
         val citroen = cars.brandId("Citroën")
         assertEquals(
-            listOf("Diésel", "Gasolina"),
+            listOf("Diésel", "Eléctrico", "Gasolina"),
             cars.variantsFor(citroen, cars.modelId(citroen, "Berlingo"), 2018).map { it.displayName }
+        )
+        assertEquals(
+            listOf("Diésel", "Gasolina"),
+            cars.variantsFor(citroen, cars.modelId(citroen, "Berlingo"), 2008).map { it.displayName }
+        )
+        assertEquals(
+            listOf("Diésel", "Eléctrico"),
+            cars.variantsFor(citroen, cars.modelId(citroen, "Berlingo"), 2025).map { it.displayName }
+        )
+        assertEquals(
+            listOf("Diésel", "Eléctrico", "Gasolina"),
+            cars.variantsFor(citroen, cars.modelId(citroen, "Berlingo"), 2022).map { it.displayName }
         )
         val toyota = cars.brandId("Toyota")
         assertEquals(
@@ -56,6 +88,64 @@ class VehicleSelectionCatalogTest {
             listOf("Diésel", "Híbrido enchufable"),
             cars.variantsFor(volkswagen, cars.modelId(volkswagen, "Golf"), 2023).map { it.displayName }
         )
+    }
+
+    @Test
+    fun researchedDenseFamiliesExposeOnlyFunctionalChoicesForTheirYears() {
+        val nissan = cars.brandId("Nissan")
+        val qashqai = cars.modelId(nissan, "Qashqai")
+
+        assertEquals(listOf("Diésel", "Gasolina"), cars.variantsFor(nissan, qashqai, 2008).map { it.displayName })
+        assertEquals(listOf("Diésel", "Gasolina"), cars.variantsFor(nissan, qashqai, 2015).map { it.displayName })
+        assertEquals(listOf("Diésel", "Gasolina"), cars.variantsFor(nissan, qashqai, 2019).map { it.displayName })
+        assertEquals(
+            setOf("e-POWER híbrido", "Mild Hybrid híbrido"),
+            cars.variantsFor(nissan, qashqai, 2024).map { it.displayName }.toSet()
+        )
+    }
+
+    @Test
+    fun transitionYearsUseHumanUniqueLabelsAndKeepTheirFunctionalSnapshots() {
+        val opel = cars.brandId("Opel")
+        val corsa = cars.modelId(opel, "Corsa")
+
+        val expectedTanks = mapOf(
+            2006 to mapOf(
+                "Gasolina · modelo anterior" to 44.0,
+                "Gasolina · modelo nuevo" to 45.0,
+                "Diésel · modelo anterior" to 44.0,
+                "Diésel · modelo nuevo" to 45.0
+            ),
+            2019 to mapOf(
+                "Gasolina · modelo anterior" to 45.0,
+                "Gasolina · modelo nuevo" to 44.0,
+                "Diésel · modelo anterior" to 45.0,
+                "Diésel · modelo nuevo" to 41.0
+            )
+        )
+
+        expectedTanks.forEach { (year, tanksByLabel) ->
+            val variants = cars.variantsFor(opel, corsa, year)
+            assertEquals(variants.size, variants.map { it.displayName }.distinct().size)
+            assertEquals(tanksByLabel, variants.associate { it.displayName to it.vehicle.fuelTankCapacity })
+            assertTrue(variants.none { it.displayName.contains(Regex("(?i)\\b(corsa [cdef]|facelift|my|[a-z]\\d{2})\\b")) })
+        }
+    }
+
+    @Test
+    fun normalizedDenseFamiliesHaveNoDuplicateHumanVariantLabels() {
+        listOf(
+            "Opel" to "Corsa",
+            "Citroën" to "Berlingo",
+            "Nissan" to "Qashqai"
+        ).forEach { (brandName, modelName) ->
+            val brandId = cars.brandId(brandName)
+            val modelId = cars.modelId(brandId, modelName)
+            cars.yearsFor(brandId, modelId).forEach { year ->
+                val labels = cars.variantsFor(brandId, modelId, year).map { it.displayName }
+                assertEquals("$brandName $modelName $year", labels.size, labels.distinct().size)
+            }
+        }
     }
 
     @Test

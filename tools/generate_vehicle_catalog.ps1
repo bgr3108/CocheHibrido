@@ -3,6 +3,7 @@ param(
     [switch]$BootstrapLegacy,
     [switch]$NormalizeLegacyModels,
     [switch]$ConsolidateMotorcycles,
+    [switch]$NormalizeDenseCarFamilies,
     [string]$EditorialPath,
     [string]$RuntimePath,
     [string]$AssetPath
@@ -535,6 +536,198 @@ function Consolidate-LegacyMotorcycles {
     return $retiredCount
 }
 
+# Editorial normalization for researched, dense car families.  This intentionally
+# lives in the generator: Android consumes only the resulting structured catalog
+# and never infers a generation or a model from a legacy display string.
+function Add-CatalogIdentity {
+    param($Catalog, [string]$Category, [string]$BrandId, [string]$ModelId, [string]$GenerationId, [string]$GenerationName, [string]$VariantId, [string]$VariantName)
+
+    if ($null -eq ($Catalog.models | Where-Object { $_.category -eq $Category -and $_.brandId -eq $BrandId -and $_.id -eq $ModelId } | Select-Object -First 1)) {
+        throw "dense car normalization: model inexistente $Category/$BrandId/$ModelId"
+    }
+    if ($null -ne $GenerationId -and $null -eq ($Catalog.generations | Where-Object {
+        $_.category -eq $Category -and $_.brandId -eq $BrandId -and $_.modelId -eq $ModelId -and $_.id -eq $GenerationId
+    } | Select-Object -First 1)) {
+        $Catalog.generations = @($Catalog.generations) + (New-Object @{ category = $Category; brandId = $BrandId; modelId = $ModelId; id = $GenerationId; displayName = $GenerationName })
+    }
+    if ($null -ne $VariantId -and $null -eq ($Catalog.variants | Where-Object {
+        $_.category -eq $Category -and $_.brandId -eq $BrandId -and $_.modelId -eq $ModelId -and $_.generationId -eq $GenerationId -and $_.id -eq $VariantId
+    } | Select-Object -First 1)) {
+        $Catalog.variants = @($Catalog.variants) + (New-Object @{ category = $Category; brandId = $BrandId; modelId = $ModelId; generationId = $GenerationId; id = $VariantId; displayName = $VariantName; aliases = @() })
+    }
+}
+
+function New-DenseCarSource {
+    param([string]$Url, [string[]]$Fields, [string]$Type = "TECHNICAL_REFERENCE")
+    return New-Object @{ type = $Type; url = $Url; accessedAt = "2026-10-06"; fields = $Fields }
+}
+
+function New-DenseCarSpec {
+    param(
+        [string]$BrandId, [string]$ModelId, [string]$GenerationId, [string]$GenerationName,
+        [string]$VariantId, [string]$VariantName, [int]$YearFrom, [Nullable[int]]$YearTo,
+        [string]$Kind, [string]$Fuel, [string]$Hybrid, [Nullable[double]]$Tank,
+        [Nullable[double]]$Gross, [Nullable[double]]$Usable, [Nullable[double]]$Declared, [string]$DeclaredType,
+        [string]$LegacyHybrid, [string]$NewCatalogId, [object[]]$Sources, [string]$Notes
+    )
+    return New-Object @{
+        brandId = $BrandId; modelId = $ModelId; generationId = $GenerationId; generationName = $GenerationName
+        variantId = $VariantId; variantName = $VariantName; yearFrom = $YearFrom; yearTo = $YearTo
+        kind = $Kind; fuel = $Fuel; hybrid = $Hybrid; tank = $Tank
+        gross = $Gross; usable = $Usable; declared = $Declared; declaredType = $DeclaredType
+        legacyHybrid = $LegacyHybrid; newCatalogId = $NewCatalogId; sources = @($Sources); notes = $Notes
+    }
+}
+
+function Test-DenseCarLegacyMatch {
+    param($Vehicle, $Spec)
+    if ($Vehicle.powertrain.kind -ne $Spec.kind) { return $false }
+    if ("$($Vehicle.powertrain.primaryFuel)" -ne "$($Spec.fuel)") { return $false }
+    $expectedLegacyHybrid = if ([string]::IsNullOrWhiteSpace($Spec.legacyHybrid)) { $Spec.hybrid } else { $Spec.legacyHybrid }
+    if ("$($Vehicle.powertrain.hybridSystem)" -ne "$expectedLegacyHybrid") { return $false }
+    # String comparison deliberately treats JSON null and an omitted optional
+    # PowerShell value alike, while retaining the exact numeric text from the
+    # catalog (we never use zero as an absence sentinel).
+    if ("$($Vehicle.fuelTankLitres)" -ne "$($Spec.tank)") { return $false }
+    if ("$($Vehicle.battery.grossKwh)" -ne "$($Spec.gross)" -or "$(($Vehicle.battery.usableKwh))" -ne "$($Spec.usable)" -or
+        "$(($Vehicle.battery.declaredKwh))" -ne "$($Spec.declared)" -or "$($Vehicle.battery.declaredCapacityType)" -ne "$($Spec.declaredType)") { return $false }
+    return @($Vehicle.legacyKeys | ForEach-Object { [int]$_.year } | Where-Object {
+        $_ -lt [int]$Spec.yearFrom -or ($null -ne $Spec.yearTo -and $_ -gt [int]$Spec.yearTo)
+    }).Count -eq 0
+}
+
+function Set-DenseCarRecord {
+    param($Vehicle, $Spec, $LegacyKeys)
+    $Vehicle.editorialStatus = "ACTIVE"
+    $Vehicle.provenance = "RESEARCH_READY"
+    $Vehicle.category = "COCHE"
+    $Vehicle.brandId = $Spec.brandId; $Vehicle.modelId = $Spec.modelId
+    $Vehicle.generationId = $Spec.generationId; $Vehicle.variantId = $Spec.variantId
+    $Vehicle.yearFrom = [int]$Spec.yearFrom; $Vehicle.yearTo = $Spec.yearTo
+    $Vehicle.powertrain = New-Object @{ kind = $Spec.kind; primaryFuel = if ([string]::IsNullOrWhiteSpace($Spec.fuel)) { $null } else { $Spec.fuel }; hybridSystem = $Spec.hybrid }
+    $Vehicle.fuelTankLitres = $Spec.tank
+    $Vehicle.battery = New-Object @{ grossKwh = $Spec.gross; usableKwh = $Spec.usable; declaredKwh = $Spec.declared; declaredCapacityType = if ([string]::IsNullOrWhiteSpace($Spec.declaredType)) { $null } else { $Spec.declaredType } }
+    $Vehicle.bodyStyle = if ($Spec.brandId -eq "citroen" -and $Spec.modelId -eq "berlingo") { "MPV" } elseif ($Spec.brandId -eq "nissan") { "SUV" } else { "HATCHBACK" }
+    $Vehicle.drivetrain = "FWD"
+    $Vehicle.marketCodes = @("ES")
+    $Vehicle.aliases = @()
+    $Vehicle.legacyKeys = @($LegacyKeys | Sort-Object category,brand,model,year)
+    $Vehicle.sources = @($Spec.sources)
+    $Vehicle.notes = $Spec.notes
+    $Vehicle.editorialRevision = [int]$Vehicle.editorialRevision + 1
+    Set-EditorialProperty $Vehicle "denseCarNormalizationVersion" 1
+}
+
+function Normalize-DenseCarFamilies {
+    param($Catalog)
+
+    $alreadyNormalized = @($Catalog.vehicles | Where-Object { (Get-Property $_ "denseCarNormalizationVersion") -eq 1 })
+    $needsNullRepair = @($alreadyNormalized | Where-Object { $_.battery.declaredCapacityType -eq "" }).Count -gt 0
+    if ($alreadyNormalized.Count -gt 0 -and -not $needsNullRepair) { return 0 }
+
+    $km77CorsaC = "https://www.km77.com/coches/opel/corsa/2001/5-puertas/elegance/corsa-5p-elegance-14-16v-aut/datos"
+    $km77CorsaD = "https://www.km77.com/coches/opel/corsa/2006/5-puertas/enjoy/corsa-5p-enjoy-12/datos"
+    $km77CorsaE = "https://www.km77.com/coches/opel/corsa/2011/5-puertas/selective/corsa-5p-selective-14-100-cv-startstop/datos"
+    $km77CorsaF = "https://www.km77.com/coches/opel/corsa/2020/5-puertas/datos"
+    $km77CorsaElectric = "https://www.km77.com/coches/opel/corsa/2020/5-puertas/corsa-e/corsa-e/datos"
+    $opelCorsaMy26 = "https://www.opel.es/hub/datasheet/corsa-my26-es.html"
+    $km77BerlingoI = "https://www.km77.com/coches/citroen/berlingo/2003/estandar/xtr/berlingo-hdi-92-xtr/datos"
+    $km77BerlingoB9 = "https://www.km77.com/coches/citroen/berlingo/2008/estandar/xtr/nuevo-berlingo-xtr-16-hdi-90/datos"
+    $km77BerlingoK9 = "https://www.km77.com/coches/citroen/berlingo/2019/talla-m/datos?market%5B%5D=discontinued"
+    $citroenEBerlingo50 = "https://www.citroen.es/content/dam/citroen/spain/pdf/catalogos/C_BERLINGO_MULTI.pdf"
+    $citroenEBerlingo54 = "https://www.citroen.es/vehiculos-citroen/e-berlingo.html"
+    $km77QashqaiJ10 = "https://www.km77.com/coches/nissan/qashqai/2007/datos?hp=1"
+    $km77QashqaiJ11 = "https://www.km77.com/coches/nissan/qashqai/2014/estandar/n-tec/qashqai-12i-dig-t-115cv-stopstart-4x2-n-tec/datos"
+    $qashqaiJ11DieselAwd = "https://www.autohints.com/es/nissan-qashqai-ii-j11-facelift-2017-1.7-dci-150-hp-4x4-version-28140"
+    $nissanQashqaiJ12 = "https://www.nissan.es/content/dam/Nissan/es/brochures/E-Catalogo_Nissan_Qashqai_ES.pdf"
+
+    $specs = @(
+        (New-DenseCarSpec "opel" "corsa" "c" "C" "gasolina" "Gasolina" 2001 2006 "ICE" "GASOLINA" "NONE" 44 $null $null $null $null $null $null @((New-DenseCarSource $km77CorsaC @("fuelTankLitres"))) "Corsa C: gasolina con depósito de 44 L."),
+        (New-DenseCarSpec "opel" "corsa" "c" "C" "diesel" "Diésel" 2001 2006 "ICE" "DIESEL" "NONE" 44 $null $null $null $null $null $null @((New-DenseCarSource $km77CorsaC @("fuelTankLitres"))) "Corsa C: diésel con depósito de 44 L."),
+        (New-DenseCarSpec "opel" "corsa" "d" "D" "gasolina" "Gasolina" 2006 2014 "ICE" "GASOLINA" "NONE" 45 $null $null $null $null $null $null @((New-DenseCarSource $km77CorsaD @("fuelTankLitres"))) "Corsa D: gasolina con depósito de 45 L."),
+        (New-DenseCarSpec "opel" "corsa" "d" "D" "diesel" "Diésel" 2006 2014 "ICE" "DIESEL" "NONE" 45 $null $null $null $null $null $null @((New-DenseCarSource $km77CorsaD @("fuelTankLitres"))) "Corsa D: diésel con depósito de 45 L."),
+        (New-DenseCarSpec "opel" "corsa" "e" "E" "gasolina" "Gasolina" 2015 2019 "ICE" "GASOLINA" "NONE" 45 $null $null $null $null $null $null @((New-DenseCarSource $km77CorsaE @("fuelTankLitres"))) "Corsa E: gasolina con depósito de 45 L."),
+        (New-DenseCarSpec "opel" "corsa" "e" "E" "diesel" "Diésel" 2015 2019 "ICE" "DIESEL" "NONE" 45 $null $null $null $null $null $null @((New-DenseCarSource $km77CorsaE @("fuelTankLitres"))) "Corsa E: diésel con depósito de 45 L."),
+        (New-DenseCarSpec "opel" "corsa" "f" "F" "gasolina" "Gasolina" 2019 2026 "ICE" "GASOLINA" "NONE" 44 $null $null $null $null $null $null @((New-DenseCarSource $opelCorsaMy26 @("fuelTankLitres" ) "OFFICIAL_MANUFACTURER"),(New-DenseCarSource $km77CorsaF @("yearFrom","fuelTankLitres"))) "Corsa F: gasolina con depósito de 44 L."),
+        (New-DenseCarSpec "opel" "corsa" "f" "F" "diesel" "Diésel" 2019 2023 "ICE" "DIESEL" "NONE" 41 $null $null $null $null $null $null @((New-DenseCarSource $km77CorsaF @("yearFrom","yearTo","fuelTankLitres"))) "Corsa F: diésel con depósito de 41 L."),
+        (New-DenseCarSpec "opel" "corsa" "f" "F" "hybrid" "Hybrid" 2024 2026 "HEV" $null "MILD" 44 $null $null $null $null "FULL" $null @((New-DenseCarSource $opelCorsaMy26 @("yearFrom","fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Corsa F: sistema mild-hybrid de 48 V, separado del híbrido e-POWER de Nissan."),
+        (New-DenseCarSpec "opel" "corsa" "f" "F" "electric-50" "Electric 50 kWh" 2020 2023 "BEV" $null "BATTERY_ELECTRIC" $null 50 46 $null $null $null "car-opel-corsa-f-electric-50" @((New-DenseCarSource $km77CorsaElectric @("yearFrom","yearTo","battery.grossKwh","battery.usableKwh"))) "Corsa-e: 50 kWh brutos y 46 kWh utilizables."),
+        (New-DenseCarSpec "opel" "corsa" "f" "F" "electric-51" "Electric 51 kWh" 2024 2026 "BEV" $null "BATTERY_ELECTRIC" $null $null $null 51 "UNKNOWN" $null "car-opel-corsa-f-electric-51" @((New-DenseCarSource $opelCorsaMy26 @("yearFrom","battery.declaredKwh") "OFFICIAL_MANUFACTURER")) "Opel publica 51 kWh sin especificar capacidad bruta o útil; no se usa para cálculos automáticos."),
+
+        (New-DenseCarSpec "citroen" "berlingo" "m49" "M49" "gasolina" "Gasolina" 1996 2007 "ICE" "GASOLINA" "NONE" 55 $null $null $null $null $null $null @((New-DenseCarSource $km77BerlingoI @("fuelTankLitres"))) "Berlingo de primera generación: gasolina con depósito de 55 L."),
+        (New-DenseCarSpec "citroen" "berlingo" "m49" "M49" "diesel" "Diésel" 1996 2007 "ICE" "DIESEL" "NONE" 55 $null $null $null $null $null $null @((New-DenseCarSource $km77BerlingoI @("fuelTankLitres"))) "Berlingo de primera generación: diésel con depósito de 55 L."),
+        (New-DenseCarSpec "citroen" "berlingo" "b9" "B9" "gasolina" "Gasolina" 2008 2021 "ICE" "GASOLINA" "NONE" 60 $null $null $null $null $null $null @((New-DenseCarSource $km77BerlingoB9 @("yearFrom","fuelTankLitres")),(New-DenseCarSource "https://www.coches.net/fichas_tecnicas/citroen/berlingo/industriales/4-puertas/talla_m_puretech_110_ss_live_110cv_gasolina/86136/799230120180604/" @("yearFrom","yearTo","fuelTankLitres"))) "Berlingo térmica gasolina: depósito de 60 L documentado hasta 2021."),
+        (New-DenseCarSpec "citroen" "berlingo" "b9" "B9" "diesel" "Diésel" 2008 2017 "ICE" "DIESEL" "NONE" 60 $null $null $null $null $null $null @((New-DenseCarSource $km77BerlingoB9 @("yearFrom","fuelTankLitres"))) "Berlingo B9 diésel: depósito de 60 L."),
+        (New-DenseCarSpec "citroen" "berlingo" "b9" "B9" "electric" "Electric" 2013 2018 "BEV" $null "BATTERY_ELECTRIC" $null $null $null 22.5 "UNKNOWN" $null $null @((New-DenseCarSource "https://www.km77.com/coches/citroen/berlingo/2015/datos" @("yearFrom","yearTo","battery.declaredKwh"))) "E-Berlingo Multispace: capacidad publicada de 22,5 kWh sin clasificación bruto/útil."),
+        (New-DenseCarSpec "citroen" "berlingo" "k9" "K9" "gasolina" "Gasolina" 2022 2022 "ICE" "GASOLINA" "NONE" 50 $null $null $null $null $null $null @((New-DenseCarSource $km77BerlingoK9 @("fuelTankLitres"))) "Berlingo K9 gasolina: solo se conserva el año legado 2022 con depósito de 50 L; no se amplía sin fuente concluyente."),
+        (New-DenseCarSpec "citroen" "berlingo" "k9" "K9" "diesel" "Diésel" 2018 2025 "ICE" "DIESEL" "NONE" 50 $null $null $null $null $null $null @((New-DenseCarSource "https://www.autobild.es/coches/citroen/berlingo/berlingo-5-2018/talla-m-bluehdi-130-feel-7p/ficha-tecnica" @("yearFrom","fuelTankLitres")),(New-DenseCarSource $km77BerlingoK9 @("yearTo","fuelTankLitres"))) "Berlingo K9 diésel: depósito de 50 L."),
+        (New-DenseCarSpec "citroen" "berlingo" "k9" "K9" "electric-50" "Electric 50 kWh" 2021 2024 "BEV" $null "BATTERY_ELECTRIC" $null $null $null 50 "UNKNOWN" $null "car-citroen-berlingo-k9-electric-50" @((New-DenseCarSource $citroenEBerlingo50 @("yearFrom","yearTo","battery.declaredKwh") "OFFICIAL_MANUFACTURER")) "ë-Berlingo: Citroën publica 50 kWh sin clasificación bruto/útil."),
+        (New-DenseCarSpec "citroen" "berlingo" "k9-facelift" "K9 facelift" "electric-54" "Electric 54 kWh" 2025 2026 "BEV" $null "BATTERY_ELECTRIC" $null $null $null 54 "UNKNOWN" $null "car-citroen-berlingo-k9-electric-54" @((New-DenseCarSource $citroenEBerlingo54 @("yearFrom","battery.declaredKwh") "OFFICIAL_MANUFACTURER")) "ë-Berlingo actual: Citroën publica 54 kWh sin clasificación bruto/útil."),
+
+        (New-DenseCarSpec "nissan" "qashqai" "j10" "J10" "gasolina" "Gasolina" 2007 2013 "ICE" "GASOLINA" "NONE" 65 $null $null $null $null $null $null @((New-DenseCarSource $km77QashqaiJ10 @("yearFrom","yearTo","fuelTankLitres"))) "Qashqai J10: gasolina con depósito de 65 L."),
+        (New-DenseCarSpec "nissan" "qashqai" "j10" "J10" "diesel" "Diésel" 2007 2013 "ICE" "DIESEL" "NONE" 65 $null $null $null $null $null $null @((New-DenseCarSource $km77QashqaiJ10 @("yearFrom","yearTo","fuelTankLitres"))) "Qashqai J10: diésel con depósito de 65 L."),
+        (New-DenseCarSpec "nissan" "qashqai" "j11" "J11" "gasolina" "Gasolina" 2014 2020 "ICE" "GASOLINA" "NONE" 55 $null $null $null $null $null $null @((New-DenseCarSource $km77QashqaiJ11 @("yearFrom","fuelTankLitres"))) "Qashqai J11 gasolina con depósito de 55 L."),
+        (New-DenseCarSpec "nissan" "qashqai" "j11" "J11" "diesel-4x2" "Diésel 4x2" 2014 2018 "ICE" "DIESEL" "NONE" 55 $null $null $null $null $null $null @((New-DenseCarSource $km77QashqaiJ11 @("yearFrom","fuelTankLitres"))) "Qashqai J11 diésel 4x2 con depósito de 55 L."),
+        (New-DenseCarSpec "nissan" "qashqai" "j11" "J11" "diesel-65l" "Diésel 65 L" 2019 2020 "ICE" "DIESEL" "NONE" 65 $null $null $null $null $null $null @((New-DenseCarSource $qashqaiJ11DieselAwd @("yearFrom","yearTo","fuelTankLitres"))) "Qashqai J11 1.7 dCi: depósito de 65 L; se mantiene separado por capacidad."),
+        (New-DenseCarSpec "nissan" "qashqai" "j12" "J12" "mild-hybrid" "Mild Hybrid" 2021 2026 "HEV" $null "MILD" 55 $null $null $null $null "FULL" $null @((New-DenseCarSource $nissanQashqaiJ12 @("yearFrom","fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Qashqai J12 Mild Hybrid 12 V; se mantiene distinto de e-POWER."),
+        (New-DenseCarSpec "nissan" "qashqai" "j12" "J12" "e-power" "e-POWER" 2022 2026 "HEV" $null "FULL" 55 $null $null $null $null $null $null @((New-DenseCarSource $nissanQashqaiJ12 @("yearFrom","fuelTankLitres") "OFFICIAL_MANUFACTURER")) "Qashqai J12 e-POWER: híbrido de serie, separado del Mild Hybrid." )
+    )
+
+    $families = @("opel|corsa", "citroen|berlingo", "nissan|qashqai")
+    $original = @($Catalog.vehicles | Where-Object {
+        $_.category -eq "COCHE" -and $_.editorialStatus -eq "ACTIVE" -and $families -contains "$($_.brandId)|$($_.modelId)"
+    })
+    $retiredCount = 0
+
+    foreach ($spec in $specs) {
+        Add-CatalogIdentity $Catalog "COCHE" $spec.brandId $spec.modelId $spec.generationId $spec.generationName $spec.variantId $spec.variantName
+        $matches = @($original | Where-Object {
+            $_.editorialStatus -eq "ACTIVE" -and $_.brandId -eq $spec.brandId -and $_.modelId -eq $spec.modelId -and (Test-DenseCarLegacyMatch $_ $spec)
+        } | Sort-Object yearFrom,catalogId)
+        if ($spec.brandId -eq "nissan" -and $spec.modelId -eq "qashqai" -and $spec.hybrid -eq "MILD") {
+            $matches = @($matches | Where-Object { $_.catalogId -like "*mhev*" })
+        }
+        # The pre-normalized e-POWER legacy record was imported with an
+        # inconsistent optional-fuel representation. Its literal legacy key is
+        # unambiguous, so retain it while correcting the structured powertrain.
+        if ($matches.Count -eq 0 -and $spec.brandId -eq "nissan" -and $spec.modelId -eq "qashqai" -and $spec.kind -eq "HEV" -and $spec.hybrid -eq "FULL" -and [int]$spec.yearFrom -eq 2022) {
+            $matches = @($original | Where-Object {
+                $_.editorialStatus -eq "ACTIVE" -and $_.catalogId -like "*qashqai-e-power*"
+            } | Sort-Object yearFrom,catalogId)
+        }
+        # A failed validation never publishes runtime/seed files, but it can
+        # have written the readable editorial file. This lets a subsequent
+        # invocation repair such a partial normalization deterministically.
+        if ($matches.Count -eq 0) {
+            $matches = @($original | Where-Object {
+                $_.editorialStatus -eq "ACTIVE" -and (Get-Property $_ "denseCarNormalizationVersion") -eq 1 -and
+                    $_.brandId -eq $spec.brandId -and $_.modelId -eq $spec.modelId -and $_.generationId -eq $spec.generationId -and $_.variantId -eq $spec.variantId
+            } | Sort-Object yearFrom,catalogId)
+        }
+        $canonical = if ($matches.Count -gt 0) { $matches[0] } else { $null }
+        if ($null -eq $canonical) {
+            if ([string]::IsNullOrWhiteSpace($spec.newCatalogId)) { throw "dense car normalization: falta catalogId nuevo para $($spec.brandId)/$($spec.modelId)/$($spec.variantId) [kind=$($spec.kind), fuel=$($spec.fuel), hybrid=$($spec.hybrid), from=$($spec.yearFrom)]" }
+            $canonical = New-Object @{ catalogId = $spec.newCatalogId; editorialStatus = "ACTIVE"; provenance = "RESEARCH_READY"; category = "COCHE"; brandId = $spec.brandId; modelId = $spec.modelId; generationId = $spec.generationId; variantId = $spec.variantId; yearFrom = $spec.yearFrom; yearTo = $spec.yearTo; powertrain = $null; fuelTankLitres = $null; battery = $null; bodyStyle = $null; drivetrain = $null; marketCodes = @("ES"); aliases = @(); legacyKeys = @(); sources = @(); notes = ""; editorialRevision = 0 }
+            $Catalog.vehicles = @($Catalog.vehicles) + $canonical
+        }
+
+        Set-DenseCarRecord $canonical $spec @($matches | ForEach-Object { $_.legacyKeys })
+        $retired = @($matches | Where-Object { $_.catalogId -ne $canonical.catalogId })
+        if ($retired.Count -gt 0) { Set-EditorialProperty $canonical "supersededCatalogIds" @($retired | ForEach-Object { $_.catalogId }) }
+        foreach ($entry in $retired) {
+            $entry.editorialStatus = "INACTIVE"
+            Set-EditorialProperty $entry "replacedByCatalogId" $canonical.catalogId
+            $entry.editorialRevision = [int]$entry.editorialRevision + 1
+            $entry.notes = "$($entry.notes) Consolidado en $($canonical.catalogId) mediante normalización editorial investigada."
+            $retiredCount++
+        }
+    }
+
+    $unresolved = @($original | Where-Object { $_.editorialStatus -eq "ACTIVE" -and (Get-Property $_ "denseCarNormalizationVersion") -ne 1 })
+    if ($unresolved.Count -gt 0) { throw "dense car normalization: registros legacy sin rango: $($unresolved.catalogId -join ', ')" }
+    return $retiredCount
+}
+
 function Test-EditorialCatalog {
     param($Catalog)
     if ($Catalog.schemaVersion -ne 1) { throw "catalog: schemaVersion no soportada '$($Catalog.schemaVersion)'" }
@@ -708,16 +901,31 @@ if ($BootstrapLegacy) {
 }
 
 $editorial = Get-Content -Raw -Encoding UTF8 $EditorialPath | ConvertFrom-Json
+$editorialDirty = $false
+$retiredMotorcycles = $null
+$retiredCars = $null
 if ($NormalizeLegacyModels) {
     Normalize-LegacyModelStructure $editorial
-    Write-EditorialJson $editorial $EditorialPath
+    $editorialDirty = $true
 }
 if ($ConsolidateMotorcycles) {
     $retiredMotorcycles = Consolidate-LegacyMotorcycles $editorial
-    Write-EditorialJson $editorial $EditorialPath
-    Write-Output "Motocicletas consolidadas: $retiredMotorcycles registros absorbidos"
+    $editorialDirty = $true
+}
+if ($NormalizeDenseCarFamilies) {
+    $retiredCars = Normalize-DenseCarFamilies $editorial
+    $editorialDirty = $true
 }
 Test-EditorialCatalog $editorial
+if ($editorialDirty) {
+    Write-EditorialJson $editorial $EditorialPath
+}
+if ($null -ne $retiredMotorcycles) {
+    Write-Output "Motocicletas consolidadas: $retiredMotorcycles registros absorbidos"
+}
+if ($null -ne $retiredCars) {
+    Write-Output "Coches normalizados: $retiredCars registros absorbidos"
+}
 $runtime = New-RuntimeCatalog $editorial
 Write-DeterministicJson $runtime $RuntimePath
 Write-DeterministicJson $runtime $AssetPath

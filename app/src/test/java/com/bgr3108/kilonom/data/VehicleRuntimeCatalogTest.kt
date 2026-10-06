@@ -21,7 +21,7 @@ class VehicleRuntimeCatalogTest {
         readLegacy("vehicles.json", VehicleCategory.COCHE).plus(readLegacy("motorcycles.json", VehicleCategory.MOTO)).forEach { legacy ->
             assertTrue("legacy entry missing: $legacy", activeLegacyKeys.contains(legacy.key))
         }
-        assertEquals(234, runtime.vehicles.size)
+        assertEquals(201, runtime.vehicles.size)
         assertTrue(runtime.vehicles.any { it.catalogId == "car-seat-leon-kl-facelift-e-hybrid-1-5" })
         assertTrue(runtime.vehicles.any { it.catalogId == "car-bmw-x5-g05-lci-xdrive50e" })
     }
@@ -120,6 +120,37 @@ class VehicleRuntimeCatalogTest {
         }
     }
 
+    @Test
+    fun normalizedCorsaBerlingoAndQashqaiPreserveEveryLegacySnapshot() {
+        val runtime = parseRuntimeVehicleCatalog(readRuntime())
+        val normalizedFamilies = setOf(
+            "Opel" to "Corsa",
+            "Citroën" to "Berlingo",
+            "Nissan" to "Qashqai"
+        )
+        val legacyCars = readLegacyCars().filter { legacy ->
+            normalizedFamilies.any { (brand, model) ->
+                legacy.brand == brand && legacy.model.startsWith(model)
+            }
+        }
+
+        assertEquals(60, legacyCars.size)
+        legacyCars.forEach { legacy ->
+            val vehicle = runtime.vehicles.single { candidate ->
+                candidate.legacyKeys.any { key ->
+                    key.brand == legacy.brand && key.model == legacy.model && key.year == legacy.year
+                }
+            }
+            val snapshot = vehicle.toVehicleInfo(legacy.year)
+
+            assertTrue("year missing: $legacy", legacy.year in vehicle.years(runtime.selectionYearUpperBound))
+            assertEquals(legacy.type, snapshot.type)
+            assertEquals(legacy.fuelTankCapacity ?: 0.0, snapshot.fuelTankCapacity, 0.0)
+            assertEquals(legacy.batteryCapacity ?: 0.0, vehicle.battery.declaredKwh ?: 0.0, 0.0)
+            assertEquals(0.0, snapshot.batteryCapacity, 0.0)
+        }
+    }
+
     private fun runtimeWith(from: String, to: String): String = readRuntime().replace(from, to)
 
     private fun readRuntime(): String = findAsset(RUNTIME_CATALOG_ASSET).readText()
@@ -134,6 +165,19 @@ class VehicleRuntimeCatalogTest {
 
     private fun readLegacyMotorcycles(): List<LegacyMotorcycleSnapshot> =
         Json.parseToJsonElement(findAsset("motorcycles.json").readText()).jsonArray.map { element ->
+            val entry = element.jsonObject
+            LegacyMotorcycleSnapshot(
+                brand = entry.getValue("brand").jsonPrimitive.content,
+                model = entry.getValue("model").jsonPrimitive.content,
+                year = entry.getValue("year").jsonPrimitive.content.toInt(),
+                type = VehicleType.valueOf(entry.getValue("type").jsonPrimitive.content),
+                fuelTankCapacity = entry["fuelTankCapacity"]?.jsonPrimitive?.doubleOrNull,
+                batteryCapacity = entry["batteryCapacity"]?.jsonPrimitive?.doubleOrNull
+            )
+        }
+
+    private fun readLegacyCars(): List<LegacyMotorcycleSnapshot> =
+        Json.parseToJsonElement(findAsset("vehicles.json").readText()).jsonArray.map { element ->
             val entry = element.jsonObject
             LegacyMotorcycleSnapshot(
                 brand = entry.getValue("brand").jsonPrimitive.content,
