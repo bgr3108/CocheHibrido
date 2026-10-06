@@ -19,13 +19,13 @@ fun AddVehicleScreen(
     onCreated: () -> Unit
 ) {
     val category by viewModel.selectedCategory.collectAsStateWithLifecycle()
-    val catalog by viewModel.availableVehicles.collectAsStateWithLifecycle()
+    val catalog by viewModel.selectionCatalog.collectAsStateWithLifecycle()
     val isSaving by viewModel.isWorking.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     VehicleForm(
         title = "Añadir vehículo",
         initialVehicle = null,
-        availableVehicles = catalog,
+        selectionCatalog = catalog,
         selectedCategory = category,
         onCategoryChanged = viewModel::selectCategory,
         catalogEditable = true,
@@ -44,7 +44,7 @@ fun VehicleEditorScreen(
 ) {
     val summaries by viewModel.vehicleSummaries.collectAsStateWithLifecycle()
     val category by viewModel.selectedCategory.collectAsStateWithLifecycle()
-    val catalog by viewModel.availableVehicles.collectAsStateWithLifecycle()
+    val catalog by viewModel.selectionCatalog.collectAsStateWithLifecycle()
     val isSaving by viewModel.isWorking.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val summary = summaries.firstOrNull { it.vehicle.id == vehicleId }
@@ -58,7 +58,7 @@ fun VehicleEditorScreen(
     VehicleForm(
         title = "Editar vehículo",
         initialVehicle = summary.vehicle.toVehicle(),
-        availableVehicles = catalog,
+        selectionCatalog = catalog,
         selectedCategory = category,
         onCategoryChanged = viewModel::selectCategory,
         catalogEditable = !hasRecordedActivity,

@@ -11,7 +11,7 @@ fun SetupScreen(
     homeViewModel: HomeViewModel,
     onDone: () -> Unit
 ) {
-    val vehicles by homeViewModel.availableVehicles.collectAsStateWithLifecycle()
+    val catalog by homeViewModel.selectionCatalog.collectAsStateWithLifecycle()
     val category by homeViewModel.setupVehicleCategory.collectAsStateWithLifecycle()
     val isSaving by homeViewModel.isSavingVehicle.collectAsStateWithLifecycle()
     val saveFailed by homeViewModel.vehicleSaveFailed.collectAsStateWithLifecycle()
@@ -19,7 +19,7 @@ fun SetupScreen(
     VehicleForm(
         title = "Configura tu vehículo",
         initialVehicle = null,
-        availableVehicles = vehicles,
+        selectionCatalog = catalog,
         selectedCategory = category,
         onCategoryChanged = homeViewModel::selectSetupVehicleCategory,
         catalogEditable = true,

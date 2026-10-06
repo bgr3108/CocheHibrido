@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.bgr3108.kilonom.data.Vehicle
 import com.bgr3108.kilonom.data.VehicleCategory
 import com.bgr3108.kilonom.data.VehicleInfo
+import com.bgr3108.kilonom.data.VehicleSelectionCatalog
 import com.bgr3108.kilonom.data.isVehicleSelectionCompatible
 import com.bgr3108.kilonom.util.ExternalLinks
 import com.bgr3108.kilonom.util.openExternalUrl
@@ -54,7 +55,7 @@ import com.bgr3108.kilonom.util.toKilometersOrNull
 fun VehicleForm(
     title: String,
     initialVehicle: Vehicle?,
-    availableVehicles: List<VehicleInfo>,
+    selectionCatalog: VehicleSelectionCatalog,
     selectedCategory: VehicleCategory,
     onCategoryChanged: (VehicleCategory) -> Unit,
     catalogEditable: Boolean,
@@ -69,15 +70,17 @@ fun VehicleForm(
     val categoryName = rememberSaveable(initialId) {
         mutableStateOf((initialVehicle?.category ?: selectedCategory).name)
     }
-    var brand by rememberSaveable(initialId) { mutableStateOf(initialVehicle?.brand.orEmpty()) }
-    var model by rememberSaveable(initialId) { mutableStateOf(initialVehicle?.model.orEmpty()) }
+    var brandId by rememberSaveable(initialId) { mutableStateOf("") }
+    var modelId by rememberSaveable(initialId) { mutableStateOf("") }
     var year by rememberSaveable(initialId) { mutableStateOf(initialVehicle?.year?.toString().orEmpty()) }
+    var variantId by rememberSaveable(initialId) { mutableStateOf("") }
     var initialKmText by rememberSaveable(initialId) {
         mutableStateOf(initialVehicle?.initialKm?.toKilometersDisplay()?.removeSuffix(" km").orEmpty())
     }
     var brandsExpanded by rememberSaveable { mutableStateOf(false) }
     var modelsExpanded by rememberSaveable { mutableStateOf(false) }
     var yearsExpanded by rememberSaveable { mutableStateOf(false) }
+    var variantsExpanded by rememberSaveable { mutableStateOf(false) }
 
     val category = VehicleCategory.entries.firstOrNull { it.name == categoryName.value } ?: VehicleCategory.COCHE
 
@@ -85,14 +88,33 @@ fun VehicleForm(
         onCategoryChanged(category)
     }
 
-    val brands = availableVehicles.map { it.brand }.distinct().sorted()
-    val models = availableVehicles.filter { it.brand == brand }.map { it.model }.distinct().sorted()
-    val years = availableVehicles.filter { it.brand == brand && it.model == model }
-        .map { it.year.toString() }.distinct().sortedDescending()
-    val catalogVehicle = availableVehicles.firstOrNull {
-        it.brand == brand && it.model == model && it.year.toString() == year
+    val initialSelection = selectionCatalog.initialSelectionFor(initialVehicle)
+    LaunchedEffect(selectionCatalog, category, initialId, initialSelection) {
+        if (catalogEditable && selectionCatalog.category == category && brandId.isBlank()) {
+            initialSelection?.let { selection ->
+                brandId = selection.brandId
+                modelId = selection.modelId
+                year = selection.year.toString()
+                variantId = selection.variantId
+            }
+        }
     }
-    val selectedVehicle = catalogVehicle ?: initialVehicle
+
+    val brands = selectionCatalog.brands()
+    val models = if (brandId.isBlank()) emptyList() else selectionCatalog.modelsFor(brandId)
+    val years = if (modelId.isBlank()) emptyList() else selectionCatalog.yearsFor(brandId, modelId)
+    val variants = year.toIntOrNull()?.let { selectedYear ->
+        selectionCatalog.variantsFor(brandId, modelId, selectedYear)
+    }.orEmpty()
+    LaunchedEffect(selectionCatalog, brandId, modelId, year, variants) {
+        variantId = when {
+            variants.size == 1 -> variants.single().id
+            variants.any { it.id == variantId } -> variantId
+            else -> ""
+        }
+    }
+    val selectedVariant = variants.firstOrNull { it.id == variantId }
+    val selectedVehicle = selectedVariant?.vehicle ?: initialVehicle
         ?.toVehicleInfoOrNull()
         ?.takeIf { !catalogEditable }
     val initialKm = initialKmText.toKilometersOrNull()
@@ -127,9 +149,10 @@ fun VehicleForm(
                     onClick = {
                         if (category != item) {
                             categoryName.value = item.name
-                            brand = ""
-                            model = ""
+                            brandId = ""
+                            modelId = ""
                             year = ""
+                            variantId = ""
                         }
                     },
                     label = { Text(if (item == VehicleCategory.COCHE) "Coche" else "Moto") },
@@ -150,19 +173,67 @@ fun VehicleForm(
         }
 
         if (catalogEditable) {
-            CatalogDropdown("Marca", brand, brands, brandsExpanded, { brandsExpanded = it }) { value ->
-                brand = value
-                model = ""
+            CatalogDropdown(
+                label = "Marca",
+                value = brands.firstOrNull { it.id == brandId }?.displayName.orEmpty(),
+                values = brands.map { CatalogDropdownOption(it.id, it.displayName) },
+                expanded = brandsExpanded,
+                onExpandedChange = { brandsExpanded = it }
+            ) { value ->
+                brandId = value
+                modelId = ""
                 year = ""
+                variantId = ""
             }
-            CatalogDropdown("Modelo", model, models, modelsExpanded, { modelsExpanded = it }) { value ->
-                model = value
+            CatalogDropdown(
+                label = "Modelo",
+                value = models.firstOrNull { it.id == modelId }?.displayName.orEmpty(),
+                values = models.map { CatalogDropdownOption(it.id, it.displayName) },
+                expanded = modelsExpanded,
+                onExpandedChange = { modelsExpanded = it }
+            ) { value ->
+                modelId = value
                 year = ""
+                variantId = ""
             }
-            CatalogDropdown("Año", year, years, yearsExpanded, { yearsExpanded = it }) { year = it }
+            CatalogDropdown(
+                label = "Año",
+                value = year,
+                values = years.map { CatalogDropdownOption(it.toString(), it.toString()) },
+                expanded = yearsExpanded,
+                onExpandedChange = { yearsExpanded = it }
+            ) { value ->
+                year = value
+                variantId = ""
+            }
+            if (variants.size > 1) {
+                CatalogDropdown(
+                    label = "Variante",
+                    value = variants.firstOrNull { it.id == variantId }?.displayName.orEmpty(),
+                    values = variants.map { CatalogDropdownOption(it.id, it.displayName) },
+                    expanded = variantsExpanded,
+                    onExpandedChange = { variantsExpanded = it }
+                ) { variantId = it }
+            } else if (
+                selectedVariant?.vehicle?.type == com.bgr3108.kilonom.data.VehicleType.HIBRIDO_ENCHUFABLE &&
+                selectedVariant.automaticDisplayName != selectedVariant.displayName
+            ) {
+                Text(
+                    "Versión seleccionada: ${selectedVariant.automaticDisplayName}",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            if (brandId.isNotBlank() && modelId.isNotBlank() && year.isNotBlank() && variants.isEmpty()) {
+                Text(
+                    "No tenemos una versión disponible para este año.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         } else {
-            Text("Marca: $brand", style = MaterialTheme.typography.bodyLarge)
-            Text("Modelo: $model", style = MaterialTheme.typography.bodyLarge)
+            Text("Marca: ${initialVehicle?.brand.orEmpty()}", style = MaterialTheme.typography.bodyLarge)
+            Text("Modelo: ${initialVehicle?.model.orEmpty()}", style = MaterialTheme.typography.bodyLarge)
             if (year.isNotBlank()) Text("Año: $year", style = MaterialTheme.typography.bodyLarge)
             Text(
                 "No se puede cambiar la propulsión de un vehículo con consumos registrados.",
@@ -268,7 +339,7 @@ private fun VehicleCatalogHelpCard(
 private fun CatalogDropdown(
     label: String,
     value: String,
-    values: List<String>,
+    values: List<CatalogDropdownOption>,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     onSelected: (String) -> Unit
@@ -283,11 +354,13 @@ private fun CatalogDropdown(
         )
         DropdownMenu(expanded = expanded, onDismissRequest = { onExpandedChange(false) }) {
             values.forEach { item ->
-                DropdownMenuItem(text = { Text(item) }, onClick = { onSelected(item); onExpandedChange(false) })
+                DropdownMenuItem(text = { Text(item.label) }, onClick = { onSelected(item.id); onExpandedChange(false) })
             }
         }
     }
 }
+
+private data class CatalogDropdownOption(val id: String, val label: String)
 
 private fun Vehicle.toVehicleInfoOrNull(): VehicleInfo? =
     type?.let {

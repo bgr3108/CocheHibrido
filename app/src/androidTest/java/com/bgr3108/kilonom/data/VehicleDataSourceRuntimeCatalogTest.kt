@@ -16,8 +16,10 @@ class VehicleDataSourceRuntimeCatalogTest {
 
         val cars = source.loadVehicles(VehicleCategory.COCHE)
         val motorcycles = source.loadVehicles(VehicleCategory.MOTO)
+        val selector = source.loadSelectionCatalog(VehicleCategory.COCHE)
 
         assertTrue(cars.any { it.brand == "SEAT" && it.model.contains("e-Hybrid 1.5") && it.year == 2025 })
         assertTrue(motorcycles.any { it.type == VehicleType.ELECTRICO })
+        assertTrue(selector.modelsFor(selector.brands().single { it.displayName == "Opel" }.id).any { it.displayName == "Corsa" })
     }
 }

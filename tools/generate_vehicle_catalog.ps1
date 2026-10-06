@@ -434,6 +434,9 @@ function New-RuntimeCatalog {
 function ConvertTo-CanonicalObject {
     param($Value)
     if ($null -eq $Value) { return $null }
+    # Strings expose adapted PowerShell properties such as Length. Handle them before
+    # PSCustomObject so a one-item string array remains ["ES"], not [{"Length":2}].
+    if ($Value -is [string]) { return $Value }
     if ($Value -is [System.Collections.IDictionary]) {
         $ordered = [ordered]@{}
         foreach ($key in @($Value.Keys | Sort-Object)) { $ordered[$key] = ConvertTo-CanonicalObject $Value[$key] }

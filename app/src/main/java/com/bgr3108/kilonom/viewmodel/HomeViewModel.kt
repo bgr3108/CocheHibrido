@@ -103,11 +103,6 @@ class HomeViewModel(
         .map { it.vehicle }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Vehicle())
 
-    /** Categories across all configured vehicles, used only by the Home header icon. */
-    val configuredVehicleCategories = vehicleRepository.vehicleSummaries
-        .map { summaries -> summaries.map { it.vehicle.category }.toSet() }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
-
     val isVehicleLoading =
         vehicleRepository.isLoading
 
@@ -128,15 +123,15 @@ class HomeViewModel(
     private val _setupVehicleCategory = MutableStateFlow(VehicleCategory.COCHE)
     val setupVehicleCategory: StateFlow<VehicleCategory> = _setupVehicleCategory
 
-    val availableVehicles = MutableStateFlow(
-        vehicleRepository.vehicleDataSource.loadVehicles(VehicleCategory.COCHE)
+    val selectionCatalog = MutableStateFlow(
+        vehicleRepository.vehicleDataSource.loadSelectionCatalog(VehicleCategory.COCHE)
     )
 
     fun selectSetupVehicleCategory(category: VehicleCategory) {
         if (_setupVehicleCategory.value == category) return
 
         _setupVehicleCategory.value = category
-        availableVehicles.value = vehicleRepository.vehicleDataSource.loadVehicles(category)
+        selectionCatalog.value = vehicleRepository.vehicleDataSource.loadSelectionCatalog(category)
     }
 
     fun saveInitialVehicle(

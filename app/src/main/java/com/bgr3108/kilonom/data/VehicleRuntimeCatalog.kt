@@ -41,6 +41,18 @@ internal data class RuntimeVehicleCatalog(
 
     internal fun modelsFor(category: VehicleCategory, brandId: String): List<String> =
         modelNamesByCategoryAndBrand[category to brandId].orEmpty()
+
+    /**
+     * Projection used only by the selector. It deliberately hides generation codes and keeps the
+     * technical runtime records untouched, so an existing saved vehicle snapshot never changes.
+     */
+    fun selectionFor(category: VehicleCategory): VehicleSelectionCatalog =
+        VehicleSelectionCatalog(
+            category = category,
+            candidates = vehiclesByCategory[category].orEmpty().flatMap { vehicle ->
+                vehicle.years(selectionYearUpperBound).map { year -> vehicle.toSelectionCandidate(year) }
+            }
+        )
 }
 
 internal data class RuntimeVehicle(
@@ -55,6 +67,9 @@ internal data class RuntimeVehicle(
     val powertrain: RuntimePowertrain,
     val fuelTankLitres: Double?,
     val battery: RuntimeBattery,
+    val bodyStyle: String?,
+    val drivetrain: String?,
+    val marketCodes: List<String>,
     val legacyKeys: List<RuntimeLegacyKey>
 ) {
     fun years(selectionYearUpperBound: Int): IntRange = yearFrom..(yearTo ?: selectionYearUpperBound)
@@ -72,6 +87,31 @@ internal data class RuntimeVehicle(
         batteryCapacity = battery.usableKwh ?: 0.0,
         fuelTankCapacity = fuelTankLitres ?: 0.0
     )
+
+    fun toSelectionCandidate(year: Int): VehicleSelectionCandidate {
+        val baseModel = VehicleSelectionModelNaming.resolve(category, brand, model)
+        return VehicleSelectionCandidate(
+            catalogId = catalogId,
+            category = category,
+            brandId = brand.id,
+            brandDisplayName = brand.displayName,
+            sourceModelId = model.id,
+            modelId = baseModel.id,
+            modelDisplayName = baseModel.displayName,
+            year = year,
+            generationId = generation?.id,
+            variantDisplayName = variant?.displayName,
+            variantId = variant?.id,
+            generationDisplayName = generation?.displayName,
+            powertrain = powertrain,
+            fuelTankLitres = fuelTankLitres,
+            operationalBatteryKwh = battery.usableKwh,
+            bodyStyle = bodyStyle,
+            drivetrain = drivetrain,
+            vehicleInfo = toVehicleInfo(year),
+            legacyKeys = legacyKeys
+        )
+    }
 }
 
 internal data class RuntimeIdentity(val id: String, val displayName: String)
@@ -112,6 +152,254 @@ internal data class RuntimeBattery(
 ) {
     fun hasDeclaredCapacity(): Boolean =
         grossKwh != null || usableKwh != null || declaredKwh != null
+}
+
+/** A simplified selector view over immutable runtime records. */
+class VehicleSelectionCatalog internal constructor(
+    val category: VehicleCategory,
+    private val candidates: List<VehicleSelectionCandidate>
+) {
+    companion object {
+        /** Compatibility projection for focused tests or alternate local catalogs. */
+        fun fromLegacy(category: VehicleCategory, vehicles: List<VehicleInfo>): VehicleSelectionCatalog =
+            VehicleSelectionCatalog(
+                category = category,
+                candidates = vehicles.filter { it.category == category }.map { vehicle ->
+                    val id = "legacy-${vehicle.brand.lowercase().selectionSlug()}-${vehicle.model.lowercase().selectionSlug()}-${vehicle.year}"
+                    VehicleSelectionCandidate(
+                        catalogId = id,
+                        category = category,
+                        brandId = vehicle.brand.selectionSlug(),
+                        brandDisplayName = vehicle.brand,
+                        sourceModelId = vehicle.model.selectionSlug(),
+                        modelId = "selection-${vehicle.brand.selectionSlug()}-${vehicle.model.selectionSlug()}",
+                        modelDisplayName = vehicle.model,
+                        year = vehicle.year,
+                        generationId = null,
+                        variantDisplayName = null,
+                        variantId = null,
+                        generationDisplayName = null,
+                        powertrain = RuntimePowertrain(
+                            kind = when (vehicle.type) {
+                                VehicleType.GASOLINA, VehicleType.DIESEL -> RuntimePowertrainKind.ICE
+                                VehicleType.HIBRIDO -> RuntimePowertrainKind.HEV
+                                VehicleType.HIBRIDO_ENCHUFABLE -> RuntimePowertrainKind.PHEV
+                                VehicleType.ELECTRICO -> RuntimePowertrainKind.BEV
+                            },
+                            primaryFuel = when (vehicle.type) {
+                                VehicleType.GASOLINA -> RuntimeFuel.GASOLINA
+                                VehicleType.DIESEL -> RuntimeFuel.DIESEL
+                                else -> null
+                            },
+                            hybridSystem = null
+                        ),
+                        fuelTankLitres = vehicle.fuelTankCapacity.takeIf { it > 0.0 },
+                        operationalBatteryKwh = vehicle.batteryCapacity.takeIf { it > 0.0 },
+                        bodyStyle = null,
+                        drivetrain = null,
+                        vehicleInfo = vehicle,
+                        legacyKeys = emptyList()
+                    )
+                }
+            )
+    }
+    fun brands(): List<VehicleSelectionBrand> = candidates
+        .map { VehicleSelectionBrand(it.brandId, it.brandDisplayName) }
+        .distinctBy { it.id }
+        .sortedBy { it.displayName }
+
+    fun modelsFor(brandId: String): List<VehicleSelectionModel> = candidates
+        .asSequence()
+        .filter { it.brandId == brandId }
+        .map { VehicleSelectionModel(it.modelId, it.modelDisplayName) }
+        .distinctBy { it.id }
+        .sortedBy { it.displayName }
+        .toList()
+
+    /**
+     * Shows the full known span for the selected model. Missing years intentionally remain
+     * selectable so the form can explain that Kilonom has no version for that exact year.
+     */
+    fun yearsFor(brandId: String, modelId: String): List<Int> {
+        val modelCandidates = candidates.filter { it.brandId == brandId && it.modelId == modelId }
+        val first = modelCandidates.minOfOrNull { it.year } ?: return emptyList()
+        val last = modelCandidates.maxOfOrNull { it.year } ?: return emptyList()
+        return (last downTo first).toList()
+    }
+
+    fun variantsFor(brandId: String, modelId: String, year: Int): List<VehicleSelectionVariant> {
+        val sameModelYear = candidates.filter {
+            it.brandId == brandId && it.modelId == modelId && it.year == year
+        }
+        val grouped = sameModelYear.groupBy { it.functionalKey }
+            .toSortedMap()
+            .values
+            .map { records -> records.sortedBy { it.catalogId }.first() }
+
+        val energyCounts = grouped.groupingBy { it.energyLabel() }.eachCount()
+        val labels = grouped.map { candidate ->
+            candidate.variantLabel(energyCounts.getValue(candidate.energyLabel()) > 1)
+        }
+        return grouped.mapIndexed { index, candidate ->
+            VehicleSelectionVariant(
+                id = candidate.functionalKey,
+                displayName = labels[index],
+                automaticDisplayName = candidate.automaticDisplayName(),
+                vehicle = candidate.vehicleInfo
+            )
+        }.sortedBy { it.displayName }
+    }
+
+    fun initialSelectionFor(vehicle: Vehicle?): VehicleSelectionInitial? {
+        if (vehicle == null || vehicle.year == null || vehicle.type == null) return null
+        val matching = candidates.filter { candidate ->
+            candidate.year == vehicle.year &&
+                candidate.category == vehicle.category &&
+                candidate.brandDisplayName == vehicle.brand &&
+                candidate.vehicleInfo.type == vehicle.type &&
+                candidate.vehicleInfo.fuelTankCapacity == vehicle.fuelTankCapacity &&
+                candidate.vehicleInfo.batteryCapacity == vehicle.batteryCapacity
+        }
+        val exact = matching.firstOrNull { it.vehicleInfo.model == vehicle.model }
+        val legacy = matching.firstOrNull { candidate ->
+            candidate.legacyKeys.any { it.model == vehicle.model && it.year == vehicle.year }
+        }
+        val candidate = exact ?: legacy ?: return null
+        return VehicleSelectionInitial(candidate.brandId, candidate.modelId, candidate.year, candidate.functionalKey)
+    }
+}
+
+private fun String.selectionSlug(): String = lowercase()
+    .replace('ó', 'o').replace('ë', 'e').replace('é', 'e')
+    .replace(Regex("[^a-z0-9]+"), "-")
+    .trim('-')
+
+data class VehicleSelectionBrand(val id: String, val displayName: String)
+data class VehicleSelectionModel(val id: String, val displayName: String)
+data class VehicleSelectionVariant(
+    val id: String,
+    val displayName: String,
+    val automaticDisplayName: String,
+    val vehicle: VehicleInfo
+)
+data class VehicleSelectionInitial(
+    val brandId: String,
+    val modelId: String,
+    val year: Int,
+    val variantId: String
+)
+
+internal data class VehicleSelectionCandidate(
+    val catalogId: String,
+    val category: VehicleCategory,
+    val brandId: String,
+    val brandDisplayName: String,
+    val sourceModelId: String,
+    val modelId: String,
+    val modelDisplayName: String,
+    val year: Int,
+    val generationId: String?,
+    val variantDisplayName: String?,
+    val variantId: String?,
+    val generationDisplayName: String?,
+    val powertrain: RuntimePowertrain,
+    val fuelTankLitres: Double?,
+    val operationalBatteryKwh: Double?,
+    val bodyStyle: String?,
+    val drivetrain: String?,
+    val vehicleInfo: VehicleInfo,
+    val legacyKeys: List<RuntimeLegacyKey>
+) {
+    /** Only values that alter Kilonom's saved vehicle snapshot participate in equivalence. */
+    val functionalKey: String = listOf(
+        category.name,
+        vehicleInfo.type.name,
+        powertrain.primaryFuel?.name.orEmpty(),
+        fuelTankLitres?.toString().orEmpty(),
+        operationalBatteryKwh?.toString().orEmpty()
+    ).joinToString("|")
+
+    fun energyLabel(): String = when (vehicleInfo.type) {
+        VehicleType.GASOLINA -> "Gasolina"
+        VehicleType.DIESEL -> "Diésel"
+        VehicleType.HIBRIDO -> "Híbrido"
+        VehicleType.HIBRIDO_ENCHUFABLE -> "Híbrido enchufable"
+        VehicleType.ELECTRICO -> "Eléctrico"
+    }
+
+    fun variantLabel(needsCommercialDetail: Boolean): String {
+        if (!needsCommercialDetail) return energyLabel()
+        val raw = variantDisplayName.orEmpty().ifBlank {
+            vehicleInfo.model.removePrefix(modelDisplayName).trim(' ', '·', '-', '/')
+        }
+        val cleaned = raw
+            .replace(Regex("(?i)\\b(pre-?facelift|facelift|lci|my\\d{2,4})\\b"), "")
+            .replace(Regex("\\s+"), " ")
+            .trim(' ', '·', '-', '/')
+        return if (cleaned.isBlank()) energyLabel()
+        else "$cleaned ${energyLabel().lowercase()}"
+    }
+
+    fun automaticDisplayName(): String = variantDisplayName.orEmpty().ifBlank {
+        vehicleInfo.model.removePrefix(modelDisplayName).trim(' ', '·', '-', '/')
+    }.ifBlank { energyLabel() }
+}
+
+/**
+ * Legacy data used a composite model field. This projection groups the established families by
+ * familiar names while retaining every source model id and generation in the technical record.
+ */
+private object VehicleSelectionModelNaming {
+    private val carFamilies = mapOf(
+        "audi" to listOf("A3 Sportback", "A4 Avant", "TT"),
+        "bmw" to listOf("iX1", "X3", "X5"),
+        "byd" to listOf("Atto 3"),
+        "citroen" to listOf("ë-Berlingo", "Berlingo", "C-Elysée", "C3 Aircross", "C4"),
+        "cupra" to listOf("Formentor", "León"),
+        "dacia" to listOf("Sandero Stepway", "Duster", "Jogger"),
+        "fiat" to listOf("500"),
+        "ford" to listOf("Focus", "Kuga", "Puma"),
+        "hyundai" to listOf("Ioniq 5", "i20", "ix35", "Kona", "Tucson"),
+        "jeep" to listOf("Compass"),
+        "kia" to listOf("EV6", "Niro", "Sorento", "Sportage"),
+        "lexus" to listOf("LBX"),
+        "lynk-co" to listOf("01"),
+        "mazda" to listOf("CX-30"),
+        "mercedes-benz" to listOf("Clase A", "Clase B", "Clase C", "CLK", "GLC"),
+        "mg" to listOf("MG4", "ZS"),
+        "mitsubishi" to listOf("ASX"),
+        "nissan" to listOf("Qashqai", "Juke", "Pulsar"),
+        "omoda" to listOf("7"),
+        "opel" to listOf("Corsa", "Astra"),
+        "peugeot" to listOf("3008", "208"),
+        "renault" to listOf("Megane", "Austral", "Captur", "Clio"),
+        "seat" to listOf("León", "Ateca", "Ibiza"),
+        "skoda" to listOf("Fabia"),
+        "suzuki" to listOf("Swift"),
+        "tesla" to listOf("Model 3"),
+        "toyota" to listOf("Yaris Cross", "GR Yaris", "Yaris", "Corolla", "RAV4"),
+        "volkswagen" to listOf("ID.4", "Golf", "Polo", "Tiguan"),
+        "volvo" to listOf("EX30", "XC60")
+    )
+
+    fun resolve(category: VehicleCategory, brand: RuntimeIdentity, sourceModel: RuntimeIdentity): RuntimeIdentity {
+        if (category == VehicleCategory.MOTO) return sourceModel
+        if (brand.id == "mercedes-benz" && sourceModel.displayName.matches(Regex("B\\s+\\d+.*"))) {
+            return RuntimeIdentity(selectionId(brand.id, "Clase B"), "Clase B")
+        }
+        val family = carFamilies[brand.id]
+            .orEmpty()
+            .sortedByDescending(String::length)
+            .firstOrNull { name -> sourceModel.displayName == name || sourceModel.displayName.startsWith("$name ") }
+            ?: sourceModel.displayName
+        return RuntimeIdentity(selectionId(brand.id, family), family)
+    }
+
+    private fun selectionId(brandId: String, name: String): String =
+        "selection-$brandId-" + name.lowercase()
+            .replace('ó', 'o').replace('ë', 'e').replace('é', 'e')
+            .replace(Regex("[^a-z0-9]+"), "-")
+            .trim('-')
 }
 
 internal const val RUNTIME_CATALOG_ASSET = "catalog/catalog-runtime.json"
@@ -175,6 +463,9 @@ private fun parseRuntimeVehicle(
         declaredKwh = batteryObject.optionalPositiveDouble("declaredKwh", "$catalogId.battery"),
         declaredCapacityType = batteryObject.optionalEnum("declaredCapacityType", "$catalogId.battery")
     )
+    val bodyStyle = obj.optionalString("bodyStyle", catalogId)
+    val drivetrain = obj.optionalString("drivetrain", catalogId)
+    val marketCodes = obj.requiredStringArray("marketCodes", catalogId)
     val legacyKeys = obj.requiredArray("legacyKeys", catalogId).mapObjects("$catalogId.legacyKeys") { _, key ->
         RuntimeLegacyKey(
             category = key.requiredEnum("category", "$catalogId.legacyKeys"),
@@ -186,7 +477,7 @@ private fun parseRuntimeVehicle(
     validateRuntimeVehicle(catalogId, powertrain, fuelTankLitres, battery)
     return RuntimeVehicle(
         catalogId, category, brand, model, generation, variant, yearFrom, yearTo,
-        powertrain, fuelTankLitres, battery, legacyKeys
+        powertrain, fuelTankLitres, battery, bodyStyle, drivetrain, marketCodes, legacyKeys
     )
 }
 
@@ -288,6 +579,19 @@ private fun JsonObject.optionalPositiveDouble(name: String, context: String): Do
     }
     return value
 }
+
+private fun JsonObject.optionalString(name: String, context: String): String? =
+    nullableElement(name, context)?.let { requiredString(name, context) }
+
+private fun JsonObject.requiredStringArray(name: String, context: String): List<String> =
+    requiredArray(name, context).mapIndexed { index, value ->
+        require(value is JsonPrimitive && value.isString && !value.contentOrNull.isNullOrBlank()) {
+            "$context.$name[$index]: expected non-empty string"
+        }
+        value.content
+    }.also { values ->
+        require(values == values.distinct()) { "$context.$name: duplicate values" }
+    }
 
 private inline fun <reified T : Enum<T>> JsonObject.requiredEnum(name: String, context: String): T =
     enumValueOfOrError(requiredString(name, context), "$context.$name")
