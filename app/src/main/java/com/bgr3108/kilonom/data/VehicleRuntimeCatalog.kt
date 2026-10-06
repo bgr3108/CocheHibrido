@@ -105,6 +105,7 @@ internal data class RuntimeVehicle(
             powertrain = powertrain,
             fuelTankLitres = fuelTankLitres,
             operationalBatteryKwh = battery.usableKwh,
+            declaredBatteryKwh = battery.declaredKwh ?: battery.grossKwh,
             bodyStyle = bodyStyle,
             drivetrain = drivetrain,
             vehicleInfo = toVehicleInfo(year),
@@ -270,6 +271,8 @@ internal data class VehicleSelectionCandidate(
     val powertrain: RuntimePowertrain,
     val fuelTankLitres: Double?,
     val operationalBatteryKwh: Double?,
+    /** Distinguishes selectable BEV variants even when their capacity is not usable-certified. */
+    val declaredBatteryKwh: Double?,
     val bodyStyle: String?,
     val drivetrain: String?,
     val vehicleInfo: VehicleInfo,
@@ -285,7 +288,8 @@ internal data class VehicleSelectionCandidate(
         // selectable as distinct human variants when they coexist in a year.
         powertrain.hybridSystem?.name.orEmpty(),
         fuelTankLitres?.toString().orEmpty(),
-        operationalBatteryKwh?.toString().orEmpty()
+        operationalBatteryKwh?.toString().orEmpty(),
+        declaredBatteryKwh?.toString().orEmpty()
     ).joinToString("|")
 
     fun energyLabel(): String = when (vehicleInfo.type) {

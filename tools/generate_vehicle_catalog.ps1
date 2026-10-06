@@ -997,6 +997,79 @@ function Normalize-RemainingDenseCarFamilies {
     return $retiredCount
 }
 
+function Ensure-EvModelIdentity {
+    param($Catalog, [string]$BrandId, [string]$ModelId, [string]$ModelName, [string]$GenerationId, [string]$VariantId, [string]$VariantName)
+    if ($null -eq ($Catalog.models | Where-Object { $_.category -eq "COCHE" -and $_.brandId -eq $BrandId -and $_.id -eq $ModelId } | Select-Object -First 1)) {
+        $Catalog.models = @($Catalog.models) + (New-Object @{ category = "COCHE"; brandId = $BrandId; id = $ModelId; displayName = $ModelName; aliases = @() })
+    }
+    Add-CatalogIdentity $Catalog "COCHE" $BrandId $ModelId $GenerationId $GenerationId $VariantId $VariantName
+}
+
+function Add-VerifiedElectricCandidates {
+    param($Catalog)
+    # The bundled legacy entry used a slugged model id (id-4), while its
+    # visible model is already ID.4. Reconcile only the structured model id;
+    # retain its independent 2024/77 kWh legacy snapshot and key.
+    $legacyId4 = $Catalog.vehicles | Where-Object { $_.catalogId -eq "legacy-coche-volkswagen-legacy-id-4-6cdbfacf4f-2024-electrico-e5ef475a22" } | Select-Object -First 1
+    if ($null -ne $legacyId4) { $legacyId4.modelId = "id4" }
+    if ($null -ne ($Catalog.vehicles | Where-Object { $_.catalogId -eq "car-volkswagen-id4-pure-52" } | Select-Object -First 1)) {
+        # Renault España now documents the 2026 NMC 89 kWh range and the LFP
+        # 67 kWh range available to order in autumn 2026. Their capacities are
+        # published but not classified as usable/gross, so they are valid ACTIVE
+        # declared values and remain non-operational for percentage calculations.
+        @("car-renault-scenic-e-tech-67", "car-renault-scenic-e-tech-89") | ForEach-Object {
+            $scenicId = $_
+            $scenic = $Catalog.vehicles | Where-Object { $_.catalogId -eq $scenicId } | Select-Object -First 1
+            if ($null -ne $scenic) {
+                $scenic.editorialStatus = "ACTIVE"
+                $scenic.notes = "Scenic E-Tech 2026: capacidad publicada por Renault España sin clasificación bruto/útil; no se usa automáticamente para cálculos porcentuales."
+                $scenic.editorialRevision = [int]$scenic.editorialRevision + 1
+            }
+        }
+        return 2
+    }
+
+    $evdbId4 = "https://ev-database.org/imp/car/1411/Volkswagen-ID4-Pure-Performance"
+    $evdbId7 = "https://ev-database.org/uk/car/1839/Volkswagen-ID7-Pro"
+    $evdbE2008_50 = "https://ev-database.org/car/1946/Peugeot-e-2008-50-kWh"
+    $evdbE2008_54 = "https://ev-database.org/car/1947/Peugeot-e-2008-54-kWh"
+    $evdbMegane = "https://ev-database.org/car/1537/Renault-Megane-E-Tech-EV40"
+    $hyundaiIoniq6 = "https://www.hyundai.com/es/es/modelos/ioniq6.html"
+    $kiaEv3 = "https://www.kia.com/es/modelos/ev3/descubrelo/"
+    $kiaEv9 = "https://www.kia.com/es/modelos/ev9/descubrelo/"
+    $toyotaBz4x = "https://ev-database.org/car/1481/Toyota-bZ4X-FWD"
+    $bmwI4 = "https://ev-database.org/car/1793/BMW-i4-eDrive35"
+    $mercedesEqa = "https://ev-database.org/car/1311/Mercedes-EQA-350-4MATIC"
+    $mercedesEqb = "https://ev-database.org/car/1318/Mercedes-EQB-350-4MATIC"
+    $renaultScenic = "https://www.renault.es/coches-electricos/scenic-e-tech-electrico.html"
+
+    $records = @(
+        @{ id="car-volkswagen-id4-pure-52"; brand="volkswagen"; model="id4"; modelName="ID.4"; gen="first"; variant="pure"; variantName="Pure"; from=2021; to=2023; usable=52.0; declared=$null; status="ACTIVE"; source=$evdbId4 },
+        @{ id="car-volkswagen-id7-pro-77"; brand="volkswagen"; model="id7"; modelName="ID.7"; gen="first"; variant="pro"; variantName="Pro"; from=2023; to=$null; usable=77.0; declared=$null; status="ACTIVE"; source=$evdbId7 },
+        @{ id="car-peugeot-e2008-50"; brand="peugeot"; model="e-2008"; modelName="e-2008"; gen="first"; variant="50-kwh"; variantName="50 kWh"; from=2020; to=2023; usable=46.3; declared=$null; status="ACTIVE"; source=$evdbE2008_50 },
+        @{ id="car-peugeot-e2008-54"; brand="peugeot"; model="e-2008"; modelName="e-2008"; gen="first"; variant="54-kwh"; variantName="54 kWh"; from=2023; to=$null; usable=50.8; declared=$null; status="ACTIVE"; source=$evdbE2008_54 },
+        @{ id="car-renault-megane-e-tech-40"; brand="renault"; model="megane-e-tech"; modelName="Megane E-Tech"; gen="first"; variant="40-kwh"; variantName="40 kWh"; from=2022; to=2024; usable=40.0; declared=$null; status="ACTIVE"; source=$evdbMegane },
+        @{ id="car-renault-scenic-e-tech-67"; brand="renault"; model="scenic-e-tech"; modelName="Scenic E-Tech"; gen="first"; variant="67-kwh"; variantName="67 kWh"; from=2026; to=$null; usable=$null; declared=67.0; status="REVIEW"; source=$renaultScenic },
+        @{ id="car-renault-scenic-e-tech-89"; brand="renault"; model="scenic-e-tech"; modelName="Scenic E-Tech"; gen="first"; variant="89-kwh"; variantName="89 kWh"; from=2026; to=$null; usable=$null; declared=89.0; status="REVIEW"; source=$renaultScenic },
+        @{ id="car-hyundai-ioniq6-standard-range-53"; brand="hyundai"; model="ioniq-6"; modelName="IONIQ 6"; gen="first"; variant="standard-range"; variantName="Standard Range"; from=2022; to=$null; usable=$null; declared=53.0; status="ACTIVE"; source=$hyundaiIoniq6 },
+        @{ id="car-hyundai-ioniq6-long-range-77-4"; brand="hyundai"; model="ioniq-6"; modelName="IONIQ 6"; gen="first"; variant="long-range"; variantName="Long Range"; from=2022; to=$null; usable=$null; declared=77.4; status="ACTIVE"; source=$hyundaiIoniq6 },
+        @{ id="car-kia-ev3-standard-range-58-3"; brand="kia"; model="ev3"; modelName="EV3"; gen="first"; variant="standard-range"; variantName="Standard Range"; from=2024; to=$null; usable=$null; declared=58.3; status="ACTIVE"; source=$kiaEv3 },
+        @{ id="car-kia-ev3-long-range-81-4"; brand="kia"; model="ev3"; modelName="EV3"; gen="first"; variant="long-range"; variantName="Long Range"; from=2024; to=$null; usable=$null; declared=81.4; status="ACTIVE"; source=$kiaEv3 },
+        @{ id="car-kia-ev9-99-8"; brand="kia"; model="ev9"; modelName="EV9"; gen="first"; variant="long-range"; variantName="Long Range"; from=2023; to=$null; usable=$null; declared=99.8; status="ACTIVE"; source=$kiaEv9 },
+        @{ id="car-toyota-bz4x-64"; brand="toyota"; model="bz4x"; modelName="bZ4X"; gen="first"; variant="fwd"; variantName="FWD"; from=2022; to=$null; usable=64.0; declared=$null; status="ACTIVE"; source=$toyotaBz4x },
+        @{ id="car-bmw-i4-edrive35-67-1"; brand="bmw"; model="i4"; modelName="i4"; gen="first"; variant="edrive35"; variantName="eDrive35"; from=2022; to=$null; usable=67.1; declared=$null; status="ACTIVE"; source=$bmwI4 },
+        @{ id="car-mercedes-eqa-300-350-66-5"; brand="mercedes-benz"; model="eqa"; modelName="EQA"; gen="first"; variant="300-350-4matic"; variantName="300/350 4MATIC"; from=2021; to=$null; usable=66.5; declared=$null; status="ACTIVE"; source=$mercedesEqa },
+        @{ id="car-mercedes-eqb-300-350-66-5"; brand="mercedes-benz"; model="eqb"; modelName="EQB"; gen="first"; variant="300-350-4matic"; variantName="300/350 4MATIC"; from=2021; to=$null; usable=66.5; declared=$null; status="ACTIVE"; source=$mercedesEqb }
+    )
+    foreach($r in $records) {
+        Ensure-EvModelIdentity $Catalog $r.brand $r.model $r.modelName $r.gen $r.variant $r.variantName
+        $battery = New-Object @{ grossKwh=$null; usableKwh=$r.usable; declaredKwh=$r.declared; declaredCapacityType=if($null -eq $r.declared){$null}else{"UNKNOWN"} }
+        $vehicle = New-Object @{ catalogId=$r.id; editorialStatus=$r.status; provenance="RESEARCH_READY"; category="COCHE"; brandId=$r.brand; modelId=$r.model; generationId=$r.gen; variantId=$r.variant; yearFrom=$r.from; yearTo=$r.to; powertrain=(New-Object @{kind="BEV";primaryFuel=$null;hybridSystem="BATTERY_ELECTRIC"}); fuelTankLitres=$null; battery=$battery; bodyStyle="SUV"; drivetrain=$null; marketCodes=@("ES"); aliases=@(); legacyKeys=@(); sources=@((New-DenseCarSource $r.source @("yearFrom","yearTo","battery") )); notes="Candidato eléctrico verificado para mercado europeo; sin depósito de combustible."; editorialRevision=0 }
+        $Catalog.vehicles = @($Catalog.vehicles) + $vehicle
+    }
+    return @($records | Where-Object {$_.status -eq "ACTIVE"}).Count
+}
+
 function Test-EditorialCatalog {
     param($Catalog)
     if ($Catalog.schemaVersion -ne 1) { throw "catalog: schemaVersion no soportada '$($Catalog.schemaVersion)'" }
@@ -1175,6 +1248,7 @@ $retiredMotorcycles = $null
 $retiredCars = $null
 $retiredAdditionalCars = $null
 $retiredRemainingCars = $null
+$addedElectricCandidates = $null
 if ($NormalizeLegacyModels) {
     Normalize-LegacyModelStructure $editorial
     $editorialDirty = $true
@@ -1187,6 +1261,7 @@ if ($NormalizeDenseCarFamilies) {
     $retiredCars = Normalize-DenseCarFamilies $editorial
     $retiredAdditionalCars = Normalize-AdditionalDenseCarFamilies $editorial
     $retiredRemainingCars = Normalize-RemainingDenseCarFamilies $editorial
+    $addedElectricCandidates = Add-VerifiedElectricCandidates $editorial
     $editorialDirty = $true
 }
 Test-EditorialCatalog $editorial
@@ -1204,6 +1279,9 @@ if ($null -ne $retiredAdditionalCars) {
 }
 if ($null -ne $retiredRemainingCars) {
     Write-Output "Coches normalizados (familias restantes): $retiredRemainingCars registros absorbidos"
+}
+if ($null -ne $addedElectricCandidates) {
+    Write-Output "Eléctricos verificados incorporados: $addedElectricCandidates registros ACTIVE"
 }
 $runtime = New-RuntimeCatalog $editorial
 Write-DeterministicJson $runtime $RuntimePath

@@ -1051,6 +1051,90 @@
       "aliases": [],
       "displayName": "SR/F",
       "category": "MOTO"
+    },
+    {
+      "displayName": "ID.4",
+      "category": "COCHE",
+      "id": "id4",
+      "brandId": "volkswagen",
+      "aliases": []
+    },
+    {
+      "displayName": "ID.7",
+      "category": "COCHE",
+      "id": "id7",
+      "brandId": "volkswagen",
+      "aliases": []
+    },
+    {
+      "displayName": "e-2008",
+      "category": "COCHE",
+      "id": "e-2008",
+      "brandId": "peugeot",
+      "aliases": []
+    },
+    {
+      "displayName": "Megane E-Tech",
+      "category": "COCHE",
+      "id": "megane-e-tech",
+      "brandId": "renault",
+      "aliases": []
+    },
+    {
+      "displayName": "Scenic E-Tech",
+      "category": "COCHE",
+      "id": "scenic-e-tech",
+      "brandId": "renault",
+      "aliases": []
+    },
+    {
+      "displayName": "IONIQ 6",
+      "category": "COCHE",
+      "id": "ioniq-6",
+      "brandId": "hyundai",
+      "aliases": []
+    },
+    {
+      "displayName": "EV3",
+      "category": "COCHE",
+      "id": "ev3",
+      "brandId": "kia",
+      "aliases": []
+    },
+    {
+      "displayName": "EV9",
+      "category": "COCHE",
+      "id": "ev9",
+      "brandId": "kia",
+      "aliases": []
+    },
+    {
+      "displayName": "bZ4X",
+      "category": "COCHE",
+      "id": "bz4x",
+      "brandId": "toyota",
+      "aliases": []
+    },
+    {
+      "displayName": "i4",
+      "category": "COCHE",
+      "id": "i4",
+      "brandId": "bmw",
+      "aliases": []
+    },
+    {
+      "displayName": "EQA",
+      "category": "COCHE",
+      "id": "eqa",
+      "brandId": "mercedes-benz",
+      "aliases": []
+    },
+    {
+      "displayName": "EQB",
+      "category": "COCHE",
+      "id": "eqb",
+      "brandId": "mercedes-benz",
+      "aliases": []
     }
   ],
   "vehicles": [
@@ -10286,7 +10370,7 @@
         "kind": "BEV"
       },
       "category": "COCHE",
-      "modelId": "id-4",
+      "modelId": "id4",
       "notes": "ImportaciÃ³n fiel del catÃ¡logo local pre-1.6; pendiente de investigaciÃ³n editorial.",
       "yearTo": 2024,
       "battery": {
@@ -36396,6 +36480,726 @@
       "yearTo": 2026,
       "denseCarNormalizationVersion": 1,
       "remainingDenseCarNormalizationVersion": 1
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-volkswagen-id4-pure-52",
+      "provenance": "RESEARCH_READY",
+      "notes": "Candidato eléctrico verificado para mercado europeo; sin depósito de combustible.",
+      "legacyKeys": [],
+      "yearFrom": 2021,
+      "sources": [
+        {
+          "url": "https://ev-database.org/imp/car/1411/Volkswagen-ID4-Pure-Performance",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": 2023,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": 52.0,
+        "grossKwh": null,
+        "declaredCapacityType": null,
+        "declaredKwh": null
+      },
+      "aliases": [],
+      "editorialRevision": 0,
+      "variantId": "pure",
+      "drivetrain": null,
+      "brandId": "volkswagen",
+      "generationId": "first",
+      "modelId": "id4",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-volkswagen-id7-pro-77",
+      "provenance": "RESEARCH_READY",
+      "notes": "Candidato eléctrico verificado para mercado europeo; sin depósito de combustible.",
+      "legacyKeys": [],
+      "yearFrom": 2023,
+      "sources": [
+        {
+          "url": "https://ev-database.org/uk/car/1839/Volkswagen-ID7-Pro",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": null,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": 77.0,
+        "grossKwh": null,
+        "declaredCapacityType": null,
+        "declaredKwh": null
+      },
+      "aliases": [],
+      "editorialRevision": 0,
+      "variantId": "pro",
+      "drivetrain": null,
+      "brandId": "volkswagen",
+      "generationId": "first",
+      "modelId": "id7",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-peugeot-e2008-50",
+      "provenance": "RESEARCH_READY",
+      "notes": "Candidato eléctrico verificado para mercado europeo; sin depósito de combustible.",
+      "legacyKeys": [],
+      "yearFrom": 2020,
+      "sources": [
+        {
+          "url": "https://ev-database.org/car/1946/Peugeot-e-2008-50-kWh",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": 2023,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": 46.3,
+        "grossKwh": null,
+        "declaredCapacityType": null,
+        "declaredKwh": null
+      },
+      "aliases": [],
+      "editorialRevision": 0,
+      "variantId": "50-kwh",
+      "drivetrain": null,
+      "brandId": "peugeot",
+      "generationId": "first",
+      "modelId": "e-2008",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-peugeot-e2008-54",
+      "provenance": "RESEARCH_READY",
+      "notes": "Candidato eléctrico verificado para mercado europeo; sin depósito de combustible.",
+      "legacyKeys": [],
+      "yearFrom": 2023,
+      "sources": [
+        {
+          "url": "https://ev-database.org/car/1947/Peugeot-e-2008-54-kWh",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": null,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": 50.8,
+        "grossKwh": null,
+        "declaredCapacityType": null,
+        "declaredKwh": null
+      },
+      "aliases": [],
+      "editorialRevision": 0,
+      "variantId": "54-kwh",
+      "drivetrain": null,
+      "brandId": "peugeot",
+      "generationId": "first",
+      "modelId": "e-2008",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-renault-megane-e-tech-40",
+      "provenance": "RESEARCH_READY",
+      "notes": "Candidato eléctrico verificado para mercado europeo; sin depósito de combustible.",
+      "legacyKeys": [],
+      "yearFrom": 2022,
+      "sources": [
+        {
+          "url": "https://ev-database.org/car/1537/Renault-Megane-E-Tech-EV40",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": 2024,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": 40.0,
+        "grossKwh": null,
+        "declaredCapacityType": null,
+        "declaredKwh": null
+      },
+      "aliases": [],
+      "editorialRevision": 0,
+      "variantId": "40-kwh",
+      "drivetrain": null,
+      "brandId": "renault",
+      "generationId": "first",
+      "modelId": "megane-e-tech",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-renault-scenic-e-tech-67",
+      "provenance": "RESEARCH_READY",
+      "notes": "Scenic E-Tech 2026: capacidad publicada por Renault España sin clasificación bruto/útil; no se usa automáticamente para cálculos porcentuales.",
+      "legacyKeys": [],
+      "yearFrom": 2026,
+      "sources": [
+        {
+          "url": "https://www.renault.es/coches-electricos/scenic-e-tech-electrico.html",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": null,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": "UNKNOWN",
+        "declaredKwh": 67.0
+      },
+      "aliases": [],
+      "editorialRevision": 1,
+      "variantId": "67-kwh",
+      "drivetrain": null,
+      "brandId": "renault",
+      "generationId": "first",
+      "modelId": "scenic-e-tech",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-renault-scenic-e-tech-89",
+      "provenance": "RESEARCH_READY",
+      "notes": "Scenic E-Tech 2026: capacidad publicada por Renault España sin clasificación bruto/útil; no se usa automáticamente para cálculos porcentuales.",
+      "legacyKeys": [],
+      "yearFrom": 2026,
+      "sources": [
+        {
+          "url": "https://www.renault.es/coches-electricos/scenic-e-tech-electrico.html",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": null,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": "UNKNOWN",
+        "declaredKwh": 89.0
+      },
+      "aliases": [],
+      "editorialRevision": 1,
+      "variantId": "89-kwh",
+      "drivetrain": null,
+      "brandId": "renault",
+      "generationId": "first",
+      "modelId": "scenic-e-tech",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-hyundai-ioniq6-standard-range-53",
+      "provenance": "RESEARCH_READY",
+      "notes": "Candidato eléctrico verificado para mercado europeo; sin depósito de combustible.",
+      "legacyKeys": [],
+      "yearFrom": 2022,
+      "sources": [
+        {
+          "url": "https://www.hyundai.com/es/es/modelos/ioniq6.html",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": null,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": "UNKNOWN",
+        "declaredKwh": 53.0
+      },
+      "aliases": [],
+      "editorialRevision": 0,
+      "variantId": "standard-range",
+      "drivetrain": null,
+      "brandId": "hyundai",
+      "generationId": "first",
+      "modelId": "ioniq-6",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-hyundai-ioniq6-long-range-77-4",
+      "provenance": "RESEARCH_READY",
+      "notes": "Candidato eléctrico verificado para mercado europeo; sin depósito de combustible.",
+      "legacyKeys": [],
+      "yearFrom": 2022,
+      "sources": [
+        {
+          "url": "https://www.hyundai.com/es/es/modelos/ioniq6.html",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": null,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": "UNKNOWN",
+        "declaredKwh": 77.4
+      },
+      "aliases": [],
+      "editorialRevision": 0,
+      "variantId": "long-range",
+      "drivetrain": null,
+      "brandId": "hyundai",
+      "generationId": "first",
+      "modelId": "ioniq-6",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-kia-ev3-standard-range-58-3",
+      "provenance": "RESEARCH_READY",
+      "notes": "Candidato eléctrico verificado para mercado europeo; sin depósito de combustible.",
+      "legacyKeys": [],
+      "yearFrom": 2024,
+      "sources": [
+        {
+          "url": "https://www.kia.com/es/modelos/ev3/descubrelo/",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": null,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": "UNKNOWN",
+        "declaredKwh": 58.3
+      },
+      "aliases": [],
+      "editorialRevision": 0,
+      "variantId": "standard-range",
+      "drivetrain": null,
+      "brandId": "kia",
+      "generationId": "first",
+      "modelId": "ev3",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-kia-ev3-long-range-81-4",
+      "provenance": "RESEARCH_READY",
+      "notes": "Candidato eléctrico verificado para mercado europeo; sin depósito de combustible.",
+      "legacyKeys": [],
+      "yearFrom": 2024,
+      "sources": [
+        {
+          "url": "https://www.kia.com/es/modelos/ev3/descubrelo/",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": null,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": "UNKNOWN",
+        "declaredKwh": 81.4
+      },
+      "aliases": [],
+      "editorialRevision": 0,
+      "variantId": "long-range",
+      "drivetrain": null,
+      "brandId": "kia",
+      "generationId": "first",
+      "modelId": "ev3",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-kia-ev9-99-8",
+      "provenance": "RESEARCH_READY",
+      "notes": "Candidato eléctrico verificado para mercado europeo; sin depósito de combustible.",
+      "legacyKeys": [],
+      "yearFrom": 2023,
+      "sources": [
+        {
+          "url": "https://www.kia.com/es/modelos/ev9/descubrelo/",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": null,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": null,
+        "grossKwh": null,
+        "declaredCapacityType": "UNKNOWN",
+        "declaredKwh": 99.8
+      },
+      "aliases": [],
+      "editorialRevision": 0,
+      "variantId": "long-range",
+      "drivetrain": null,
+      "brandId": "kia",
+      "generationId": "first",
+      "modelId": "ev9",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-toyota-bz4x-64",
+      "provenance": "RESEARCH_READY",
+      "notes": "Candidato eléctrico verificado para mercado europeo; sin depósito de combustible.",
+      "legacyKeys": [],
+      "yearFrom": 2022,
+      "sources": [
+        {
+          "url": "https://ev-database.org/car/1481/Toyota-bZ4X-FWD",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": null,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": 64.0,
+        "grossKwh": null,
+        "declaredCapacityType": null,
+        "declaredKwh": null
+      },
+      "aliases": [],
+      "editorialRevision": 0,
+      "variantId": "fwd",
+      "drivetrain": null,
+      "brandId": "toyota",
+      "generationId": "first",
+      "modelId": "bz4x",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-bmw-i4-edrive35-67-1",
+      "provenance": "RESEARCH_READY",
+      "notes": "Candidato eléctrico verificado para mercado europeo; sin depósito de combustible.",
+      "legacyKeys": [],
+      "yearFrom": 2022,
+      "sources": [
+        {
+          "url": "https://ev-database.org/car/1793/BMW-i4-eDrive35",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": null,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": 67.1,
+        "grossKwh": null,
+        "declaredCapacityType": null,
+        "declaredKwh": null
+      },
+      "aliases": [],
+      "editorialRevision": 0,
+      "variantId": "edrive35",
+      "drivetrain": null,
+      "brandId": "bmw",
+      "generationId": "first",
+      "modelId": "i4",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-mercedes-eqa-300-350-66-5",
+      "provenance": "RESEARCH_READY",
+      "notes": "Candidato eléctrico verificado para mercado europeo; sin depósito de combustible.",
+      "legacyKeys": [],
+      "yearFrom": 2021,
+      "sources": [
+        {
+          "url": "https://ev-database.org/car/1311/Mercedes-EQA-350-4MATIC",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": null,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": 66.5,
+        "grossKwh": null,
+        "declaredCapacityType": null,
+        "declaredKwh": null
+      },
+      "aliases": [],
+      "editorialRevision": 0,
+      "variantId": "300-350-4matic",
+      "drivetrain": null,
+      "brandId": "mercedes-benz",
+      "generationId": "first",
+      "modelId": "eqa",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
+    },
+    {
+      "powertrain": {
+        "primaryFuel": null,
+        "kind": "BEV",
+        "hybridSystem": "BATTERY_ELECTRIC"
+      },
+      "catalogId": "car-mercedes-eqb-300-350-66-5",
+      "provenance": "RESEARCH_READY",
+      "notes": "Candidato eléctrico verificado para mercado europeo; sin depósito de combustible.",
+      "legacyKeys": [],
+      "yearFrom": 2021,
+      "sources": [
+        {
+          "url": "https://ev-database.org/car/1318/Mercedes-EQB-350-4MATIC",
+          "type": "TECHNICAL_REFERENCE",
+          "accessedAt": "2026-10-06",
+          "fields": [
+            "yearFrom",
+            "yearTo",
+            "battery"
+          ]
+        }
+      ],
+      "yearTo": null,
+      "editorialStatus": "ACTIVE",
+      "category": "COCHE",
+      "fuelTankLitres": null,
+      "battery": {
+        "usableKwh": 66.5,
+        "grossKwh": null,
+        "declaredCapacityType": null,
+        "declaredKwh": null
+      },
+      "aliases": [],
+      "editorialRevision": 0,
+      "variantId": "300-350-4matic",
+      "drivetrain": null,
+      "brandId": "mercedes-benz",
+      "generationId": "first",
+      "modelId": "eqb",
+      "bodyStyle": "SUV",
+      "marketCodes": [
+        "ES"
+      ]
     }
   ],
   "generations": [
@@ -36720,6 +37524,90 @@
       "brandId": "volkswagen",
       "modelId": "tiguan",
       "displayName": "Segunda generación"
+    },
+    {
+      "displayName": "first",
+      "category": "COCHE",
+      "id": "first",
+      "brandId": "volkswagen",
+      "modelId": "id4"
+    },
+    {
+      "displayName": "first",
+      "category": "COCHE",
+      "id": "first",
+      "brandId": "volkswagen",
+      "modelId": "id7"
+    },
+    {
+      "displayName": "first",
+      "category": "COCHE",
+      "id": "first",
+      "brandId": "peugeot",
+      "modelId": "e-2008"
+    },
+    {
+      "displayName": "first",
+      "category": "COCHE",
+      "id": "first",
+      "brandId": "renault",
+      "modelId": "megane-e-tech"
+    },
+    {
+      "displayName": "first",
+      "category": "COCHE",
+      "id": "first",
+      "brandId": "renault",
+      "modelId": "scenic-e-tech"
+    },
+    {
+      "displayName": "first",
+      "category": "COCHE",
+      "id": "first",
+      "brandId": "hyundai",
+      "modelId": "ioniq-6"
+    },
+    {
+      "displayName": "first",
+      "category": "COCHE",
+      "id": "first",
+      "brandId": "kia",
+      "modelId": "ev3"
+    },
+    {
+      "displayName": "first",
+      "category": "COCHE",
+      "id": "first",
+      "brandId": "kia",
+      "modelId": "ev9"
+    },
+    {
+      "displayName": "first",
+      "category": "COCHE",
+      "id": "first",
+      "brandId": "toyota",
+      "modelId": "bz4x"
+    },
+    {
+      "displayName": "first",
+      "category": "COCHE",
+      "id": "first",
+      "brandId": "bmw",
+      "modelId": "i4"
+    },
+    {
+      "displayName": "first",
+      "category": "COCHE",
+      "id": "first",
+      "brandId": "mercedes-benz",
+      "modelId": "eqa"
+    },
+    {
+      "displayName": "first",
+      "category": "COCHE",
+      "id": "first",
+      "brandId": "mercedes-benz",
+      "modelId": "eqb"
     }
   ],
   "variants": [
@@ -38729,6 +39617,150 @@
       "category": "COCHE",
       "displayName": "Diésel",
       "modelId": "tiguan"
+    },
+    {
+      "brandId": "volkswagen",
+      "modelId": "id4",
+      "displayName": "Pure",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "pure",
+      "generationId": "first"
+    },
+    {
+      "brandId": "volkswagen",
+      "modelId": "id7",
+      "displayName": "Pro",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "pro",
+      "generationId": "first"
+    },
+    {
+      "brandId": "peugeot",
+      "modelId": "e-2008",
+      "displayName": "50 kWh",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "50-kwh",
+      "generationId": "first"
+    },
+    {
+      "brandId": "peugeot",
+      "modelId": "e-2008",
+      "displayName": "54 kWh",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "54-kwh",
+      "generationId": "first"
+    },
+    {
+      "brandId": "renault",
+      "modelId": "megane-e-tech",
+      "displayName": "40 kWh",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "40-kwh",
+      "generationId": "first"
+    },
+    {
+      "brandId": "renault",
+      "modelId": "scenic-e-tech",
+      "displayName": "67 kWh",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "67-kwh",
+      "generationId": "first"
+    },
+    {
+      "brandId": "renault",
+      "modelId": "scenic-e-tech",
+      "displayName": "89 kWh",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "89-kwh",
+      "generationId": "first"
+    },
+    {
+      "brandId": "hyundai",
+      "modelId": "ioniq-6",
+      "displayName": "Standard Range",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "standard-range",
+      "generationId": "first"
+    },
+    {
+      "brandId": "hyundai",
+      "modelId": "ioniq-6",
+      "displayName": "Long Range",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "long-range",
+      "generationId": "first"
+    },
+    {
+      "brandId": "kia",
+      "modelId": "ev3",
+      "displayName": "Standard Range",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "standard-range",
+      "generationId": "first"
+    },
+    {
+      "brandId": "kia",
+      "modelId": "ev3",
+      "displayName": "Long Range",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "long-range",
+      "generationId": "first"
+    },
+    {
+      "brandId": "kia",
+      "modelId": "ev9",
+      "displayName": "Long Range",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "long-range",
+      "generationId": "first"
+    },
+    {
+      "brandId": "toyota",
+      "modelId": "bz4x",
+      "displayName": "FWD",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "fwd",
+      "generationId": "first"
+    },
+    {
+      "brandId": "bmw",
+      "modelId": "i4",
+      "displayName": "eDrive35",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "edrive35",
+      "generationId": "first"
+    },
+    {
+      "brandId": "mercedes-benz",
+      "modelId": "eqa",
+      "displayName": "300/350 4MATIC",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "300-350-4matic",
+      "generationId": "first"
+    },
+    {
+      "brandId": "mercedes-benz",
+      "modelId": "eqb",
+      "displayName": "300/350 4MATIC",
+      "category": "COCHE",
+      "aliases": [],
+      "id": "300-350-4matic",
+      "generationId": "first"
     }
   ],
   "schemaVersion": 1,

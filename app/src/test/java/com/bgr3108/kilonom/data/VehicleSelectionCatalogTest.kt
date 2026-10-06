@@ -187,6 +187,25 @@ class VehicleSelectionCatalogTest {
     }
 
     @Test
+    fun verifiedElectricCandidatesUseBaseModelsAndHumanRangeLabels() {
+        val volkswagen = cars.brandId("Volkswagen")
+        assertVariants(volkswagen, "ID.4", 2022, "Eléctrico")
+        assertVariants(volkswagen, "ID.7", 2024, "Eléctrico")
+        val peugeot = cars.brandId("Peugeot")
+        assertVariants(peugeot, "e-2008", 2023, "50 kWh eléctrico", "54 kWh eléctrico")
+        val kia = cars.brandId("Kia")
+        assertVariants(kia, "EV3", 2025, "Long Range eléctrico", "Standard Range eléctrico")
+        assertVariants(kia, "EV9", 2025, "Eléctrico")
+        val toyota = cars.brandId("Toyota")
+        assertVariants(toyota, "bZ4X", 2024, "Eléctrico")
+        val bmw = cars.brandId("BMW")
+        assertVariants(bmw, "i4", 2024, "Eléctrico")
+        val mercedes = cars.brandId("Mercedes-Benz")
+        assertVariants(mercedes, "EQA", 2024, "Eléctrico")
+        assertVariants(mercedes, "EQB", 2024, "Eléctrico")
+    }
+
+    @Test
     fun everySelectorLabelIsUniqueForDistinctFunctionalSnapshots() {
         cars.brands().forEach { brand ->
             cars.modelsFor(brand.id).forEach { model ->

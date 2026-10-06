@@ -21,7 +21,7 @@ class VehicleRuntimeCatalogTest {
         readLegacy("vehicles.json", VehicleCategory.COCHE).plus(readLegacy("motorcycles.json", VehicleCategory.MOTO)).forEach { legacy ->
             assertTrue("legacy entry missing: $legacy", activeLegacyKeys.contains(legacy.key))
         }
-        assertEquals(212, runtime.vehicles.size)
+        assertEquals(228, runtime.vehicles.size)
         assertTrue(runtime.vehicles.any { it.catalogId == "car-seat-leon-kl-facelift-e-hybrid-1-5" })
         assertTrue(runtime.vehicles.any { it.catalogId == "car-bmw-x5-g05-lci-xdrive50e" })
     }
@@ -44,6 +44,21 @@ class VehicleRuntimeCatalogTest {
         assertEquals(17.8, peugeot.toVehicleInfo(2025).batteryCapacity, 0.0)
         assertEquals(25.7, bmw.toVehicleInfo(2023).batteryCapacity, 0.0)
         assertEquals(0.0, rav4.toVehicleInfo(2022).batteryCapacity, 0.0)
+    }
+
+    @Test
+    fun verifiedElectricCandidatesKeepNoTankAndOnlyUseExplicitUsableCapacity() {
+        val runtime = parseRuntimeVehicleCatalog(readRuntime())
+        val id4 = runtime.vehicles.single { it.catalogId == "car-volkswagen-id4-pure-52" }
+        val e2008 = runtime.vehicles.single { it.catalogId == "car-peugeot-e2008-54" }
+        val ev3 = runtime.vehicles.single { it.catalogId == "car-kia-ev3-long-range-81-4" }
+        val eqa = runtime.vehicles.single { it.catalogId == "car-mercedes-eqa-300-350-66-5" }
+
+        listOf(id4, e2008, ev3, eqa).forEach { assertEquals(null, it.fuelTankLitres) }
+        assertEquals(52.0, id4.toVehicleInfo(2022).batteryCapacity, 0.0)
+        assertEquals(50.8, e2008.toVehicleInfo(2024).batteryCapacity, 0.0)
+        assertEquals(0.0, ev3.toVehicleInfo(2025).batteryCapacity, 0.0)
+        assertEquals(66.5, eqa.toVehicleInfo(2022).batteryCapacity, 0.0)
     }
 
     @Test
