@@ -8,6 +8,7 @@
     <exclude domain="database" path="charger_cache" />
     <exclude domain="database" path="charger_cache-wal" />
     <exclude domain="database" path="charger_cache-shm" />
+    <!-- Only these personal preferences are backed up; files/catalog stays excluded as replaceable data. -->
     <include domain="file" path="datastore/vehicle_preferences.preferences_pb" />
     <include domain="file" path="datastore/station_preferences.preferences_pb" />
 </full-backup-content>
