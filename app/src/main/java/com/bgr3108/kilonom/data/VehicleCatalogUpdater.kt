@@ -5,7 +5,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
-/** Coordinates an explicit catalog check. Callers decide when, if ever, to invoke it. */
+/** Performs one catalog check when a higher-level caller decides it is due. */
 /** Small UI-facing boundary: reading the local version never performs a network request. */
 internal interface VehicleCatalogUpdateChecker {
     fun activeCatalogVersion(): Int

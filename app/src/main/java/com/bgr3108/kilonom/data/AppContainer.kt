@@ -30,11 +30,18 @@ class AppContainer(context: Context) {
         database.maintenanceDao()
     )
 
-    /** Created only for the manual catalog-update action; construction itself performs no request. */
-    internal val vehicleCatalogUpdater: VehicleCatalogUpdateChecker by lazy {
+    private val vehicleCatalogUpdater: VehicleCatalogUpdateChecker by lazy {
         VehicleCatalogUpdater(
             remoteSource = GitHubRawVehicleCatalogRemoteSource(),
             installer = VehicleCatalogInstaller(context)
+        )
+    }
+
+    /** Created for manual and lifecycle-triggered checks; construction itself performs no request. */
+    internal val vehicleCatalogUpdateCoordinator: VehicleCatalogUpdateCoordinator by lazy {
+        VehicleCatalogUpdateCoordinator(
+            updateChecker = vehicleCatalogUpdater,
+            timestampStore = VehicleCatalogUpdatePreferences(context)
         )
     }
 

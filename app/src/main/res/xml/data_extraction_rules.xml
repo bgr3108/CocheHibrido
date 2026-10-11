@@ -9,7 +9,7 @@
         <exclude domain="database" path="charger_cache" />
         <exclude domain="database" path="charger_cache-wal" />
         <exclude domain="database" path="charger_cache-shm" />
-        <!-- Only the listed personal preferences transfer; files/catalog stays excluded as replaceable data. -->
+        <!-- Only the listed personal preferences transfer; catalog files and metadata stay excluded as replaceable data. -->
         <include domain="file" path="datastore/vehicle_preferences.preferences_pb" />
         <include domain="file" path="datastore/station_preferences.preferences_pb" />
     </cloud-backup>
@@ -22,7 +22,7 @@
         <exclude domain="database" path="charger_cache" />
         <exclude domain="database" path="charger_cache-wal" />
         <exclude domain="database" path="charger_cache-shm" />
-        <!-- Only the listed personal preferences transfer; files/catalog stays excluded as replaceable data. -->
+        <!-- Only the listed personal preferences transfer; catalog files and metadata stay excluded as replaceable data. -->
         <include domain="file" path="datastore/vehicle_preferences.preferences_pb" />
         <include domain="file" path="datastore/station_preferences.preferences_pb" />
     </device-transfer>

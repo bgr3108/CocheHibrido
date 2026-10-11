@@ -58,7 +58,7 @@ object AppViewModelProvider {
 
         initializer {
             VehicleCatalogUpdateViewModel(
-                hybridCarApplication().container.vehicleCatalogUpdater
+                hybridCarApplication().container.vehicleCatalogUpdateCoordinator
             )
         }
 
