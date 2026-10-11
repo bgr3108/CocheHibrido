@@ -53,7 +53,8 @@ internal class VehicleCatalogInstaller internal constructor(
         }
     }
 
-    private fun activeCatalogVersion(): Int {
+    /** Shared version baseline for local installation and the remote update coordinator. */
+    internal fun activeCatalogVersion(): Int {
         val installed = try {
             storage.readInstalledCatalogBytes()?.let { bytes ->
                 parseRuntimeVehicleCatalog(bytes.toString(Charsets.UTF_8))
