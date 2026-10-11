@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.filled.PrivacyTip
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -60,6 +61,7 @@ internal fun drawerNavigationItems(showAdPrivacyOptions: Boolean): List<DrawerIt
     add(DrawerItemSpec("Estaciones", Icons.Default.LocalGasStation, DrawerSection.PRIMARY, route = "stations"))
     add(DrawerItemSpec("Mis vehículos", Icons.Default.DirectionsCar, DrawerSection.VEHICLES, route = "my_vehicles"))
     add(DrawerItemSpec("Guía de uso", Icons.AutoMirrored.Filled.MenuBook, DrawerSection.HELP_AND_SETTINGS, route = "usage_guide"))
+    add(DrawerItemSpec("Catálogo de vehículos", Icons.Default.Storage, DrawerSection.HELP_AND_SETTINGS, route = "vehicle_catalog"))
     add(DrawerItemSpec("Privacidad", Icons.Default.PrivacyTip, DrawerSection.HELP_AND_SETTINGS, route = "privacy"))
     if (showAdPrivacyOptions) {
         add(DrawerItemSpec("Preferencias de publicidad", Icons.Default.Tune, DrawerSection.HELP_AND_SETTINGS, DrawerAction.AD_PRIVACY_OPTIONS))
@@ -68,7 +70,7 @@ internal fun drawerNavigationItems(showAdPrivacyOptions: Boolean): List<DrawerIt
 }
 
 internal fun isDrawerTopLevelRoute(route: String?): Boolean = route in setOf(
-    "home", "consumption", "stats", "stats/trends", "maintenance", "stations", "my_vehicles", "usage_guide", "privacy"
+    "home", "consumption", "stats", "stats/trends", "maintenance", "stations", "my_vehicles", "usage_guide", "vehicle_catalog", "privacy"
 )
 
 /** MapLibre owns horizontal pans while the map is visible; the menu still opens from its button. */
@@ -83,6 +85,7 @@ internal fun drawerRouteTitle(route: String?): String? = when (route) {
     "stations" -> "Estaciones"
     "my_vehicles" -> "Mis vehículos"
     "usage_guide" -> "Guía de uso"
+    "vehicle_catalog" -> "Catálogo de vehículos"
     "privacy" -> "Privacidad"
     else -> null
 }

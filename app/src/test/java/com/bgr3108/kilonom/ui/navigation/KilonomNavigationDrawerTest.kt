@@ -15,7 +15,7 @@ class KilonomNavigationDrawerTest {
         assertEquals(
             listOf(
                 "Inicio", "Consumos", "Estadísticas", "Mantenimiento", "Estaciones",
-                "Mis vehículos", "Guía de uso", "Privacidad", "Instagram"
+                "Mis vehículos", "Guía de uso", "Catálogo de vehículos", "Privacidad", "Instagram"
             ),
             labels
         )
@@ -40,6 +40,7 @@ class KilonomNavigationDrawerTest {
     fun onlyTopLevelRoutesExposeTheDrawer() {
         assertTrue(isDrawerTopLevelRoute("stations"))
         assertTrue(isDrawerTopLevelRoute("privacy"))
+        assertTrue(isDrawerTopLevelRoute("vehicle_catalog"))
         assertFalse(isDrawerTopLevelRoute("maintenance/item/3"))
         assertFalse(isDrawerTopLevelRoute("add_refuel"))
     }

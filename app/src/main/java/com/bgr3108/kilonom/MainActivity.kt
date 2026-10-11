@@ -81,6 +81,7 @@ import com.bgr3108.kilonom.viewmodel.PeriodSummaryViewModel
 import com.bgr3108.kilonom.viewmodel.MyVehiclesViewModel
 import com.bgr3108.kilonom.viewmodel.MaintenanceViewModel
 import com.bgr3108.kilonom.viewmodel.StationsViewModel
+import com.bgr3108.kilonom.viewmodel.VehicleCatalogUpdateViewModel
 import com.bgr3108.kilonom.viewmodel.ResetState
 import kotlinx.coroutines.launch
 
@@ -110,6 +111,10 @@ class MainActivity : ComponentActivity() {
         AppViewModelProvider.Factory
     }
 
+    private val vehicleCatalogUpdateViewModel: VehicleCatalogUpdateViewModel by viewModels {
+        AppViewModelProvider.Factory
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -126,6 +131,7 @@ class MainActivity : ComponentActivity() {
                         myVehiclesViewModel = myVehiclesViewModel,
                         maintenanceViewModel = maintenanceViewModel,
                         stationsViewModel = stationsViewModel,
+                        vehicleCatalogUpdateViewModel = vehicleCatalogUpdateViewModel,
                         adsManager = (application as HybridCarApplication).adsManager
                     )
                 }
@@ -143,6 +149,7 @@ internal fun AppContent(
     myVehiclesViewModel: MyVehiclesViewModel,
     maintenanceViewModel: MaintenanceViewModel,
     stationsViewModel: StationsViewModel,
+    vehicleCatalogUpdateViewModel: VehicleCatalogUpdateViewModel,
     adsManager: AdsManager
 ) {
     val navController = rememberNavController()
@@ -291,6 +298,7 @@ internal fun AppContent(
                     myVehiclesViewModel = myVehiclesViewModel,
                     maintenanceViewModel = maintenanceViewModel,
                     stationsViewModel = stationsViewModel,
+                    vehicleCatalogUpdateViewModel = vehicleCatalogUpdateViewModel,
                     onNavigateTopLevel = navigateToTopLevel
                 )
                 // Scaffold content is subcomposed. Register after the NavHost in that same

@@ -6,13 +6,21 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /** Coordinates an explicit catalog check. Callers decide when, if ever, to invoke it. */
+/** Small UI-facing boundary: reading the local version never performs a network request. */
+internal interface VehicleCatalogUpdateChecker {
+    fun activeCatalogVersion(): Int
+    suspend fun checkForUpdate(): VehicleCatalogUpdateResult
+}
+
 internal class VehicleCatalogUpdater(
     private val remoteSource: VehicleCatalogRemoteSource,
     private val installer: VehicleCatalogInstaller
-) {
+) : VehicleCatalogUpdateChecker {
     private val updateMutex = Mutex()
 
-    suspend fun checkForUpdate(): VehicleCatalogUpdateResult = updateMutex.withLock {
+    override fun activeCatalogVersion(): Int = installer.activeCatalogVersion()
+
+    override suspend fun checkForUpdate(): VehicleCatalogUpdateResult = updateMutex.withLock {
         withContext(Dispatchers.IO) {
             checkForUpdateOnIo()
         }

@@ -56,5 +56,11 @@ object AppViewModelProvider {
             )
         }
 
+        initializer {
+            VehicleCatalogUpdateViewModel(
+                hybridCarApplication().container.vehicleCatalogUpdater
+            )
+        }
+
     }
 }

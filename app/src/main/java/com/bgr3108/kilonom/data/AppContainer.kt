@@ -30,6 +30,14 @@ class AppContainer(context: Context) {
         database.maintenanceDao()
     )
 
+    /** Created only for the manual catalog-update action; construction itself performs no request. */
+    internal val vehicleCatalogUpdater: VehicleCatalogUpdateChecker by lazy {
+        VehicleCatalogUpdater(
+            remoteSource = GitHubRawVehicleCatalogRemoteSource(),
+            installer = VehicleCatalogInstaller(context)
+        )
+    }
+
     /** Shared vehicle-scoped maintenance boundary, consumed by the Phase 2 UI. */
     val maintenanceRepository: MaintenanceRepository by lazy {
         MaintenanceRepository(

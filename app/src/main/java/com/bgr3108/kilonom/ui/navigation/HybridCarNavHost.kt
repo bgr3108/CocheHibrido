@@ -33,6 +33,7 @@ import com.bgr3108.kilonom.ui.screens.AddVehicleScreen
 import com.bgr3108.kilonom.ui.screens.VehicleEditorScreen
 import com.bgr3108.kilonom.ui.screens.UsageGuideScreen
 import com.bgr3108.kilonom.ui.screens.StationsScreen
+import com.bgr3108.kilonom.ui.screens.VehicleCatalogScreen
 import com.bgr3108.kilonom.viewmodel.FuelEntryViewModel
 import com.bgr3108.kilonom.viewmodel.HomeViewModel
 import com.bgr3108.kilonom.viewmodel.PeriodSummaryViewModel
@@ -43,9 +44,10 @@ import com.bgr3108.kilonom.ui.screens.MaintenanceDetailScreen
 import com.bgr3108.kilonom.ui.screens.MaintenanceFormScreen
 import com.bgr3108.kilonom.ui.screens.MaintenanceFormMode
 import com.bgr3108.kilonom.viewmodel.StationsViewModel
+import com.bgr3108.kilonom.viewmodel.VehicleCatalogUpdateViewModel
 
 @Composable
-fun HybridCarNavHost(
+internal fun HybridCarNavHost(
     navController: NavHostController,
     innerPadding: PaddingValues,
     fuelViewModel: FuelEntryViewModel,
@@ -54,6 +56,7 @@ fun HybridCarNavHost(
     myVehiclesViewModel: MyVehiclesViewModel,
     maintenanceViewModel: MaintenanceViewModel,
     stationsViewModel: StationsViewModel,
+    vehicleCatalogUpdateViewModel: VehicleCatalogUpdateViewModel,
     onNavigateTopLevel: (String) -> Unit
 ){
 
@@ -153,6 +156,13 @@ fun HybridCarNavHost(
 
         composable("usage_guide") {
             UsageGuideScreen(innerPadding = innerPadding)
+        }
+
+        composable("vehicle_catalog") {
+            VehicleCatalogScreen(
+                innerPadding = innerPadding,
+                viewModel = vehicleCatalogUpdateViewModel
+            )
         }
 
         composable("add_vehicle") {
