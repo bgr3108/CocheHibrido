@@ -6,10 +6,12 @@ Esta carpeta contiene el pipeline local del futuro catálogo actualizable de Kil
 
 - `editorial/catalog-editorial.json` es la fuente de verdad. Conserva fuentes, notas, estado editorial y claves de compatibilidad (`legacyKeys`).
 - `runtime/catalog-runtime.json` es el artefacto compacto generado desde editorial.
-- `app/src/main/assets/catalog/catalog-runtime.json` es una copia exacta del runtime que Android empaqueta como seed offline.
-- `../tools/generate_vehicle_catalog.ps1` valida y genera ambos runtime de forma determinista.
+- `../app/src/main/assets/catalog/catalog-runtime.json` es una copia exacta del runtime que Android empaqueta como seed offline.
+- `publish/catalog-runtime.json` es otra copia byte a byte, preparada para publicar.
+- `publish/manifest.json` describe ese artefacto publicable con `schemaVersion`, `catalogVersion`, `generatedAt`, `sha256` y `file`.
+- `../tools/generate_vehicle_catalog.ps1` valida y genera runtime, seed y publish de forma determinista.
 
-No se edita el runtime a mano.
+No se editan a mano ni el runtime ni los archivos de `publish`: son artefactos generados y versionados.
 
 ## Generación
 
@@ -19,6 +21,8 @@ Desde la raíz del repositorio:
 pwsh -NoProfile -ExecutionPolicy Bypass -File tools/generate_vehicle_catalog.ps1
 ```
 
+El generador requiere PowerShell 7 (`pwsh`) para conservar los bytes idénticos en todos los artefactos.
+
 La primera generación del catálogo heredado usa `-BootstrapLegacy`. Lee los JSON históricos sin modificarlos, crea un registro editorial por entrada y los conserva como `ACTIVE`. Este modo es de inicialización y no debe usarse para sobrescribir trabajo editorial posterior.
 
 Los registros de ejecución siempre llevan `brand.id`/`brand.displayName` y `model.id`/`model.displayName` explícitos. La aplicación no intenta deducir un modelo base a partir de textos heredados. La normalización inicial de modelos legacy se realiza una sola vez con `-NormalizeLegacyModels` en esta herramienta, que conserva literalmente las `legacyKeys` históricas y separa el modelo base de la variante antes de generar el runtime.
@@ -27,7 +31,7 @@ Las motocicletas legacy pueden consolidarse una sola vez con `-ConsolidateMotorc
 
 El generador rechaza el editorial si encuentra, entre otros problemas: IDs o `legacyKeys` activos duplicados, referencias inexistentes, rangos inválidos, capacidades no positivas, rangos solapados técnicamente iguales, combinaciones de propulsión inválidas o registros `ACTIVE` sin fuentes. Si la validación falla no se escribe un runtime nuevo.
 
-La salida es estable: el orden se fija por ID y `generatedAt` procede del editorial, no del reloj de la máquina. Dos ejecuciones con el mismo editorial producen los mismos bytes y el mismo SHA-256, que el script muestra al terminar.
+La salida es estable: el orden se fija por ID y `generatedAt` procede del editorial, no del reloj de la máquina. Dos ejecuciones con el mismo editorial producen los mismos bytes y el mismo SHA-256, que el script muestra al terminar. El manifest toma automáticamente `catalogVersion` y `generatedAt` del runtime, y calcula su checksum sobre los bytes exactos de `publish/catalog-runtime.json`.
 
 ## Contrato editorial v1
 
@@ -55,6 +59,6 @@ El editorial admite `ACTIVE`, `REVIEW` y `DRAFT`. Solo `ACTIVE` pasa a runtime. 
 
 `legacyKeys` describe las claves anteriores `category` + `brand` + `model` + `year`. Sirve para reconciliar datos históricos; no modifica vehículos ya guardados. Los vehículos Room son snapshots personales independientes del catálogo y no se reescriben en esta fase.
 
-## Próximas fases
+## Publicación futura
 
-La futura copia descargada deberá vivir como caché pública recuperable bajo `files/catalog/` y excluirse de backup. La actualización remota añadirá manifest, checksum SHA-256, descarga temporal, validación y sustitución atómica. Nada de ello está implementado todavía.
+El flujo correcto es: editar editorial → ejecutar el generador → revisar el diff de runtime, seed y publish → ejecutar pruebas → commit/push. La app todavía no descarga nada: `publish/` prepara únicamente los archivos que se alojarán más adelante. La futura copia descargada vivirá como caché pública recuperable bajo `files/catalog/` y seguirá excluida de backup.

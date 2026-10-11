@@ -1,3 +1,4 @@
+#Requires -Version 7.0
 [CmdletBinding()]
 param(
     [switch]$BootstrapLegacy,
@@ -6,7 +7,8 @@ param(
     [switch]$NormalizeDenseCarFamilies,
     [string]$EditorialPath,
     [string]$RuntimePath,
-    [string]$AssetPath
+    [string]$AssetPath,
+    [string]$PublishPath
 )
 
 $ErrorActionPreference = "Stop"
@@ -14,6 +16,11 @@ $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 if ([string]::IsNullOrWhiteSpace($EditorialPath)) { $EditorialPath = Join-Path $scriptRoot "..\catalog\editorial\catalog-editorial.json" }
 if ([string]::IsNullOrWhiteSpace($RuntimePath)) { $RuntimePath = Join-Path $scriptRoot "..\catalog\runtime\catalog-runtime.json" }
 if ([string]::IsNullOrWhiteSpace($AssetPath)) { $AssetPath = Join-Path $scriptRoot "..\app\src\main\assets\catalog\catalog-runtime.json" }
+if ([string]::IsNullOrWhiteSpace($PublishPath)) { $PublishPath = Join-Path $scriptRoot "..\catalog\publish" }
+
+$manifestSchemaVersion = 1
+$publishRuntimeFileName = "catalog-runtime.json"
+$publishManifestFileName = "manifest.json"
 
 function New-Object {
     param([hashtable]$Properties)
@@ -43,6 +50,13 @@ function Get-ShortHash {
     param([string]$Value)
     $bytes = [Text.Encoding]::UTF8.GetBytes($Value)
     (Get-Sha256 $bytes).Substring(0, 10)
+}
+
+function Get-OrdinalSortKey {
+    param([string]$Value)
+    # Sort-Object uses culture-aware comparison for strings. IDs are ASCII and
+    # need a culture-independent order so runtime bytes stay stable everywhere.
+    return -join ($Value.ToCharArray() | ForEach-Object { ([int][char]$_).ToString("X4") })
 }
 
 function Assert-Id {
@@ -1256,7 +1270,7 @@ function New-RuntimeCatalog {
         }
     }
     $vehicles = @()
-    foreach ($entry in ($Editorial.vehicles | Where-Object { $_.editorialStatus -eq "ACTIVE" } | Sort-Object catalogId)) {
+    foreach ($entry in ($Editorial.vehicles | Where-Object { $_.editorialStatus -eq "ACTIVE" } | Sort-Object { Get-OrdinalSortKey $_.catalogId })) {
         $brand = $lookup.brands[$entry.brandId]
         $model = $lookup.models["$($entry.category)|$($entry.brandId)|$($entry.modelId)"]
         $generation = if ($null -eq $entry.generationId) { $null } else { $lookup.generations["$($entry.category)|$($entry.brandId)|$($entry.modelId)|$($entry.generationId)"] }
@@ -1310,6 +1324,112 @@ function Write-DeterministicJson {
     if (-not (Test-Path $directory)) { New-Item -ItemType Directory -Force -Path $directory | Out-Null }
     $json = (ConvertTo-CanonicalObject $Object) | ConvertTo-Json -Depth 100 -Compress
     [IO.File]::WriteAllText($Path, $json + "`n", [Text.UTF8Encoding]::new($false))
+}
+
+function Write-ExactBytes {
+    param([byte[]]$Bytes, [string]$Path)
+    $directory = Split-Path -Parent $Path
+    if (-not (Test-Path $directory)) { [IO.Directory]::CreateDirectory($directory) | Out-Null }
+    [IO.File]::WriteAllBytes($Path, $Bytes)
+}
+
+function Write-DeterministicManifest {
+    param($Manifest, [string]$Path)
+    $directory = Split-Path -Parent $Path
+    if (-not (Test-Path $directory)) { [IO.Directory]::CreateDirectory($directory) | Out-Null }
+    # The field order is explicit so this generated artifact is stable as well.
+    $json = $Manifest | ConvertTo-Json -Depth 2 -Compress
+    [IO.File]::WriteAllText($Path, $json + "`n", [Text.UTF8Encoding]::new($false))
+}
+
+function Get-RuntimeArtifactMetadata {
+    param([byte[]]$CatalogBytes)
+
+    $json = [Text.Encoding]::UTF8.GetString($CatalogBytes)
+    $schemaVersion = [regex]::Match($json, '"schemaVersion":(?<value>\d+)')
+    $catalogVersion = [regex]::Match($json, '"catalogVersion":(?<value>\d+)')
+    $generatedAt = [regex]::Match($json, '"generatedAt":"(?<value>[^"]+)"')
+    if (-not $schemaVersion.Success -or -not $catalogVersion.Success -or -not $generatedAt.Success) {
+        throw "runtime generado: faltan metadatos obligatorios"
+    }
+    return [pscustomobject]@{
+        schemaVersion = [int]$schemaVersion.Groups["value"].Value
+        catalogVersion = [int]$catalogVersion.Groups["value"].Value
+        generatedAt = $generatedAt.Groups["value"].Value
+    }
+}
+
+function Test-PublishManifest {
+    param($Manifest, [byte[]]$CatalogBytes, $RuntimeMetadata)
+
+    if ($Manifest.schemaVersion -ne $manifestSchemaVersion) { throw "publish manifest: schemaVersion debe ser $manifestSchemaVersion" }
+    if ([int]$Manifest.catalogVersion -lt 1) { throw "publish manifest: catalogVersion debe ser positivo" }
+    if ([int]$Manifest.catalogVersion -ne [int]$RuntimeMetadata.catalogVersion) { throw "publish manifest: catalogVersion no coincide con runtime" }
+    if ([string]::IsNullOrWhiteSpace($Manifest.generatedAt) -or $Manifest.generatedAt -notmatch "^\d{4}-\d{2}-\d{2}T.*Z$") { throw "publish manifest: generatedAt UTC ISO-8601 obligatorio" }
+    if ($Manifest.generatedAt -ne $RuntimeMetadata.generatedAt) { throw "publish manifest: generatedAt no coincide con runtime" }
+    if ($Manifest.file -ne $publishRuntimeFileName) { throw "publish manifest: file debe ser $publishRuntimeFileName" }
+    if ($Manifest.sha256 -notmatch "^[0-9A-F]{64}$") { throw "publish manifest: sha256 debe ser hexadecimal SHA-256 en mayúsculas" }
+    $actualSha = (Get-Sha256 $CatalogBytes).ToUpperInvariant()
+    if ($Manifest.sha256 -ne $actualSha) { throw "publish manifest: sha256 no coincide con los bytes del catálogo" }
+}
+
+function Restore-PublishFile {
+    param([string]$Path, [byte[]]$PreviousBytes, [bool]$Existed)
+    if ($Existed) {
+        [IO.File]::WriteAllBytes($Path, $PreviousBytes)
+    } elseif (Test-Path $Path) {
+        Remove-Item -LiteralPath $Path -Force
+    }
+}
+
+function Publish-RuntimeArtifacts {
+    param($RuntimeMetadata, [byte[]]$RuntimeBytes, [string]$Directory)
+
+    [IO.Directory]::CreateDirectory($Directory) | Out-Null
+    $catalogPath = Join-Path $Directory $publishRuntimeFileName
+    $manifestPath = Join-Path $Directory $publishManifestFileName
+    $catalogTemporaryPath = "$catalogPath.tmp"
+    $manifestTemporaryPath = "$manifestPath.tmp"
+    $catalogPreviouslyExisted = Test-Path $catalogPath
+    $manifestPreviouslyExisted = Test-Path $manifestPath
+    $previousCatalogBytes = if ($catalogPreviouslyExisted) { [IO.File]::ReadAllBytes($catalogPath) } else { $null }
+    $previousManifestBytes = if ($manifestPreviouslyExisted) { [IO.File]::ReadAllBytes($manifestPath) } else { $null }
+    $manifest = [pscustomobject][ordered]@{
+        schemaVersion = $manifestSchemaVersion
+        catalogVersion = [int]$RuntimeMetadata.catalogVersion
+        generatedAt = [string]$RuntimeMetadata.generatedAt
+        sha256 = (Get-Sha256 $RuntimeBytes).ToUpperInvariant()
+        file = $publishRuntimeFileName
+    }
+    try {
+        if (Test-Path $catalogTemporaryPath) { Remove-Item -LiteralPath $catalogTemporaryPath -Force }
+        if (Test-Path $manifestTemporaryPath) { Remove-Item -LiteralPath $manifestTemporaryPath -Force }
+        Write-ExactBytes $RuntimeBytes $catalogTemporaryPath
+        Write-DeterministicManifest $manifest $manifestTemporaryPath
+        Test-PublishManifest -Manifest $manifest -CatalogBytes ([IO.File]::ReadAllBytes($catalogTemporaryPath)) -RuntimeMetadata $RuntimeMetadata
+
+        Write-ExactBytes ([IO.File]::ReadAllBytes($catalogTemporaryPath)) $catalogPath
+        Write-ExactBytes ([IO.File]::ReadAllBytes($manifestTemporaryPath)) $manifestPath
+
+        $writtenManifestJson = Get-Content -Raw -Encoding UTF8 $manifestPath
+        $writtenManifest = $writtenManifestJson | ConvertFrom-Json
+        # PowerShell may materialize ISO dates as DateTime. Re-read this string
+        # verbatim because the generated manifest contract is textual UTC data.
+        $writtenManifest.generatedAt = [regex]::Match($writtenManifestJson, '"generatedAt":"(?<value>[^"]+)"').Groups["value"].Value
+        Test-PublishManifest -Manifest $writtenManifest -CatalogBytes ([IO.File]::ReadAllBytes($catalogPath)) -RuntimeMetadata $RuntimeMetadata
+    } catch {
+        $publishError = $_
+        try {
+            Restore-PublishFile $catalogPath $previousCatalogBytes $catalogPreviouslyExisted
+            Restore-PublishFile $manifestPath $previousManifestBytes $manifestPreviouslyExisted
+        } catch {
+            throw "No se pudieron restaurar los artefactos publicables tras un fallo: $($_.Exception.Message)"
+        }
+        throw $publishError
+    } finally {
+        if (Test-Path $catalogTemporaryPath) { Remove-Item -LiteralPath $catalogTemporaryPath -Force }
+        if (Test-Path $manifestTemporaryPath) { Remove-Item -LiteralPath $manifestTemporaryPath -Force }
+    }
 }
 
 function Write-EditorialJson {
@@ -1373,8 +1493,13 @@ if ($null -ne $addedElectricCandidates) {
 }
 $runtime = New-RuntimeCatalog $editorial
 Write-DeterministicJson $runtime $RuntimePath
-Write-DeterministicJson $runtime $AssetPath
 $bytes = [IO.File]::ReadAllBytes($RuntimePath)
+$runtimeMetadata = Get-RuntimeArtifactMetadata $bytes
+if ($runtimeMetadata.schemaVersion -ne [int]$runtime.schemaVersion -or $runtimeMetadata.catalogVersion -ne [int]$runtime.catalogVersion) {
+    throw "runtime generado: metadatos incoherentes"
+}
+Write-ExactBytes $bytes $AssetPath
+Publish-RuntimeArtifacts -RuntimeMetadata $runtimeMetadata -RuntimeBytes $bytes -Directory $PublishPath
 $activeCount = @($runtime.vehicles).Count
 Write-Output "Editorial validado: $(@($editorial.vehicles).Count) registros"
 Write-Output "Runtime generado: $activeCount registros"
