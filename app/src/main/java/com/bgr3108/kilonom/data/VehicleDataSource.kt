@@ -4,6 +4,8 @@ import android.content.Context
 interface VehicleCatalog {
     fun loadVehicles(category: VehicleCategory): List<VehicleInfo>
     fun loadSelectionCatalog(category: VehicleCategory): VehicleSelectionCatalog
+    fun reconcileLegacyVehicle(vehicle: VehicleEntity): LegacyCatalogReconciliation =
+        LegacyCatalogReconciliation.NoMatch
 }
 
 class VehicleDataSource(
@@ -27,6 +29,9 @@ class VehicleDataSource(
 
     override fun loadSelectionCatalog(category: VehicleCategory): VehicleSelectionCatalog =
         selectionsByCategory.getValue(category)
+
+    override fun reconcileLegacyVehicle(vehicle: VehicleEntity): LegacyCatalogReconciliation =
+        runtimeCatalog.reconcileLegacyVehicle(vehicle)
 }
 
 internal fun isVehicleSelectionCompatible(

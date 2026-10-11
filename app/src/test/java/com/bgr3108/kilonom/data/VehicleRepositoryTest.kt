@@ -509,6 +509,39 @@ class VehicleRepositoryTest {
     }
 
     @Test
+    fun explicitLegacyLink_persistsOnlyCatalogIdAfterARepeatedExactMatch() = runBlocking {
+        val original = entity(id = 1, initialKm = 12_345.0)
+        val vehicleDao = InMemoryVehicleDao(listOf(original))
+        val repository = repository(
+            preferences = FakeVehiclePreferences(activeVehicleId = 1),
+            vehicleDao = vehicleDao,
+            catalog = ReconciliationCatalog(LegacyCatalogReconciliation.ExactMatch("car-example"))
+        )
+        repository.isLoading.first { !it }
+
+        assertTrue(repository.linkLegacyVehicleToCatalog(1, "car-example"))
+
+        val linked = vehicleDao.vehicles.single()
+        assertEquals("car-example", linked.catalogId)
+        assertEquals(original.copy(catalogId = "car-example"), linked)
+    }
+
+    @Test
+    fun legacyLink_neverPersistsWhenTheSnapshotIsNotAnExactMatch() = runBlocking {
+        val original = entity(id = 1)
+        val vehicleDao = InMemoryVehicleDao(listOf(original))
+        val repository = repository(
+            preferences = FakeVehiclePreferences(activeVehicleId = 1),
+            vehicleDao = vehicleDao,
+            catalog = ReconciliationCatalog(LegacyCatalogReconciliation.Conflict)
+        )
+        repository.isLoading.first { !it }
+
+        assertFalse(repository.linkLegacyVehicleToCatalog(1, "car-example"))
+        assertNull(vehicleDao.vehicles.single().catalogId)
+    }
+
+    @Test
     fun updateVehicleWithoutEntries_canReplaceTheCatalogSnapshot() = runBlocking {
         val stored = entity(id = 1, initialKm = 1_000.0)
         val repository = repository(
@@ -684,8 +717,9 @@ class VehicleRepositoryTest {
         preferences: FakeVehiclePreferences,
         vehicleDao: InMemoryVehicleDao = InMemoryVehicleDao(),
         fuelEntryDao: InMemoryFuelEntryDao = InMemoryFuelEntryDao(),
-        maintenanceDao: InMemoryMaintenanceDao = InMemoryMaintenanceDao()
-    ) = VehicleRepository(EmptyVehicleCatalog, preferences, vehicleDao, fuelEntryDao, maintenanceDao)
+        maintenanceDao: InMemoryMaintenanceDao = InMemoryMaintenanceDao(),
+        catalog: VehicleCatalog = EmptyVehicleCatalog
+    ) = VehicleRepository(catalog, preferences, vehicleDao, fuelEntryDao, maintenanceDao)
 
     private fun configuredVehicle(
         type: VehicleType = VehicleType.HIBRIDO_ENCHUFABLE,
@@ -751,6 +785,16 @@ class VehicleRepositoryTest {
         override fun loadVehicles(category: VehicleCategory): List<VehicleInfo> = emptyList()
         override fun loadSelectionCatalog(category: VehicleCategory) =
             VehicleSelectionCatalog(category, emptyList())
+    }
+
+    private class ReconciliationCatalog(
+        private val reconciliation: LegacyCatalogReconciliation
+    ) : VehicleCatalog {
+        override fun loadVehicles(category: VehicleCategory): List<VehicleInfo> = emptyList()
+        override fun loadSelectionCatalog(category: VehicleCategory) =
+            VehicleSelectionCatalog(category, emptyList())
+
+        override fun reconcileLegacyVehicle(vehicle: VehicleEntity): LegacyCatalogReconciliation = reconciliation
     }
 
     private class FakeVehiclePreferences(

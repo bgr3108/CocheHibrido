@@ -1193,10 +1193,36 @@ function Test-EditorialCatalog {
         }
         $replacementId = Get-Property $vehicle "replacedByCatalogId"
         if ($null -ne $replacementId) {
-            Assert-Id $replacementId "$context.replacedByCatalogId"
-            $replacement = $vehiclesById[$replacementId]
-            if ($null -eq $replacement -or $replacement.editorialStatus -ne "ACTIVE") { throw "$context.replacedByCatalogId: debe referenciar un ACTIVE" }
+            # Historical records may be superseded more than once. Follow the complete chain here
+            # so the generated runtime can always carry each legacy key to one ACTIVE canonical id.
+            $visited = @{}
+            $current = $vehicle
+            while ($current.editorialStatus -ne "ACTIVE") {
+                if ($visited[$current.catalogId]) { throw "$context.replacedByCatalogId: ciclo detectado en $($current.catalogId)" }
+                $visited[$current.catalogId] = $true
+                $nextId = Get-Property $current "replacedByCatalogId"
+                if ([string]::IsNullOrWhiteSpace($nextId)) { throw "$context.replacedByCatalogId: la cadena no termina en un ACTIVE" }
+                Assert-Id $nextId "$context.replacedByCatalogId"
+                $current = $vehiclesById[$nextId]
+                if ($null -eq $current) { throw "$context.replacedByCatalogId: catalogId inexistente '$nextId'" }
+            }
         }
+    }
+}
+
+function Resolve-CanonicalActiveCatalogId {
+    param($StartCatalogId, $VehiclesById)
+
+    $visited = @{}
+    $currentId = $StartCatalogId
+    while ($true) {
+        if ($visited[$currentId]) { throw "catalog replacement: ciclo detectado en $currentId" }
+        $visited[$currentId] = $true
+        $current = $VehiclesById[$currentId]
+        if ($null -eq $current) { throw "catalog replacement: catalogId inexistente '$currentId'" }
+        if ($current.editorialStatus -eq "ACTIVE") { return $current.catalogId }
+        $currentId = Get-Property $current "replacedByCatalogId"
+        if ([string]::IsNullOrWhiteSpace($currentId)) { return $null }
     }
 }
 
@@ -1212,6 +1238,23 @@ function Get-DisplayLookup {
 function New-RuntimeCatalog {
     param($Editorial)
     $lookup = Get-DisplayLookup $Editorial
+    $vehiclesById = @{}
+    foreach ($entry in $Editorial.vehicles) { $vehiclesById[$entry.catalogId] = $entry }
+    $legacyKeysByCanonicalId = @{}
+    $legacyKeyOwners = @{}
+    foreach ($entry in $Editorial.vehicles) {
+        $canonicalId = Resolve-CanonicalActiveCatalogId $entry.catalogId $vehiclesById
+        if ($null -eq $canonicalId) { continue }
+        if (-not $legacyKeysByCanonicalId.ContainsKey($canonicalId)) { $legacyKeysByCanonicalId[$canonicalId] = @{} }
+        foreach ($legacy in @($entry.legacyKeys)) {
+            $legacyKey = "$($legacy.category)|$($legacy.brand)|$($legacy.model)|$($legacy.year)"
+            if ($legacyKeyOwners.ContainsKey($legacyKey) -and $legacyKeyOwners[$legacyKey] -ne $canonicalId) {
+                throw "runtime legacyKeys: '$legacyKey' llega a dos ACTIVE distintos"
+            }
+            $legacyKeyOwners[$legacyKey] = $canonicalId
+            $legacyKeysByCanonicalId[$canonicalId][$legacyKey] = $legacy
+        }
+    }
     $vehicles = @()
     foreach ($entry in ($Editorial.vehicles | Where-Object { $_.editorialStatus -eq "ACTIVE" } | Sort-Object catalogId)) {
         $brand = $lookup.brands[$entry.brandId]
@@ -1226,7 +1269,7 @@ function New-RuntimeCatalog {
             variant = if ($null -eq $variant) { $null } else { New-Object @{ id = $variant.id; displayName = $variant.displayName; aliases = @($variant.aliases) } }
             yearFrom = $entry.yearFrom; yearTo = $entry.yearTo; powertrain = $entry.powertrain
             fuelTankLitres = $entry.fuelTankLitres; battery = $entry.battery
-            bodyStyle = $entry.bodyStyle; drivetrain = $entry.drivetrain; marketCodes = @($entry.marketCodes); aliases = @($entry.aliases); legacyKeys = @($entry.legacyKeys); identification = Get-RuntimeIdentification $entry
+            bodyStyle = $entry.bodyStyle; drivetrain = $entry.drivetrain; marketCodes = @($entry.marketCodes); aliases = @($entry.aliases); legacyKeys = @($legacyKeysByCanonicalId[$entry.catalogId].Values | Sort-Object category,brand,model,year); identification = Get-RuntimeIdentification $entry
         }
     }
     return New-Object @{ schemaVersion = $Editorial.schemaVersion; catalogVersion = $Editorial.catalogVersion; generatedAt = $Editorial.generatedAt; vehicles = $vehicles }

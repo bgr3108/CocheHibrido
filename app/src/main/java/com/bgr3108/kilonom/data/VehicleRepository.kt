@@ -301,6 +301,28 @@ class VehicleRepository(
         entity
     }
 
+    /** Returns a conservative, read-only suggestion for an old snapshot with no provenance. */
+    fun reconcileLegacyVehicle(vehicle: VehicleEntity): LegacyCatalogReconciliation =
+        if (vehicle.catalogId == null) vehicleDataSource.reconcileLegacyVehicle(vehicle)
+        else LegacyCatalogReconciliation.NoMatch
+
+    /**
+     * Persists only a catalog provenance after verifying the exact match again under the mutex.
+     * No field of the personal snapshot is reconstructed from the catalog.
+     */
+    suspend fun linkLegacyVehicleToCatalog(vehicleId: Long, catalogId: String): Boolean = vehicleMutex.withLock {
+        val current = vehicleDao.getVehicle(vehicleId) ?: return@withLock false
+        val resolution = vehicleDataSource.reconcileLegacyVehicle(current)
+        if (resolution !is LegacyCatalogReconciliation.ExactMatch || resolution.catalogId != catalogId) {
+            return@withLock false
+        }
+        val linked = vehicleDao.setCatalogIdIfMissing(vehicleId, catalogId) == 1
+        if (linked && _activeVehicleId.value == vehicleId) {
+            _vehicle.value = current.copy(catalogId = catalogId).toVehicle()
+        }
+        linked
+    }
+
     /** Deletes one snapshot; Room cascades its associated entries and maintenance history. */
     suspend fun deleteVehicle(vehicleId: Long) = vehicleMutex.withLock {
         val target = vehicleDao.getVehicle(vehicleId) ?: return@withLock

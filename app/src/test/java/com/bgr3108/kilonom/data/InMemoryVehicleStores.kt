@@ -47,6 +47,14 @@ internal class InMemoryVehicleDao(
         vehiclesFlow.value = vehicles.toList()
     }
 
+    override suspend fun setCatalogIdIfMissing(vehicleId: Long, catalogId: String): Int {
+        val index = vehicles.indexOfFirst { it.id == vehicleId && it.catalogId == null }
+        if (index < 0) return 0
+        vehicles[index] = vehicles[index].copy(catalogId = catalogId)
+        vehiclesFlow.value = vehicles.toList()
+        return 1
+    }
+
     override suspend fun deleteAll() {
         vehicles.map { it.id }.forEach { onVehicleDeleted?.invoke(it) }
         vehicles.clear()

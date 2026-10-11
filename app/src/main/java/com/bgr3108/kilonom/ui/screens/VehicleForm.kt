@@ -70,6 +70,8 @@ fun VehicleForm(
     catalogEditable: Boolean,
     minimumRecordedKm: Double? = null,
     currentKm: Double? = null,
+    catalogLinkSuggestion: String? = null,
+    onLinkToCatalog: (() -> Unit)? = null,
     isSaving: Boolean,
     errorMessage: String?,
     onSubmit: (Vehicle) -> Unit
@@ -351,6 +353,31 @@ fun VehicleForm(
         ) {
             if (isSaving) CircularProgressIndicator(modifier = Modifier.padding(2.dp), color = MaterialTheme.colorScheme.onPrimary)
             else Text("Guardar")
+        }
+        if (catalogLinkSuggestion != null && onLinkToCatalog != null) {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        "Este vehículo está disponible en el catálogo de Kilonom",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    Text(
+                        "Tus datos, consumos y mantenimientos no cambiarán.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    TextButton(onClick = onLinkToCatalog, enabled = !isSaving) {
+                        Text("Vincular con catálogo")
+                    }
+                }
+            }
         }
         VehicleCatalogHelpCard(
             onSendEmail = {

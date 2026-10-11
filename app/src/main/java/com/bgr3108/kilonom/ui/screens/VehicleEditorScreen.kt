@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.data.Vehicle
+import com.bgr3108.kilonom.data.LegacyCatalogReconciliation
 import com.bgr3108.kilonom.data.toVehicle
 import com.bgr3108.kilonom.viewmodel.MyVehiclesViewModel
 
@@ -55,6 +56,9 @@ fun VehicleEditorScreen(
     LaunchedEffect(summary.vehicle.id) { viewModel.selectCategory(summary.vehicle.category) }
     val pendingInitialKmChange = remember { mutableStateOf<Vehicle?>(null) }
     val hasRecordedActivity = summary.entryCount > 0 || summary.maintenanceRecordCount > 0
+    val catalogLinkSuggestion = remember(summary.vehicle) {
+        (viewModel.reconcileLegacyVehicle(summary.vehicle) as? LegacyCatalogReconciliation.ExactMatch)?.catalogId
+    }
     VehicleForm(
         title = "Editar vehículo",
         initialVehicle = summary.vehicle.toVehicle(),
@@ -64,6 +68,10 @@ fun VehicleEditorScreen(
         catalogEditable = !hasRecordedActivity,
         minimumRecordedKm = summary.minimumValidRecordedKm,
         currentKm = summary.currentKm,
+        catalogLinkSuggestion = catalogLinkSuggestion,
+        onLinkToCatalog = catalogLinkSuggestion?.let { catalogId ->
+            { viewModel.linkLegacyVehicleToCatalog(summary.vehicle.id, catalogId) }
+        },
         isSaving = isSaving,
         errorMessage = error,
         onSubmit = { updated ->

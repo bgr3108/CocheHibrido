@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bgr3108.kilonom.data.Vehicle
 import com.bgr3108.kilonom.data.VehicleCategory
+import com.bgr3108.kilonom.data.VehicleEntity
+import com.bgr3108.kilonom.data.LegacyCatalogReconciliation
 import com.bgr3108.kilonom.data.VehicleSelectionCatalog
 import com.bgr3108.kilonom.data.VehicleRepository
 import kotlinx.coroutines.CancellationException
@@ -63,6 +65,13 @@ class MyVehiclesViewModel(
             vehicleRepository.deleteVehicle(vehicleId)
             onDeleted()
         }
+    )
+
+    fun reconcileLegacyVehicle(vehicle: VehicleEntity): LegacyCatalogReconciliation =
+        vehicleRepository.reconcileLegacyVehicle(vehicle)
+
+    fun linkLegacyVehicleToCatalog(vehicleId: Long, catalogId: String) = runAction(
+        action = { vehicleRepository.linkLegacyVehicleToCatalog(vehicleId, catalogId) }
     )
 
     private fun runAction(

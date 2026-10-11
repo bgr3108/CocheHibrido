@@ -30,6 +30,10 @@ interface VehicleDao {
     @Update
     suspend fun update(vehicle: VehicleEntity)
 
+    /** Links catalog provenance without rebuilding or changing the independent personal snapshot. */
+    @Query("UPDATE vehicles SET catalogId = :catalogId WHERE id = :vehicleId AND catalogId IS NULL")
+    suspend fun setCatalogIdIfMissing(vehicleId: Long, catalogId: String): Int
+
     @Delete
     suspend fun delete(vehicle: VehicleEntity)
 
