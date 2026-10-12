@@ -4,6 +4,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -15,10 +19,11 @@ class VehicleCatalogUpdaterTest {
     @Test
     fun sameRemoteVersion_isUpToDateAndNeverDownloadsTheCatalog() = runBlocking {
         val seed = bundledSeedBytes()
-        val remote = FakeRemoteSource(manifest = manifestFor(seed, 1), catalog = catalogWithVersion(2))
+        val baseVersion = seedCatalogVersion()
+        val remote = FakeRemoteSource(manifest = manifestFor(seed, baseVersion), catalog = catalogWithVersion(baseVersion + 1))
         val result = VehicleCatalogUpdater(remote, installer(seed)).checkForUpdate()
 
-        assertEquals(VehicleCatalogUpdateResult.UpToDate(1), result)
+        assertEquals(VehicleCatalogUpdateResult.UpToDate(baseVersion), result)
         assertEquals(1, remote.manifestDownloads)
         assertEquals(0, remote.catalogDownloads)
     }
@@ -26,12 +31,14 @@ class VehicleCatalogUpdaterTest {
     @Test
     fun olderRemoteVersion_isUpToDateAndNeverDownloadsTheCatalog() = runBlocking {
         val seed = bundledSeedBytes()
-        val installedV2 = catalogWithVersion(2)
-        val remote = FakeRemoteSource(manifest = manifestFor(seed, 1), catalog = seed)
+        val baseVersion = seedCatalogVersion()
+        val installedVersion = baseVersion + 1
+        val installedV2 = catalogWithVersion(installedVersion)
+        val remote = FakeRemoteSource(manifest = manifestFor(seed, baseVersion), catalog = seed)
         val storage = FakeInstallStorage(installed = installedV2, seed = seed)
 
         assertEquals(
-            VehicleCatalogUpdateResult.UpToDate(2),
+            VehicleCatalogUpdateResult.UpToDate(installedVersion),
             VehicleCatalogUpdater(remote, VehicleCatalogInstaller(storage)).checkForUpdate()
         )
         assertEquals(0, remote.catalogDownloads)
@@ -41,12 +48,13 @@ class VehicleCatalogUpdaterTest {
     @Test
     fun newerValidCatalog_isInstalledThroughTheExistingInstaller() = runBlocking {
         val seed = bundledSeedBytes()
-        val candidate = catalogWithVersion(2)
+        val candidateVersion = seedCatalogVersion() + 1
+        val candidate = catalogWithVersion(candidateVersion)
         val storage = FakeInstallStorage(seed = seed)
-        val remote = FakeRemoteSource(manifest = manifestFor(candidate, 2), catalog = candidate)
+        val remote = FakeRemoteSource(manifest = manifestFor(candidate, candidateVersion), catalog = candidate)
 
         assertEquals(
-            VehicleCatalogUpdateResult.Updated(2),
+            VehicleCatalogUpdateResult.Updated(candidateVersion),
             VehicleCatalogUpdater(remote, VehicleCatalogInstaller(storage)).checkForUpdate()
         )
         assertEquals(1, remote.catalogDownloads)
@@ -55,10 +63,11 @@ class VehicleCatalogUpdaterTest {
 
     @Test
     fun rejectedCandidate_keepsThePreviousInstalledCatalogIntact() = runBlocking {
-        val previous = catalogWithVersion(2)
+        val previousVersion = seedCatalogVersion() + 1
+        val previous = catalogWithVersion(previousVersion)
         val corruptCandidate = "{ broken".toByteArray()
         val storage = FakeInstallStorage(installed = previous, seed = bundledSeedBytes())
-        val remote = FakeRemoteSource(manifest = manifestFor(corruptCandidate, 3), catalog = corruptCandidate)
+        val remote = FakeRemoteSource(manifest = manifestFor(corruptCandidate, previousVersion + 1), catalog = corruptCandidate)
 
         assertEquals(
             VehicleCatalogUpdateResult.InstallFailed(VehicleCatalogInstallResult.InvalidCatalog),
@@ -69,11 +78,13 @@ class VehicleCatalogUpdaterTest {
 
     @Test
     fun checksumMismatch_isReportedByTheInstallerWithoutChangingTheCatalog() = runBlocking {
-        val previous = catalogWithVersion(2)
-        val candidate = catalogWithVersion(3)
+        val previousVersion = seedCatalogVersion() + 1
+        val candidateVersion = previousVersion + 1
+        val previous = catalogWithVersion(previousVersion)
+        val candidate = catalogWithVersion(candidateVersion)
         val storage = FakeInstallStorage(installed = previous, seed = bundledSeedBytes())
         val remote = FakeRemoteSource(
-            manifest = manifestFor(candidate, 3, sha256 = "0".repeat(64)),
+            manifest = manifestFor(candidate, candidateVersion, sha256 = "0".repeat(64)),
             catalog = candidate
         )
 
@@ -95,11 +106,12 @@ class VehicleCatalogUpdaterTest {
             VehicleCatalogUpdateResult.ManifestDownloadFailed,
             VehicleCatalogUpdater(FakeRemoteSource(manifestFailure = IOException("offline")), installer(seed)).checkForUpdate()
         )
-        val candidate = catalogWithVersion(2)
+        val candidateVersion = seedCatalogVersion() + 1
+        val candidate = catalogWithVersion(candidateVersion)
         assertEquals(
             VehicleCatalogUpdateResult.CatalogDownloadFailed,
             VehicleCatalogUpdater(
-                FakeRemoteSource(manifest = manifestFor(candidate, 2), catalogFailure = IOException("timeout")),
+                FakeRemoteSource(manifest = manifestFor(candidate, candidateVersion), catalogFailure = IOException("timeout")),
                 installer(seed)
             ).checkForUpdate()
         )
@@ -108,12 +120,13 @@ class VehicleCatalogUpdaterTest {
     @Test
     fun corruptInstalledCatalog_usesSeedAsTheUpdateBaseline() = runBlocking {
         val seed = bundledSeedBytes()
-        val candidate = catalogWithVersion(2)
+        val candidateVersion = seedCatalogVersion() + 1
+        val candidate = catalogWithVersion(candidateVersion)
         val storage = FakeInstallStorage(installed = "not a catalog".toByteArray(), seed = seed)
-        val remote = FakeRemoteSource(manifest = manifestFor(candidate, 2), catalog = candidate)
+        val remote = FakeRemoteSource(manifest = manifestFor(candidate, candidateVersion), catalog = candidate)
 
         assertEquals(
-            VehicleCatalogUpdateResult.Updated(2),
+            VehicleCatalogUpdateResult.Updated(candidateVersion),
             VehicleCatalogUpdater(remote, VehicleCatalogInstaller(storage)).checkForUpdate()
         )
         assertArrayEquals(candidate, storage.installed)
@@ -122,8 +135,9 @@ class VehicleCatalogUpdaterTest {
     @Test
     fun concurrentChecks_shareOneInstallationAndTheSecondSeesTheInstalledVersion() = runBlocking {
         val seed = bundledSeedBytes()
-        val candidate = catalogWithVersion(2)
-        val remote = FakeRemoteSource(manifest = manifestFor(candidate, 2), catalog = candidate, catalogDelayMillis = 100)
+        val candidateVersion = seedCatalogVersion() + 1
+        val candidate = catalogWithVersion(candidateVersion)
+        val remote = FakeRemoteSource(manifest = manifestFor(candidate, candidateVersion), catalog = candidate, catalogDelayMillis = 100)
         val updater = VehicleCatalogUpdater(remote, installer(seed))
 
         val results = listOf(
@@ -139,9 +153,14 @@ class VehicleCatalogUpdaterTest {
     private fun installer(seed: ByteArray): VehicleCatalogInstaller =
         VehicleCatalogInstaller(FakeInstallStorage(seed = seed))
 
-    private fun catalogWithVersion(version: Int): ByteArray = bundledSeed()
-        .replaceFirst("\"catalogVersion\":1", "\"catalogVersion\":$version")
-        .toByteArray()
+    private fun catalogWithVersion(version: Int): ByteArray {
+        val root = Json.parseToJsonElement(bundledSeed()).jsonObject
+        return Json.encodeToString(
+            JsonObject(root + ("catalogVersion" to JsonPrimitive(version)))
+        ).toByteArray()
+    }
+
+    private fun seedCatalogVersion(): Int = parseRuntimeVehicleCatalog(bundledSeed()).catalogVersion
 
     private fun manifestFor(
         bytes: ByteArray,

@@ -1,5 +1,12 @@
 package com.bgr3108.kilonom.data
 
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -14,11 +21,12 @@ class VehicleCatalogInstallerTest {
     @Test
     fun manifestParser_acceptsTheMinimalRuntimeContract() {
         val bytes = bundledSeed().toByteArray()
+        val baseVersion = seedCatalogVersion()
 
-        val manifest = parseVehicleCatalogManifest(manifestFor(bytes, 1).uppercaseSha())
+        val manifest = parseVehicleCatalogManifest(manifestFor(bytes, baseVersion).uppercaseSha())
 
         assertEquals(1, manifest.schemaVersion)
-        assertEquals(1, manifest.catalogVersion)
+        assertEquals(baseVersion, manifest.catalogVersion)
         assertEquals(catalogSha256(bytes), manifest.sha256)
         assertEquals(INSTALLED_RUNTIME_CATALOG_FILE_NAME, manifest.file)
     }
@@ -38,22 +46,24 @@ class VehicleCatalogInstallerTest {
 
     @Test
     fun validNewerCandidate_installsAfterEveryValidation() {
+        val candidateVersion = seedCatalogVersion() + 1
         val storage = FakeInstallStorage(seed = bundledSeedBytes())
-        val candidate = catalogWithVersion(2, "Installed BMW")
+        val candidate = catalogWithVersion(candidateVersion, "Installed BMW")
 
-        val result = VehicleCatalogInstaller(storage).install(manifestFor(candidate, 2), candidate)
+        val result = VehicleCatalogInstaller(storage).install(manifestFor(candidate, candidateVersion), candidate)
 
-        assertEquals(VehicleCatalogInstallResult.Installed(2), result)
+        assertEquals(VehicleCatalogInstallResult.Installed(candidateVersion), result)
         assertArrayEquals(candidate, storage.installed)
         assertNull(storage.temporary)
     }
 
     @Test
     fun checksumMismatch_isRejectedBeforeWriting() {
+        val candidateVersion = seedCatalogVersion() + 1
         val storage = FakeInstallStorage(seed = bundledSeedBytes())
-        val candidate = catalogWithVersion(2, "Installed BMW")
+        val candidate = catalogWithVersion(candidateVersion, "Installed BMW")
 
-        val result = VehicleCatalogInstaller(storage).install(manifestFor(candidate, 2, sha256 = "0".repeat(64)), candidate)
+        val result = VehicleCatalogInstaller(storage).install(manifestFor(candidate, candidateVersion, sha256 = "0".repeat(64)), candidate)
 
         assertEquals(VehicleCatalogInstallResult.ChecksumMismatch, result)
         assertNull(storage.installed)
@@ -62,29 +72,31 @@ class VehicleCatalogInstallerTest {
 
     @Test
     fun invalidOrIncompatibleRuntime_isRejectedBeforeWriting() {
+        val candidateVersion = seedCatalogVersion() + 1
         val storage = FakeInstallStorage(seed = bundledSeedBytes())
         val malformed = "{ not catalog".toByteArray()
-        val incompatible = catalogWithVersion(2, "Installed BMW").toString(Charsets.UTF_8)
+        val incompatible = catalogWithVersion(candidateVersion, "Installed BMW").toString(Charsets.UTF_8)
             .replaceFirst("\"schemaVersion\":1", "\"schemaVersion\":2")
             .toByteArray()
 
         assertEquals(
             VehicleCatalogInstallResult.InvalidCatalog,
-            VehicleCatalogInstaller(storage).install(manifestFor(malformed, 2), malformed)
+            VehicleCatalogInstaller(storage).install(manifestFor(malformed, candidateVersion), malformed)
         )
         assertEquals(
             VehicleCatalogInstallResult.InvalidCatalog,
-            VehicleCatalogInstaller(storage).install(manifestFor(incompatible, 2), incompatible)
+            VehicleCatalogInstaller(storage).install(manifestFor(incompatible, candidateVersion), incompatible)
         )
         assertNull(storage.installed)
     }
 
     @Test
     fun manifestRuntimeVersionMismatch_isRejected() {
+        val candidateVersion = seedCatalogVersion() + 1
         val storage = FakeInstallStorage(seed = bundledSeedBytes())
-        val candidate = catalogWithVersion(2, "Installed BMW")
+        val candidate = catalogWithVersion(candidateVersion, "Installed BMW")
 
-        val result = VehicleCatalogInstaller(storage).install(manifestFor(candidate, 3), candidate)
+        val result = VehicleCatalogInstaller(storage).install(manifestFor(candidate, candidateVersion + 1), candidate)
 
         assertEquals(VehicleCatalogInstallResult.VersionMismatch, result)
         assertNull(storage.installed)
@@ -92,51 +104,57 @@ class VehicleCatalogInstallerTest {
 
     @Test
     fun sameAndOlderVersions_doNotReplaceTheActiveCatalog() {
-        val installed = catalogWithVersion(2, "Installed BMW")
+        val baseVersion = seedCatalogVersion()
+        val installedVersion = baseVersion + 1
+        val installed = catalogWithVersion(installedVersion, "Installed BMW")
         val storage = FakeInstallStorage(installed = installed, seed = bundledSeedBytes())
         val seed = bundledSeedBytes()
 
         assertEquals(
-            VehicleCatalogInstallResult.NoUpdate(2),
-            VehicleCatalogInstaller(storage).install(manifestFor(installed, 2), installed)
+            VehicleCatalogInstallResult.NoUpdate(installedVersion),
+            VehicleCatalogInstaller(storage).install(manifestFor(installed, installedVersion), installed)
         )
         assertEquals(
-            VehicleCatalogInstallResult.NoUpdate(2),
-            VehicleCatalogInstaller(storage).install(manifestFor(seed, 1), seed)
+            VehicleCatalogInstallResult.NoUpdate(installedVersion),
+            VehicleCatalogInstaller(storage).install(manifestFor(seed, baseVersion), seed)
         )
         assertArrayEquals(installed, storage.installed)
     }
 
     @Test
     fun validNewerCandidate_replacesThePreviousValidCatalog() {
-        val previous = catalogWithVersion(2, "Previous BMW")
-        val candidate = catalogWithVersion(3, "Installed BMW")
+        val previousVersion = seedCatalogVersion() + 1
+        val candidateVersion = previousVersion + 1
+        val previous = catalogWithVersion(previousVersion, "Previous BMW")
+        val candidate = catalogWithVersion(candidateVersion, "Installed BMW")
         val storage = FakeInstallStorage(installed = previous, seed = bundledSeedBytes())
 
-        val result = VehicleCatalogInstaller(storage).install(manifestFor(candidate, 3), candidate)
+        val result = VehicleCatalogInstaller(storage).install(manifestFor(candidate, candidateVersion), candidate)
 
-        assertEquals(VehicleCatalogInstallResult.Installed(3), result)
+        assertEquals(VehicleCatalogInstallResult.Installed(candidateVersion), result)
         assertArrayEquals(candidate, storage.installed)
     }
 
     @Test
     fun corruptPreviousInstalledCatalog_usesSeedAsVersionBaseline() {
-        val candidate = catalogWithVersion(2, "Installed BMW")
+        val candidateVersion = seedCatalogVersion() + 1
+        val candidate = catalogWithVersion(candidateVersion, "Installed BMW")
         val storage = FakeInstallStorage(installed = "not a catalog".toByteArray(), seed = bundledSeedBytes())
 
-        val result = VehicleCatalogInstaller(storage).install(manifestFor(candidate, 2), candidate)
+        val result = VehicleCatalogInstaller(storage).install(manifestFor(candidate, candidateVersion), candidate)
 
-        assertEquals(VehicleCatalogInstallResult.Installed(2), result)
+        assertEquals(VehicleCatalogInstallResult.Installed(candidateVersion), result)
         assertArrayEquals(candidate, storage.installed)
     }
 
     @Test
     fun failedCandidateInstall_keepsThePreviousCatalogByteForByte() {
-        val previous = catalogWithVersion(2, "Previous BMW")
+        val previousVersion = seedCatalogVersion() + 1
+        val previous = catalogWithVersion(previousVersion, "Previous BMW")
         val corruptCandidate = "{ broken".toByteArray()
         val storage = FakeInstallStorage(installed = previous, seed = bundledSeedBytes())
 
-        val result = VehicleCatalogInstaller(storage).install(manifestFor(corruptCandidate, 3), corruptCandidate)
+        val result = VehicleCatalogInstaller(storage).install(manifestFor(corruptCandidate, previousVersion + 1), corruptCandidate)
 
         assertEquals(VehicleCatalogInstallResult.InvalidCatalog, result)
         assertArrayEquals(previous, storage.installed)
@@ -145,13 +163,15 @@ class VehicleCatalogInstallerTest {
 
     @Test
     fun writeAndPromotionFailures_keepThePreviousCatalogAndCleanTemporaryData() {
-        val previous = catalogWithVersion(2, "Previous BMW")
-        val candidate = catalogWithVersion(3, "Installed BMW")
+        val previousVersion = seedCatalogVersion() + 1
+        val candidateVersion = previousVersion + 1
+        val previous = catalogWithVersion(previousVersion, "Previous BMW")
+        val candidate = catalogWithVersion(candidateVersion, "Installed BMW")
 
         val writeFailure = FakeInstallStorage(installed = previous, seed = bundledSeedBytes(), failWrite = true)
         assertEquals(
             VehicleCatalogInstallResult.IoError,
-            VehicleCatalogInstaller(writeFailure).install(manifestFor(candidate, 3), candidate)
+            VehicleCatalogInstaller(writeFailure).install(manifestFor(candidate, candidateVersion), candidate)
         )
         assertArrayEquals(previous, writeFailure.installed)
         assertNull(writeFailure.temporary)
@@ -159,7 +179,7 @@ class VehicleCatalogInstallerTest {
         val promotionFailure = FakeInstallStorage(installed = previous, seed = bundledSeedBytes(), failPromotion = true)
         assertEquals(
             VehicleCatalogInstallResult.IoError,
-            VehicleCatalogInstaller(promotionFailure).install(manifestFor(candidate, 3), candidate)
+            VehicleCatalogInstaller(promotionFailure).install(manifestFor(candidate, candidateVersion), candidate)
         )
         assertArrayEquals(previous, promotionFailure.installed)
         assertNull(promotionFailure.temporary)
@@ -167,11 +187,12 @@ class VehicleCatalogInstallerTest {
 
     @Test
     fun installedCatalog_isUsedByANewDataSourceInstance() {
-        val candidate = catalogWithVersion(2, "Installed BMW")
+        val candidateVersion = seedCatalogVersion() + 1
+        val candidate = catalogWithVersion(candidateVersion, "Installed BMW")
         val storage = FakeInstallStorage(seed = bundledSeedBytes())
         assertEquals(
-            VehicleCatalogInstallResult.Installed(2),
-            VehicleCatalogInstaller(storage).install(manifestFor(candidate, 2), candidate)
+            VehicleCatalogInstallResult.Installed(candidateVersion),
+            VehicleCatalogInstaller(storage).install(manifestFor(candidate, candidateVersion), candidate)
         )
         val source = VehicleDataSource(object : VehicleCatalogLocalSource {
             override fun readInstalledCatalog(): String? = storage.installed?.toString(Charsets.UTF_8)
@@ -181,10 +202,23 @@ class VehicleCatalogInstallerTest {
         assertTrue(source.loadVehicles(VehicleCategory.COCHE).any { it.brand == "Installed BMW" })
     }
 
-    private fun catalogWithVersion(version: Int, bmwDisplayName: String): ByteArray = bundledSeed()
-        .replaceFirst("\"catalogVersion\":1", "\"catalogVersion\":$version")
-        .replace("\"displayName\":\"BMW\"", "\"displayName\":\"$bmwDisplayName\"")
-        .toByteArray()
+    private fun catalogWithVersion(version: Int, bmwDisplayName: String): ByteArray {
+        val root = Json.parseToJsonElement(bundledSeed()).jsonObject
+        val vehicles = root.getValue("vehicles").jsonArray.map { element ->
+            val vehicle = element.jsonObject
+            val brand = vehicle.getValue("brand").jsonObject
+            if (brand.getValue("displayName").jsonPrimitive.content == "BMW") {
+                JsonObject(vehicle + ("brand" to JsonObject(brand + ("displayName" to JsonPrimitive(bmwDisplayName)))))
+            } else {
+                vehicle
+            }
+        }
+        return Json.encodeToString(
+            JsonObject(root + ("catalogVersion" to JsonPrimitive(version)) + ("vehicles" to JsonArray(vehicles)))
+        ).toByteArray()
+    }
+
+    private fun seedCatalogVersion(): Int = parseRuntimeVehicleCatalog(bundledSeed()).catalogVersion
 
     private fun manifestFor(
         bytes: ByteArray,

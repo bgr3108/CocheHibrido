@@ -2,6 +2,13 @@ package com.bgr3108.kilonom.data
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -34,14 +41,12 @@ class VehicleDataSourceRuntimeCatalogTest {
         try {
             relatedFiles.forEach(File::delete)
             val seed = context.assets.open(RUNTIME_CATALOG_ASSET).use { it.readBytes() }
-            val candidate = seed.toString(Charsets.UTF_8)
-                .replaceFirst("\"catalogVersion\":1", "\"catalogVersion\":2")
-                .replace("\"displayName\":\"BMW\"", "\"displayName\":\"Installed BMW\"")
-                .toByteArray()
-            val manifest = """{"schemaVersion":1,"catalogVersion":2,"generatedAt":"2026-10-11T00:00:00Z","sha256":"${catalogSha256(candidate)}","file":"catalog-runtime.json"}"""
+            val candidateVersion = parseRuntimeVehicleCatalog(seed.toString(Charsets.UTF_8)).catalogVersion + 1
+            val candidate = catalogWithVersion(seed, candidateVersion)
+            val manifest = """{"schemaVersion":1,"catalogVersion":$candidateVersion,"generatedAt":"2026-10-11T00:00:00Z","sha256":"${catalogSha256(candidate)}","file":"catalog-runtime.json"}"""
 
             assertEquals(
-                VehicleCatalogInstallResult.Installed(2),
+                VehicleCatalogInstallResult.Installed(candidateVersion),
                 VehicleCatalogInstaller(context).install(manifest, candidate)
             )
             assertTrue(
@@ -57,5 +62,21 @@ class VehicleDataSourceRuntimeCatalogTest {
                 }
             }
         }
+    }
+
+    private fun catalogWithVersion(seed: ByteArray, version: Int): ByteArray {
+        val root = Json.parseToJsonElement(seed.toString(Charsets.UTF_8)).jsonObject
+        val vehicles = root.getValue("vehicles").jsonArray.map { element ->
+            val vehicle = element.jsonObject
+            val brand = vehicle.getValue("brand").jsonObject
+            if (brand.getValue("displayName").jsonPrimitive.content == "BMW") {
+                JsonObject(vehicle + ("brand" to JsonObject(brand + ("displayName" to JsonPrimitive("Installed BMW")))))
+            } else {
+                vehicle
+            }
+        }
+        return Json.encodeToString(
+            JsonObject(root + ("catalogVersion" to JsonPrimitive(version)) + ("vehicles" to JsonArray(vehicles)))
+        ).toByteArray()
     }
 }
