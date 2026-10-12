@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.UiComposable
@@ -23,10 +24,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bgr3108.kilonom.chargers.ChargerListItem
-import com.bgr3108.kilonom.chargers.coordinatesOrNull
 import com.bgr3108.kilonom.chargers.chargersForMap
 import com.bgr3108.kilonom.stations.StationCoordinates
+import com.bgr3108.kilonom.stations.StationMapBounds
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
@@ -62,6 +65,9 @@ import kotlin.time.Duration.Companion.milliseconds
 fun ChargerMap(
     chargers: List<ChargerListItem>,
     currentLocation: StationCoordinates?,
+    initialBounds: StationMapBounds?,
+    waitForInitialCamera: Boolean,
+    onViewportChanged: (StationMapBounds) -> Unit,
     onChargerSelected: (ChargerListItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -82,6 +88,9 @@ fun ChargerMap(
         is ChargerMapPreparation.Ready -> ChargerMapContent(
                 preparation = preparation,
                 currentLocation = currentLocation,
+                initialBounds = initialBounds,
+                waitForInitialCamera = waitForInitialCamera,
+                onViewportChanged = onViewportChanged,
                 onChargerSelected = onChargerSelected,
                 modifier = modifier
             )
@@ -93,10 +102,15 @@ fun ChargerMap(
 private fun ChargerMapContent(
     preparation: ChargerMapPreparation.Ready,
     currentLocation: StationCoordinates?,
+    initialBounds: StationMapBounds?,
+    waitForInitialCamera: Boolean,
+    onViewportChanged: (StationMapBounds) -> Unit,
     onChargerSelected: (ChargerListItem) -> Unit,
     modifier: Modifier
 ) {
     val chargersById by rememberUpdatedState(preparation.chargersById)
+    val updateViewport by rememberUpdatedState(onViewportChanged)
+    var waitingForInitialCamera by remember(waitForInitialCamera) { mutableStateOf(waitForInitialCamera) }
     val selectCharger by rememberUpdatedState(onChargerSelected)
     val scope = rememberCoroutineScope()
     var activeMapState by remember { mutableStateOf<org.maplibre.compose.map.MapState?>(null) }
@@ -122,6 +136,25 @@ private fun ChargerMapContent(
         CircleLayer("charger-current-location", locationSource, color = const(Color(0xFF00695C)), radius = const(8.dp), strokeColor = const(Color.White), strokeWidth = const(3.dp))
     }
     LaunchedEffect(mapState) { activeMapState = mapState }
+    LaunchedEffect(initialBounds, waitForInitialCamera) {
+        if (waitForInitialCamera && initialBounds != null) {
+            mapState.animateCameraPosition(
+                initialBounds.toMapCameraPosition(),
+                animation = CameraAnimation.Ease(500.milliseconds)
+            )
+            waitingForInitialCamera = false
+        } else if (!waitForInitialCamera) {
+            waitingForInitialCamera = false
+        }
+    }
+    LaunchedEffect(mapState) {
+        snapshotFlow {
+            if (waitingForInitialCamera || mapState.isCameraMoving) null
+            else mapState.viewport?.visibleBounds?.toStationMapBounds()
+        }.filterNotNull()
+            .distinctUntilChanged()
+            .collect { bounds -> updateViewport(bounds) }
+    }
     val onMapClick = rememberUpdatedState<(ClickEvent) -> Unit> { event ->
         scope.launch {
             val map = activeMapState ?: return@launch
@@ -147,15 +180,10 @@ private fun ChargerMapContent(
         StyleLoadState.Ready -> StationMapLoadState.READY
         else -> StationMapLoadState.LOADING
     }
-    LaunchedEffect(preparation.chargersById, currentLocation) {
+    LaunchedEffect(currentLocation) {
         currentLocation?.takeIf(StationCoordinates::isValid)?.let {
             mapState.animateCameraPosition(
                 userLocationCamera(it),
-                animation = CameraAnimation.Ease(500.milliseconds)
-            )
-        } ?: chargerStationsCamera(preparation.chargersById.values.toList())?.let { camera ->
-            mapState.animateCameraPosition(
-                camera,
                 animation = CameraAnimation.Ease(500.milliseconds)
             )
         }
@@ -181,25 +209,6 @@ private fun ChargerMapContent(
         )
         stationMapStatusMessage(loadState)?.let { Text(it, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.align(Alignment.Center).padding(16.dp)) }
     }
-}
-
-private fun chargerStationsCamera(chargers: List<ChargerListItem>): org.maplibre.compose.camera.CameraPosition? {
-    val points = chargers.mapNotNull(ChargerListItem::coordinatesOrNull)
-    if (points.isEmpty()) return null
-    val latitude = points.map(StationCoordinates::latitude).average()
-    val longitude = points.map(StationCoordinates::longitude).average()
-    val span = maxOf(
-        points.maxOf(StationCoordinates::latitude) - points.minOf(StationCoordinates::latitude),
-        points.maxOf(StationCoordinates::longitude) - points.minOf(StationCoordinates::longitude)
-    )
-    val zoom = when {
-        span <= 0.02 -> 13.0
-        span <= 0.08 -> 11.0
-        span <= 0.30 -> 9.0
-        span <= 1.2 -> 7.0
-        else -> 5.5
-    }
-    return org.maplibre.compose.camera.CameraPosition(target = Position(longitude = longitude, latitude = latitude), zoom = zoom)
 }
 
 internal sealed interface ChargerMapPreparation {

@@ -121,6 +121,80 @@ class ChargerCacheDaoTest {
     }
 
     @Test
+    fun mapViewport_queryCombinesBoundsWithProvinceMunicipalityOperatorPowerAndConnector() = runBlocking {
+        val connectors = listOf(
+            connector("inside|1", "inside", 150.0, "IEC_62196_T2_COMBO"),
+            connector("outside|1", "outside", 150.0, "IEC_62196_T2_COMBO"),
+            connector("municipality|1", "municipality", 150.0, "IEC_62196_T2_COMBO"),
+            connector("operator|1", "operator", 150.0, "IEC_62196_T2_COMBO"),
+            connector("power|1", "power", 50.0, "IEC_62196_T2_COMBO"),
+            connector("connector|1", "connector", 150.0, "IEC_62196_T2")
+        )
+        dao.replaceCache(
+            installations = listOf(
+                installation("inside", municipality = "Madrid", province = "Madrid", latitude = 40.42, longitude = -3.70, operatorName = "Kilonom"),
+                installation("outside", municipality = "Madrid", province = "Madrid", latitude = 41.0, longitude = -3.70, operatorName = "Kilonom"),
+                installation("municipality", municipality = "Alcalá", province = "Madrid", latitude = 40.42, longitude = -3.70, operatorName = "Kilonom"),
+                installation("operator", municipality = "Madrid", province = "Madrid", latitude = 40.42, longitude = -3.70, operatorName = "Otra"),
+                installation("power", municipality = "Madrid", province = "Madrid", latitude = 40.42, longitude = -3.70, operatorName = "Kilonom"),
+                installation("connector", municipality = "Madrid", province = "Madrid", latitude = 40.42, longitude = -3.70, operatorName = "Kilonom")
+            ).withConnectorSummaries(connectors),
+            connectors = connectors,
+            metadata = ChargerCacheMetadataEntity(downloadedAtMillis = 1L, sourceUpdatedAtMillis = null, sourceUrl = "https://ripree.test")
+        )
+
+        val results = dao.observeChargersForMapViewport(
+            connectorFilterEnabled = 1,
+            connectorCodes = ChargerConnectorType.CCS_COMBO_2.sourceValues.toList(),
+            minimumPowerKw = 100.0,
+            operatorName = "Kilonom",
+            province = "Madrid",
+            municipality = "Madrid",
+            south = 40.40,
+            west = -3.75,
+            north = 40.45,
+            east = -3.65,
+            crossesAntimeridian = 0
+        ).first()
+
+        assertEquals(listOf("inside"), results.map { it.externalId })
+    }
+
+    @Test
+    fun mapViewport_antimeridianBounds_includeBothEdgesOnly() = runBlocking {
+        val connectors = listOf(
+            connector("east|1", "east", 50.0),
+            connector("west|1", "west", 50.0),
+            connector("middle|1", "middle", 50.0)
+        )
+        dao.replaceCache(
+            installations = listOf(
+                installation("east", latitude = 0.0, longitude = 179.0),
+                installation("west", latitude = 0.0, longitude = -179.0),
+                installation("middle", latitude = 0.0, longitude = 0.0)
+            ).withConnectorSummaries(connectors),
+            connectors = connectors,
+            metadata = ChargerCacheMetadataEntity(downloadedAtMillis = 1L, sourceUpdatedAtMillis = null, sourceUrl = "https://ripree.test")
+        )
+
+        val results = dao.observeChargersForMapViewport(
+            connectorFilterEnabled = 0,
+            connectorCodes = listOf("unused"),
+            minimumPowerKw = null,
+            operatorName = null,
+            province = null,
+            municipality = null,
+            south = -1.0,
+            west = 170.0,
+            north = 1.0,
+            east = -170.0,
+            crossesAntimeridian = 1
+        ).first()
+
+        assertEquals(listOf("east", "west"), results.map { it.externalId })
+    }
+
+    @Test
     fun prepackagedSeed_createsAValidPublicCacheWithNearbyResults() {
         runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -194,15 +268,22 @@ class ChargerCacheDaoTest {
         }
     }
 
-    private fun installation(id: String) = ChargerInstallationEntity(
-        externalId = id, name = id, operatorName = null, operatorCode = null, address = "", municipality = "Las Palmas",
-        province = "Las Palmas", postalCode = null, locality = null, schedule = null, scheduleType = null,
-        latitude = 28.1, longitude = -15.4, sourceUpdatedAtMillis = null
+    private fun installation(
+        id: String,
+        municipality: String = "Las Palmas",
+        province: String = "Las Palmas",
+        latitude: Double = 28.1,
+        longitude: Double = -15.4,
+        operatorName: String? = null
+    ) = ChargerInstallationEntity(
+        externalId = id, name = id, operatorName = operatorName, operatorCode = null, address = "", municipality = municipality,
+        province = province, postalCode = null, locality = null, schedule = null, scheduleType = null,
+        latitude = latitude, longitude = longitude, sourceUpdatedAtMillis = null
     )
 
-    private fun connector(id: String, installationId: String, power: Double) = ChargerConnectorEntity(
+    private fun connector(id: String, installationId: String, power: Double, type: String = "IEC_62196_T2") = ChargerConnectorEntity(
         externalId = id, installationId = installationId, pointId = null, pointCode = null,
-        connectorType = "IEC_62196_T2", chargeType = "AC", connectorFormat = "Cable",
+        connectorType = type, chargeType = "AC", connectorFormat = "Cable",
         maxPowerKw = power, voltage = null, amperage = null
     )
 }

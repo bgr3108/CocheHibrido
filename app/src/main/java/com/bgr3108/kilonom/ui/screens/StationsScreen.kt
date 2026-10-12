@@ -100,13 +100,16 @@ private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: Stations
     var isLocating by remember { mutableStateOf(false) }
     var useLocationAsSearchScope by remember { mutableStateOf(false) }
 
-    val mapStations by viewModel.stations.collectAsStateWithLifecycle()
+    val distanceStations by viewModel.stations.collectAsStateWithLifecycle()
+    val mapStations by viewModel.mapStations.collectAsStateWithLifecycle()
+    val mapInitialBounds by viewModel.stationMapInitialBounds.collectAsStateWithLifecycle()
     val locationPermissionPermanentlyDenied = StationLocationProvider.isPermissionPermanentlyDenied(
         context, state.locationPermissionRequested
     )
 
-    LaunchedEffect(mapStations) {
-        selectedStation = selectedStationAfterFiltering(selectedStation, mapStations)
+    LaunchedEffect(state.viewMode, distanceStations, mapStations) {
+        val visibleStations = if (state.viewMode == StationsViewMode.MAP) mapStations else distanceStations
+        selectedStation = selectedStationAfterFiltering(selectedStation, visibleStations)
     }
     LaunchedEffect(selectedStation?.externalId) {
         selectedStationFuelPrices = emptyList()
@@ -189,17 +192,19 @@ private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: Stations
                     }
                 }
                 state.viewMode == StationsViewMode.LIST -> {
-                    if (mapStations.isEmpty()) EmptyStationsMessage() else StationList(
-                        stations = mapStations,
+                    if (distanceStations.isEmpty()) EmptyStationsMessage() else StationList(
+                        stations = distanceStations,
                         onStationSelected = { selectedStation = it },
                         modifier = Modifier.weight(1f)
                     )
                 }
-                mapStations.isEmpty() -> EmptyStationsMessage()
                 else -> Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     StationMap(
                         stations = mapStations,
                         currentLocation = state.currentLocation.takeIf { state.searchScope is StationSearchScope.Nearby },
+                        initialBounds = mapInitialBounds,
+                        waitForInitialCamera = state.searchScope is StationSearchScope.ManualZone,
+                        onViewportChanged = viewModel::updateStationMapViewport,
                         onStationSelected = { selectedStation = it },
                         modifier = Modifier.fillMaxSize()
                     )

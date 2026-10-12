@@ -110,6 +110,38 @@ class StationCacheDaoTest {
     }
 
     @Test
+    fun mapViewport_queryCombinesBoundsWithProvinceMunicipalityAndSelectedFuel() = runBlocking {
+        dao.replaceCache(
+            stations = listOf(
+                station("inside", "Madrid", 40.42, -3.70),
+                station("outside", "Madrid", 41.0, -3.70),
+                station("municipality", "Alcalá", 40.42, -3.70, province = "MADRID"),
+                station("fuel", "Madrid", 40.42, -3.70)
+            ),
+            prices = listOf(
+                price("inside", 1.60),
+                price("outside", 1.50),
+                price("municipality", 1.40),
+                price("fuel", 1.30, code = "gasoleo_a", fuelType = StationFuelType.DIESEL)
+            ),
+            metadata = StationCacheMetadataEntity(downloadedAtMillis = 1L, sourceUpdatedAtMillis = null, sourceUrl = "https://miteco.test")
+        )
+
+        val results = dao.observeStationsForMapViewport(
+            fuelType = StationFuelType.GASOLINE_95.name,
+            province = "MADRID",
+            municipality = "Madrid",
+            south = 40.40,
+            west = -3.75,
+            north = 40.45,
+            east = -3.65,
+            crossesAntimeridian = 0
+        ).first()
+
+        assertEquals(listOf("inside"), results.map { it.externalId })
+    }
+
+    @Test
     fun detailFuelPrices_returnOnlyPreferredAvailableVisibleFuelsInPresentationOrder() = runBlocking {
         dao.replaceCache(
             stations = listOf(station("detail", "Detalle")),
@@ -139,8 +171,14 @@ class StationCacheDaoTest {
         assertFalse(prices.any { it.fuelType == StationFuelType.ADBLUE.name })
     }
 
-    private fun station(id: String, name: String, latitude: Double? = null, longitude: Double? = null) = FuelStationEntity(
-        externalId = id, name = name, address = "", municipality = name, province = if (name == "Madrid") "MADRID" else "SANTA CRUZ DE TENERIFE",
+    private fun station(
+        id: String,
+        name: String,
+        latitude: Double? = null,
+        longitude: Double? = null,
+        province: String = if (name == "Madrid") "MADRID" else "SANTA CRUZ DE TENERIFE"
+    ) = FuelStationEntity(
+        externalId = id, name = name, address = "", municipality = name, province = province,
         postalCode = null, latitude = latitude, longitude = longitude, schedule = null, margin = null,
         saleType = null, submissionType = null, sourceUpdatedAtMillis = null
     )

@@ -7,6 +7,7 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -47,6 +48,38 @@ class StationRepository(
             }
         }
 
+    /** The map never materialises a whole manual zone: Room intersects it with the current viewport. */
+    fun observeStationsForMap(
+        filter: StationFilter,
+        bounds: StationMapBounds,
+        currentLocation: StationCoordinates? = null
+    ): Flow<List<StationListItem>> =
+        dao.observeStationsForMapViewport(
+            fuelType = filter.fuelType.name,
+            province = filter.province,
+            municipality = filter.municipality,
+            south = bounds.south,
+            west = bounds.west,
+            north = bounds.north,
+            east = bounds.east,
+            crossesAntimeridian = if (bounds.crossesAntimeridian) 1 else 0
+        ).map { rows ->
+            withContext(Dispatchers.Default) {
+                val stations = rows.map { it.copy(productName = filter.fuelType.displayName) }
+                if (filter.sortOrder == StationSortOrder.DISTANCE) {
+                    withDistancesAndSort(stations, currentLocation, filter.sortOrder)
+                } else stations
+            }
+        }
+
+    /** One aggregate row positions a manual scope before the map asks Room for its viewport. */
+    fun observeStationMapBounds(filter: StationFilter): Flow<StationMapBounds?> =
+        dao.observeStationMapBounds(
+            fuelType = filter.fuelType.name,
+            province = filter.province,
+            municipality = filter.municipality
+        ).map(StationMapBoundsRow::toStationMapBoundsOrNull)
+
     /** Nearby mode queries just the largest local bounding box, then narrows it adaptively. */
     fun observeNearbyStations(
         filter: StationFilter,
@@ -59,6 +92,29 @@ class StationRepository(
             maxLatitude = bounds.maxLatitude,
             minLongitude = bounds.minLongitude,
             maxLongitude = bounds.maxLongitude
+        ).map { rows ->
+            withContext(Dispatchers.Default) {
+                nearbyStations(rows.map { it.copy(productName = filter.fuelType.displayName) }, origin)
+            }
+        }
+    }
+
+    /** Nearby maps retain their 50 km search boundary and further restrict it to the viewport. */
+    fun observeNearbyStationsForMap(
+        filter: StationFilter,
+        origin: StationCoordinates,
+        viewport: StationMapBounds
+    ): Flow<List<StationListItem>> {
+        val bounds = viewport.intersect(origin.boundingBox(NEARBY_SEARCH_RADII_KM.last())) ?: return flowOf(emptyList())
+        return dao.observeStationsForMapViewport(
+            fuelType = filter.fuelType.name,
+            province = null,
+            municipality = null,
+            south = bounds.south,
+            west = bounds.west,
+            north = bounds.north,
+            east = bounds.east,
+            crossesAntimeridian = if (bounds.crossesAntimeridian) 1 else 0
         ).map { rows ->
             withContext(Dispatchers.Default) {
                 nearbyStations(rows.map { it.copy(productName = filter.fuelType.displayName) }, origin)

@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.bgr3108.kilonom.stations.StationMapBoundsRow
 import androidx.paging.PagingSource
 import kotlinx.coroutines.flow.Flow
 
@@ -105,6 +106,63 @@ interface ChargerCacheDao {
         province: String?,
         municipality: String?
     ): Flow<List<ChargerListRow>>
+
+    /** Map-only query: filters remain identical to the list, while coordinates are limited to its viewport. */
+    @Query("""
+        SELECT externalId, name, operatorName, address, municipality, province, schedule, latitude, longitude,
+               sourceUpdatedAtMillis, maxPowerKw, connectorTypesEncoded
+        FROM charger_installations i
+        WHERE (:connectorFilterEnabled = 0 OR EXISTS (
+            SELECT 1 FROM charger_connectors c
+            WHERE c.installationId = i.externalId AND c.connectorType IN (:connectorCodes)
+        ))
+          AND (:minimumPowerKw IS NULL OR i.maxPowerKw >= :minimumPowerKw)
+          AND (:operatorName IS NULL OR i.operatorName = :operatorName)
+          AND (:province IS NULL OR i.province = :province)
+          AND (:municipality IS NULL OR i.municipality = :municipality)
+          AND i.latitude BETWEEN :south AND :north
+          AND (
+              (:crossesAntimeridian = 0 AND i.longitude BETWEEN :west AND :east)
+              OR (:crossesAntimeridian = 1 AND (i.longitude >= :west OR i.longitude <= :east))
+          )
+        ORDER BY i.name COLLATE NOCASE
+    """)
+    fun observeChargersForMapViewport(
+        connectorFilterEnabled: Int,
+        connectorCodes: List<String>,
+        minimumPowerKw: Double?,
+        operatorName: String?,
+        province: String?,
+        municipality: String?,
+        south: Double,
+        west: Double,
+        north: Double,
+        east: Double,
+        crossesAntimeridian: Int
+    ): Flow<List<ChargerListRow>>
+
+    /** A one-row aggregate frames a manual map scope without loading every installation. */
+    @Query("""
+        SELECT MIN(i.latitude) AS south, MIN(i.longitude) AS west,
+               MAX(i.latitude) AS north, MAX(i.longitude) AS east
+        FROM charger_installations i
+        WHERE (:connectorFilterEnabled = 0 OR EXISTS (
+            SELECT 1 FROM charger_connectors c
+            WHERE c.installationId = i.externalId AND c.connectorType IN (:connectorCodes)
+        ))
+          AND (:minimumPowerKw IS NULL OR i.maxPowerKw >= :minimumPowerKw)
+          AND (:operatorName IS NULL OR i.operatorName = :operatorName)
+          AND (:province IS NULL OR i.province = :province)
+          AND (:municipality IS NULL OR i.municipality = :municipality)
+    """)
+    fun observeChargerMapBounds(
+        connectorFilterEnabled: Int,
+        connectorCodes: List<String>,
+        minimumPowerKw: Double?,
+        operatorName: String?,
+        province: String?,
+        municipality: String?
+    ): Flow<StationMapBoundsRow>
 
     /**
      * Local candidates only. The common nearby path has no connector filter, so it must not

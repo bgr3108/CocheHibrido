@@ -18,6 +18,7 @@ import com.bgr3108.kilonom.stations.StationCoordinates
 import com.bgr3108.kilonom.stations.StationFilter
 import com.bgr3108.kilonom.stations.StationFuelPrice
 import com.bgr3108.kilonom.stations.StationListItem
+import com.bgr3108.kilonom.stations.StationMapBounds
 import com.bgr3108.kilonom.stations.StationPreferencesStore
 import com.bgr3108.kilonom.stations.StationRepository
 import com.bgr3108.kilonom.stations.StationSearchScope
@@ -52,6 +53,8 @@ class StationsViewModel(
     private val refreshError = MutableStateFlow<String?>(null)
     private val chargerRefreshing = MutableStateFlow(false)
     private val chargerRefreshError = MutableStateFlow<String?>(null)
+    private val stationMapViewport = MutableStateFlow<StationMapBounds?>(null)
+    private val chargerMapViewport = MutableStateFlow<StationMapBounds?>(null)
     private val locationIntroVisible = MutableStateFlow(false)
     private val locationPermissionRequested = MutableStateFlow(false)
     private var stationEntryHandled = false
@@ -83,19 +86,52 @@ class StationsViewModel(
         else flowOf(PagingData.empty())
     }.cachedIn(viewModelScope)
 
-    /** Nearby and map results are built from the same scope and current filters. */
+    /** Nearby and manual distance lists keep their existing non-paged behaviour. */
     val stations: StateFlow<List<StationListItem>> = combine(contentType, filter, currentLocation, viewMode, stationSearchScope) {
             type, activeFilter, location, mode, scope -> SearchInput(type, activeFilter, location, mode, scope)
     }.flatMapLatest { input ->
         if (!shouldLoadFuelResults(input.contentType, input.scope)) return@flatMapLatest flowOf(emptyList())
         when (val scope = input.scope) {
-            is StationSearchScope.Nearby -> repository.observeNearbyStations(input.filter, scope.origin)
-            is StationSearchScope.ManualZone -> if (input.mode == StationsViewMode.MAP || input.filter.sortOrder == StationSortOrder.DISTANCE) {
+            is StationSearchScope.Nearby -> if (input.mode == StationsViewMode.LIST) {
+                repository.observeNearbyStations(input.filter, scope.origin)
+            } else flowOf(emptyList())
+            is StationSearchScope.ManualZone -> if (input.filter.sortOrder == StationSortOrder.DISTANCE) {
                 repository.observeStations(input.filter, input.location)
             } else flowOf(emptyList())
             StationSearchScope.None -> flowOf(emptyList())
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** Map data is independent from Paging and starts only after MapLibre reports a valid viewport. */
+    val mapStations: StateFlow<List<StationListItem>> = combine(
+        combine(contentType, filter, currentLocation, viewMode, stationSearchScope) { type, activeFilter, location, mode, scope ->
+            SearchInput(type, activeFilter, location, mode, scope)
+        },
+        stationMapViewport
+    ) { input, viewport ->
+        StationMapSearchInput(input.contentType, input.filter, input.location, input.mode, input.scope, viewport)
+    }.flatMapLatest { input ->
+        if (!shouldLoadFuelMapResults(input.contentType, input.scope, input.mode, input.viewport)) {
+            return@flatMapLatest flowOf(emptyList())
+        }
+        val viewport = requireNotNull(input.viewport)
+        when (val scope = input.scope) {
+            is StationSearchScope.ManualZone -> repository.observeStationsForMap(input.filter, viewport, input.location)
+            is StationSearchScope.Nearby -> repository.observeNearbyStationsForMap(input.filter, scope.origin, viewport)
+            StationSearchScope.None -> flowOf(emptyList())
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** Manual scopes are framed from one aggregate row before MapLibre emits its first viewport. */
+    val stationMapInitialBounds: StateFlow<StationMapBounds?> = combine(
+        contentType, filter, viewMode, stationSearchScope
+    ) { type, activeFilter, mode, scope ->
+        SearchInput(type, activeFilter, null, mode, scope)
+    }.flatMapLatest { input ->
+        if (input.contentType == StationsContentType.FUEL && input.mode == StationsViewMode.MAP &&
+            input.scope is StationSearchScope.ManualZone
+        ) repository.observeStationMapBounds(input.filter) else flowOf(null)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val chargerMetadata: StateFlow<ChargerCacheMetadataEntity?> = chargerRepository.observeMetadata()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -119,13 +155,44 @@ class StationsViewModel(
     }.flatMapLatest { input ->
         if (!shouldLoadChargerResults(input.contentType, input.scope)) return@flatMapLatest flowOf(emptyList())
         when (val scope = input.scope) {
-            is StationSearchScope.Nearby -> chargerRepository.observeNearbyChargers(input.filter, scope.origin)
-            is StationSearchScope.ManualZone -> if (input.mode == StationsViewMode.MAP || input.filter.sortOrder == ChargerSortOrder.DISTANCE) {
+            is StationSearchScope.Nearby -> if (input.mode == StationsViewMode.LIST) {
+                chargerRepository.observeNearbyChargers(input.filter, scope.origin)
+            } else flowOf(emptyList())
+            is StationSearchScope.ManualZone -> if (input.filter.sortOrder == ChargerSortOrder.DISTANCE) {
                 chargerRepository.observeChargers(input.filter, input.location)
             } else flowOf(emptyList())
             StationSearchScope.None -> flowOf(emptyList())
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    val mapChargers: StateFlow<List<ChargerListItem>> = combine(
+        combine(contentType, chargerFilter, currentLocation, viewMode, chargerSearchScope) { type, activeFilter, location, mode, scope ->
+            ChargerSearchInput(type, activeFilter, location, mode, scope)
+        },
+        chargerMapViewport
+    ) { input, viewport ->
+        ChargerMapSearchInput(input.contentType, input.filter, input.location, input.mode, input.scope, viewport)
+    }.flatMapLatest { input ->
+        if (!shouldLoadChargerMapResults(input.contentType, input.scope, input.mode, input.viewport)) {
+            return@flatMapLatest flowOf(emptyList())
+        }
+        val viewport = requireNotNull(input.viewport)
+        when (val scope = input.scope) {
+            is StationSearchScope.ManualZone -> chargerRepository.observeChargersForMap(input.filter, viewport, input.location)
+            is StationSearchScope.Nearby -> chargerRepository.observeNearbyChargersForMap(input.filter, scope.origin, viewport)
+            StationSearchScope.None -> flowOf(emptyList())
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    val chargerMapInitialBounds: StateFlow<StationMapBounds?> = combine(
+        contentType, chargerFilter, viewMode, chargerSearchScope
+    ) { type, activeFilter, mode, scope ->
+        ChargerSearchInput(type, activeFilter, null, mode, scope)
+    }.flatMapLatest { input ->
+        if (input.contentType == StationsContentType.CHARGERS && input.mode == StationsViewMode.MAP &&
+            input.scope is StationSearchScope.ManualZone
+        ) chargerRepository.observeChargerMapBounds(input.filter) else flowOf(null)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val fuelCoreState = combine(filter, metadata, refreshing, refreshError, currentLocation) {
             activeFilter, cache, isRefreshing, error, location ->
@@ -178,6 +245,7 @@ class StationsViewModel(
 
     fun selectContentType(type: StationsContentType) {
         contentType.value = type
+        if (type == StationsContentType.FUEL) stationMapViewport.value = null else chargerMapViewport.value = null
         if (type == StationsContentType.CHARGERS) viewModelScope.launch {
             val cache = chargerRepository.getMetadata()
             val stale = cache == null || chargerRepository.isStale(cache)
@@ -218,7 +286,21 @@ class StationsViewModel(
     }
     fun resetChargerFilters() { chargerFilter.value = if (currentLocation.value != null) ChargerFilter(sortOrder = ChargerSortOrder.DISTANCE) else ChargerFilter() }
     fun useNearbyChargers() { currentLocation.value?.let { chargerFilter.value = chargerFilter.value.copy(province = null, municipality = null, sortOrder = ChargerSortOrder.DISTANCE) } }
-    fun setViewMode(mode: StationsViewMode) { viewMode.value = mode }
+    fun setViewMode(mode: StationsViewMode) {
+        if (mode == StationsViewMode.MAP && viewMode.value != StationsViewMode.MAP) {
+            if (contentType.value == StationsContentType.FUEL) stationMapViewport.value = null
+            else chargerMapViewport.value = null
+        }
+        viewMode.value = mode
+    }
+
+    fun updateStationMapViewport(bounds: StationMapBounds) {
+        if (bounds.isValid()) stationMapViewport.value = bounds
+    }
+
+    fun updateChargerMapViewport(bounds: StationMapBounds) {
+        if (bounds.isValid()) chargerMapViewport.value = bounds
+    }
 
     /** Position remains in this ViewModel only. Coarse is sufficient and enables nearby mode. */
     fun updateCurrentLocation(location: StationCoordinates?) {
@@ -231,8 +313,24 @@ class StationsViewModel(
 }
 
 private data class SearchInput(val contentType: StationsContentType, val filter: StationFilter, val location: StationCoordinates?, val mode: StationsViewMode, val scope: StationSearchScope)
+private data class StationMapSearchInput(
+    val contentType: StationsContentType,
+    val filter: StationFilter,
+    val location: StationCoordinates?,
+    val mode: StationsViewMode,
+    val scope: StationSearchScope,
+    val viewport: StationMapBounds?
+)
 private data class StationPagingInput(val contentType: StationsContentType, val filter: StationFilter, val scope: StationSearchScope)
 private data class ChargerSearchInput(val contentType: StationsContentType, val filter: ChargerFilter, val location: StationCoordinates?, val mode: StationsViewMode, val scope: StationSearchScope)
+private data class ChargerMapSearchInput(
+    val contentType: StationsContentType,
+    val filter: ChargerFilter,
+    val location: StationCoordinates?,
+    val mode: StationsViewMode,
+    val scope: StationSearchScope,
+    val viewport: StationMapBounds?
+)
 private data class ChargerPagingInput(val contentType: StationsContentType, val filter: ChargerFilter, val scope: StationSearchScope)
 private data class FuelCoreState(
     val filter: StationFilter, val metadata: StationCacheMetadataEntity?, val refreshing: Boolean,
@@ -252,6 +350,20 @@ internal fun shouldLoadFuelResults(contentType: StationsContentType, scope: Stat
 
 internal fun shouldLoadChargerResults(contentType: StationsContentType, scope: StationSearchScope): Boolean =
     contentType == StationsContentType.CHARGERS && scope !is StationSearchScope.None
+
+internal fun shouldLoadFuelMapResults(
+    contentType: StationsContentType,
+    scope: StationSearchScope,
+    mode: StationsViewMode,
+    viewport: StationMapBounds?
+): Boolean = shouldLoadFuelResults(contentType, scope) && mode == StationsViewMode.MAP && viewport?.isValid() == true
+
+internal fun shouldLoadChargerMapResults(
+    contentType: StationsContentType,
+    scope: StationSearchScope,
+    mode: StationsViewMode,
+    viewport: StationMapBounds?
+): Boolean = shouldLoadChargerResults(contentType, scope) && mode == StationsViewMode.MAP && viewport?.isValid() == true
 
 data class ChargerUiState(
     val filter: ChargerFilter = ChargerFilter(), val metadata: ChargerCacheMetadataEntity? = null,

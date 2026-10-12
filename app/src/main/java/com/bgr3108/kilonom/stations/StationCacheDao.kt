@@ -91,6 +91,64 @@ interface StationCacheDao {
         municipality: String?
     ): Flow<List<StationListItem>>
 
+    /** Map-only query: the selected fuel and zone remain in force inside the visible viewport. */
+    @Query("""
+        WITH preferred_price AS (
+            SELECT stationId, MIN(visibleFuelPriority) AS priority
+            FROM fuel_station_prices
+            WHERE visibleFuelType = :fuelType
+            GROUP BY stationId
+        )
+        SELECT s.externalId, s.name, s.address, s.municipality, s.province, s.latitude, s.longitude, s.schedule,
+               s.sourceUpdatedAtMillis, p.productCode, p.price, p.productName,
+               1 AS hasSelectedFuel, NULL AS distanceMeters
+        FROM preferred_price best
+        INNER JOIN fuel_station_prices p ON p.stationId = best.stationId
+            AND p.visibleFuelType = :fuelType AND p.visibleFuelPriority = best.priority
+        INNER JOIN fuel_stations s ON s.externalId = p.stationId
+        WHERE (:province IS NULL OR s.province = :province)
+          AND (:municipality IS NULL OR s.municipality = :municipality)
+          AND s.latitude BETWEEN :south AND :north
+          AND (
+              (:crossesAntimeridian = 0 AND s.longitude BETWEEN :west AND :east)
+              OR (:crossesAntimeridian = 1 AND (s.longitude >= :west OR s.longitude <= :east))
+          )
+        ORDER BY p.price ASC, s.name COLLATE NOCASE
+    """)
+    fun observeStationsForMapViewport(
+        fuelType: String,
+        province: String?,
+        municipality: String?,
+        south: Double,
+        west: Double,
+        north: Double,
+        east: Double,
+        crossesAntimeridian: Int
+    ): Flow<List<StationListItem>>
+
+    /** A one-row aggregate used only to frame a manual map scope before loading its viewport. */
+    @Query("""
+        WITH preferred_price AS (
+            SELECT stationId, MIN(visibleFuelPriority) AS priority
+            FROM fuel_station_prices
+            WHERE visibleFuelType = :fuelType
+            GROUP BY stationId
+        )
+        SELECT MIN(s.latitude) AS south, MIN(s.longitude) AS west,
+               MAX(s.latitude) AS north, MAX(s.longitude) AS east
+        FROM preferred_price best
+        INNER JOIN fuel_station_prices p ON p.stationId = best.stationId
+            AND p.visibleFuelType = :fuelType AND p.visibleFuelPriority = best.priority
+        INNER JOIN fuel_stations s ON s.externalId = p.stationId
+        WHERE (:province IS NULL OR s.province = :province)
+          AND (:municipality IS NULL OR s.municipality = :municipality)
+    """)
+    fun observeStationMapBounds(
+        fuelType: String,
+        province: String?,
+        municipality: String?
+    ): Flow<StationMapBoundsRow>
+
     /** Local candidates only. The repository chooses an adaptive radius and applies Haversine. */
     @Query("""
         WITH preferred_price AS (

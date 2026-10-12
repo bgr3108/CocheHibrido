@@ -7,10 +7,13 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import com.bgr3108.kilonom.stations.StationCoordinates
 import com.bgr3108.kilonom.stations.StationRepository
+import com.bgr3108.kilonom.stations.StationMapBounds
+import com.bgr3108.kilonom.stations.toStationMapBoundsOrNull
 import com.bgr3108.kilonom.stations.boundingBox
 import com.bgr3108.kilonom.stations.NEARBY_SEARCH_RADII_KM
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -65,6 +68,48 @@ class ChargerRepository(
         }
     }
 
+    /** The map uses the same logical filters as the list, constrained by the current viewport. */
+    fun observeChargersForMap(
+        filter: ChargerFilter,
+        bounds: StationMapBounds,
+        currentLocation: StationCoordinates?
+    ): Flow<List<ChargerListItem>> {
+        val args = filter.sqlArgs()
+        return dao.observeChargersForMapViewport(
+            connectorFilterEnabled = args.connectorFilterEnabled,
+            connectorCodes = args.connectorCodes,
+            minimumPowerKw = filter.minimumPowerKw,
+            operatorName = filter.operatorName,
+            province = filter.province,
+            municipality = filter.municipality,
+            south = bounds.south,
+            west = bounds.west,
+            north = bounds.north,
+            east = bounds.east,
+            crossesAntimeridian = if (bounds.crossesAntimeridian) 1 else 0
+        ).map { rows ->
+            withContext(Dispatchers.Default) {
+                val chargers = rows.map(ChargerListRow::toListItem)
+                if (filter.sortOrder == ChargerSortOrder.DISTANCE) {
+                    filterAndSortChargers(chargers, filter, currentLocation)
+                } else chargers
+            }
+        }
+    }
+
+    /** One aggregate row positions a manual scope before the map asks Room for its viewport. */
+    fun observeChargerMapBounds(filter: ChargerFilter): Flow<StationMapBounds?> {
+        val args = filter.sqlArgs()
+        return dao.observeChargerMapBounds(
+            connectorFilterEnabled = args.connectorFilterEnabled,
+            connectorCodes = args.connectorCodes,
+            minimumPowerKw = filter.minimumPowerKw,
+            operatorName = filter.operatorName,
+            province = filter.province,
+            municipality = filter.municipality
+        ).map { it.toStationMapBoundsOrNull() }
+    }
+
     /** Nearby mode never loads the national installation list into memory. */
     fun observeNearbyChargers(
         filter: ChargerFilter,
@@ -84,6 +129,31 @@ class ChargerRepository(
             )
         }
         return source.map { rows ->
+            withContext(Dispatchers.Default) { nearbyChargers(rows.map(ChargerListRow::toListItem), origin) }
+        }
+    }
+
+    /** Nearby maps intersect the local search radius with the visible viewport before Room runs. */
+    fun observeNearbyChargersForMap(
+        filter: ChargerFilter,
+        origin: StationCoordinates,
+        viewport: StationMapBounds
+    ): Flow<List<ChargerListItem>> {
+        val bounds = viewport.intersect(origin.boundingBox(NEARBY_SEARCH_RADII_KM.last())) ?: return flowOf(emptyList())
+        val args = filter.sqlArgs()
+        return dao.observeChargersForMapViewport(
+            connectorFilterEnabled = args.connectorFilterEnabled,
+            connectorCodes = args.connectorCodes,
+            minimumPowerKw = filter.minimumPowerKw,
+            operatorName = filter.operatorName,
+            province = null,
+            municipality = null,
+            south = bounds.south,
+            west = bounds.west,
+            north = bounds.north,
+            east = bounds.east,
+            crossesAntimeridian = if (bounds.crossesAntimeridian) 1 else 0
+        ).map { rows ->
             withContext(Dispatchers.Default) { nearbyChargers(rows.map(ChargerListRow::toListItem), origin) }
         }
     }

@@ -78,7 +78,9 @@ import kotlinx.coroutines.launch
 internal fun ChargersContent(innerPadding: PaddingValues, viewModel: StationsViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val chargerState by viewModel.chargerUiState.collectAsStateWithLifecycle()
-    val mapChargers by viewModel.chargers.collectAsStateWithLifecycle()
+    val distanceChargers by viewModel.chargers.collectAsStateWithLifecycle()
+    val mapChargers by viewModel.mapChargers.collectAsStateWithLifecycle()
+    val mapInitialBounds by viewModel.chargerMapInitialBounds.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val locationPermissionPermanentlyDenied = StationLocationProvider.isPermissionPermanentlyDenied(
         context, state.locationPermissionRequested
@@ -89,8 +91,9 @@ internal fun ChargersContent(innerPadding: PaddingValues, viewModel: StationsVie
     var selectedCharger by remember { mutableStateOf<ChargerListItem?>(null) }
     var isLocating by remember { mutableStateOf(false) }
     var useLocationAsSearchScope by remember { mutableStateOf(false) }
-    LaunchedEffect(mapChargers) {
-        selectedCharger = selectedChargerAfterFiltering(selectedCharger, mapChargers)
+    LaunchedEffect(state.viewMode, distanceChargers, mapChargers) {
+        val visibleChargers = if (state.viewMode == StationsViewMode.MAP) mapChargers else distanceChargers
+        selectedCharger = selectedChargerAfterFiltering(selectedCharger, visibleChargers)
     }
     fun obtainLocation() {
         if (isLocating) return
@@ -154,17 +157,19 @@ internal fun ChargersContent(innerPadding: PaddingValues, viewModel: StationsVie
                     }
                 }
                 state.viewMode == StationsViewMode.LIST -> {
-                    if (mapChargers.isEmpty()) EmptyChargersMessage() else ChargerList(
-                        chargers = mapChargers,
+                    if (distanceChargers.isEmpty()) EmptyChargersMessage() else ChargerList(
+                        chargers = distanceChargers,
                         onChargerSelected = { selectedCharger = it },
                         modifier = Modifier.weight(1f)
                     )
                 }
-                mapChargers.isEmpty() -> EmptyChargersMessage()
                 else -> Box(Modifier.weight(1f).fillMaxWidth()) {
                     ChargerMap(
                         mapChargers,
                         state.currentLocation.takeIf { chargerState.searchScope is StationSearchScope.Nearby },
+                        mapInitialBounds,
+                        chargerState.searchScope is StationSearchScope.ManualZone,
+                        viewModel::updateChargerMapViewport,
                         { selectedCharger = it },
                         Modifier.fillMaxSize()
                     )

@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.UiComposable
@@ -25,9 +26,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bgr3108.kilonom.stations.StationCoordinates
 import com.bgr3108.kilonom.stations.StationListItem
-import com.bgr3108.kilonom.stations.coordinatesOrNull
+import com.bgr3108.kilonom.stations.StationMapBounds
 import com.bgr3108.kilonom.stations.stationsForMap
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
@@ -54,6 +57,7 @@ import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.GeoJsonOptions
 import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.style.BaseStyle
+import org.maplibre.compose.util.VisibleBounds
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
 import kotlin.time.Duration.Companion.milliseconds
@@ -88,6 +92,9 @@ internal fun stationMapStatusMessage(state: StationMapLoadState): String? = when
 fun StationMap(
     stations: List<StationListItem>,
     currentLocation: StationCoordinates?,
+    initialBounds: StationMapBounds?,
+    waitForInitialCamera: Boolean,
+    onViewportChanged: (StationMapBounds) -> Unit,
     onStationSelected: (StationListItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -107,6 +114,9 @@ fun StationMap(
         is StationMapPreparation.Ready -> StationMapContent(
             preparation = currentPreparation,
             currentLocation = currentLocation,
+            initialBounds = initialBounds,
+            waitForInitialCamera = waitForInitialCamera,
+            onViewportChanged = onViewportChanged,
             onStationSelected = onStationSelected,
             modifier = modifier
         )
@@ -118,10 +128,15 @@ fun StationMap(
 private fun StationMapContent(
     preparation: StationMapPreparation.Ready,
     currentLocation: StationCoordinates?,
+    initialBounds: StationMapBounds?,
+    waitForInitialCamera: Boolean,
+    onViewportChanged: (StationMapBounds) -> Unit,
     onStationSelected: (StationListItem) -> Unit,
     modifier: Modifier
 ) {
     val stationsById by rememberUpdatedState(preparation.stationsById)
+    val updateViewport by rememberUpdatedState(onViewportChanged)
+    var waitingForInitialCamera by remember(waitForInitialCamera) { mutableStateOf(waitForInitialCamera) }
     val selectStation by rememberUpdatedState(onStationSelected)
     val scope = rememberCoroutineScope()
     var activeMapState by remember { mutableStateOf<org.maplibre.compose.map.MapState?>(null) }
@@ -192,6 +207,25 @@ private fun StationMapContent(
     LaunchedEffect(mapState) {
         activeMapState = mapState
     }
+    LaunchedEffect(initialBounds, waitForInitialCamera) {
+        if (waitForInitialCamera && initialBounds != null) {
+            mapState.animateCameraPosition(
+                initialBounds.toMapCameraPosition(),
+                animation = CameraAnimation.Ease(USER_LOCATION_ANIMATION_DURATION)
+            )
+            waitingForInitialCamera = false
+        } else if (!waitForInitialCamera) {
+            waitingForInitialCamera = false
+        }
+    }
+    LaunchedEffect(mapState) {
+        snapshotFlow {
+            if (waitingForInitialCamera || mapState.isCameraMoving) null
+            else mapState.viewport?.visibleBounds?.toStationMapBounds()
+        }.filterNotNull()
+            .distinctUntilChanged()
+            .collect { bounds -> updateViewport(bounds) }
+    }
     val onMapClick = rememberUpdatedState<(ClickEvent) -> Unit> { event ->
         scope.launch {
             val map = activeMapState ?: return@launch
@@ -238,15 +272,10 @@ private fun StationMapContent(
         StyleLoadState.Ready -> StationMapLoadState.READY
         else -> StationMapLoadState.LOADING
     }
-    LaunchedEffect(preparation.stationsById, currentLocation) {
+    LaunchedEffect(currentLocation) {
         currentLocation?.takeIf(StationCoordinates::isValid)?.let { location ->
             mapState.animateCameraPosition(
                 userLocationCamera(location),
-                animation = CameraAnimation.Ease(USER_LOCATION_ANIMATION_DURATION)
-            )
-        } ?: stationsCamera(preparation.stationsById.values.toList())?.let { camera ->
-            mapState.animateCameraPosition(
-                camera,
                 animation = CameraAnimation.Ease(USER_LOCATION_ANIMATION_DURATION)
             )
         }
@@ -358,16 +387,25 @@ internal fun userLocationCamera(location: StationCoordinates) =
         zoom = USER_LOCATION_ZOOM
     )
 
-/** A manual province/municipality search frames its own results instead of returning to Spain. */
-internal fun stationsCamera(stations: List<StationListItem>): org.maplibre.compose.camera.CameraPosition? {
-    val points = stations.mapNotNull(StationListItem::coordinatesOrNull)
-    if (points.isEmpty()) return null
-    val latitude = points.map(StationCoordinates::latitude).average()
-    val longitude = points.map(StationCoordinates::longitude).average()
-    val span = maxOf(
-        points.maxOf(StationCoordinates::latitude) - points.minOf(StationCoordinates::latitude),
-        points.maxOf(StationCoordinates::longitude) - points.minOf(StationCoordinates::longitude)
-    )
+/** Converts MapLibre's continuous longitudes into Room-safe geographic bounds. */
+internal fun VisibleBounds.toStationMapBounds(): StationMapBounds? {
+    if (!south.isFinite() || !north.isFinite() || !west.isFinite() || !east.isFinite()) return null
+    val bounds = toBoundingBox()
+    return StationMapBounds(
+        south = bounds.southwest.latitude,
+        west = bounds.southwest.longitude,
+        north = bounds.northeast.latitude,
+        east = bounds.northeast.longitude
+    ).takeIf(StationMapBounds::isValid)
+}
+
+/** Fits an already-filtered manual zone without first materialising every point of that zone. */
+internal fun StationMapBounds.toMapCameraPosition(): org.maplibre.compose.camera.CameraPosition {
+    val longitudeSpan = if (crossesAntimeridian) 360.0 - west + east else east - west
+    val centerLongitude = if (crossesAntimeridian) {
+        ((west + longitudeSpan / 2.0 + 180.0) % 360.0) - 180.0
+    } else (west + east) / 2.0
+    val span = maxOf(north - south, longitudeSpan)
     val zoom = when {
         span <= 0.02 -> 13.0
         span <= 0.08 -> 11.0
@@ -375,7 +413,10 @@ internal fun stationsCamera(stations: List<StationListItem>): org.maplibre.compo
         span <= 1.2 -> 7.0
         else -> 5.5
     }
-    return org.maplibre.compose.camera.CameraPosition(target = Position(longitude = longitude, latitude = latitude), zoom = zoom)
+    return org.maplibre.compose.camera.CameraPosition(
+        target = Position(longitude = centerLongitude, latitude = (south + north) / 2.0),
+        zoom = zoom
+    )
 }
 
 private fun StationCoordinates?.toLocationGeoJson(): String = when {
