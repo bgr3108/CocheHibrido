@@ -85,7 +85,12 @@ class StationRepository(
     fun observeNearbyStations(
         filter: StationFilter,
         origin: StationCoordinates
-    ): Flow<List<StationListItem>> {
+    ): Flow<List<StationListItem>> = observeNearbyStationSelection(filter, origin).map { it.items }
+
+    internal fun observeNearbyStationSelection(
+        filter: StationFilter,
+        origin: StationCoordinates
+    ): Flow<NearbySearchResult<StationListItem>> {
         val bounds = origin.boundingBox(NEARBY_SEARCH_RADII_KM.last())
         return dao.observeStationsInBounds(
             fuelType = filter.fuelType.name,
@@ -95,17 +100,19 @@ class StationRepository(
             maxLongitude = bounds.maxLongitude
         ).map { rows ->
             withContext(Dispatchers.Default) {
-                nearbyStations(rows.map { it.copy(productName = filter.fuelType.displayName) }, origin)
+                nearbyStationSelection(rows.map { it.copy(productName = filter.fuelType.displayName) }, origin)
             }
         }
     }
 
-    /** Nearby maps retain their 50 km search boundary and further restrict it to the viewport. */
+    /** The viewport can restrict the selected nearby boundary, never expand it. */
     fun observeNearbyStationsForMap(
         filter: StationFilter,
         origin: StationCoordinates,
-        viewport: StationMapBounds
+        viewport: StationMapBounds,
+        radiusKm: Double
     ): Flow<List<StationListItem>> {
+        // Keep the list's candidate box: a smaller approximate box could drop boundary points.
         val bounds = viewport.intersect(origin.boundingBox(NEARBY_SEARCH_RADII_KM.last())) ?: return flowOf(emptyList())
         return dao.observeStationsForMapViewport(
             fuelType = filter.fuelType.name,
@@ -118,7 +125,9 @@ class StationRepository(
             crossesAntimeridian = if (bounds.crossesAntimeridian) 1 else 0
         ).map { rows ->
             withContext(Dispatchers.Default) {
-                nearbyStations(rows.map { it.copy(productName = filter.fuelType.displayName) }, origin)
+                withDistancesAndSort(
+                    rows.map { it.copy(productName = filter.fuelType.displayName) }, origin, StationSortOrder.DISTANCE
+                ).filter { it.distanceMeters?.let { distance -> distance <= radiusKm * 1_000 } == true }
             }
         }
     }

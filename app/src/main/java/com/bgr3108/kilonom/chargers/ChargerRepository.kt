@@ -11,6 +11,7 @@ import com.bgr3108.kilonom.stations.StationMapBounds
 import com.bgr3108.kilonom.stations.toStationMapBoundsOrNull
 import com.bgr3108.kilonom.stations.boundingBox
 import com.bgr3108.kilonom.stations.NEARBY_SEARCH_RADII_KM
+import com.bgr3108.kilonom.stations.NearbySearchResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
@@ -115,7 +116,12 @@ class ChargerRepository(
     fun observeNearbyChargers(
         filter: ChargerFilter,
         origin: StationCoordinates
-    ): Flow<List<ChargerListItem>> {
+    ): Flow<List<ChargerListItem>> = observeNearbyChargerSelection(filter, origin).map { it.items }
+
+    internal fun observeNearbyChargerSelection(
+        filter: ChargerFilter,
+        origin: StationCoordinates
+    ): Flow<NearbySearchResult<ChargerListItem>> {
         val bounds = origin.boundingBox(NEARBY_SEARCH_RADII_KM.last())
         val source = if (requiresConnectorLookup(filter)) {
             val connector = requireNotNull(filter.connectorType)
@@ -130,7 +136,7 @@ class ChargerRepository(
             )
         }
         return source.map { rows ->
-            withContext(Dispatchers.Default) { nearbyChargers(rows.map(ChargerListRow::toListItem), origin) }
+            withContext(Dispatchers.Default) { nearbyChargerSelection(rows.map(ChargerListRow::toListItem), origin) }
         }
     }
 
@@ -138,8 +144,10 @@ class ChargerRepository(
     fun observeNearbyChargersForMap(
         filter: ChargerFilter,
         origin: StationCoordinates,
-        viewport: StationMapBounds
+        viewport: StationMapBounds,
+        radiusKm: Double
     ): Flow<List<ChargerListItem>> {
+        // Keep the list's candidate box: a smaller approximate box could drop boundary points.
         val bounds = viewport.intersect(origin.boundingBox(NEARBY_SEARCH_RADII_KM.last())) ?: return flowOf(emptyList())
         val args = filter.sqlArgs()
         return dao.observeChargersForMapViewport(
@@ -155,7 +163,10 @@ class ChargerRepository(
             east = bounds.east,
             crossesAntimeridian = if (bounds.crossesAntimeridian) 1 else 0
         ).map { rows ->
-            withContext(Dispatchers.Default) { nearbyChargers(rows.map(ChargerListRow::toListItem), origin) }
+            withContext(Dispatchers.Default) {
+                filterAndSortChargers(rows.map(ChargerListRow::toListItem), filter.copy(sortOrder = ChargerSortOrder.DISTANCE), origin)
+                    .filter { it.distanceMeters?.let { distance -> distance <= radiusKm * 1_000 } == true }
+            }
         }
     }
 

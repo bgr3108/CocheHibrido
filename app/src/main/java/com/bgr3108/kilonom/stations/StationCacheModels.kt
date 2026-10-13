@@ -198,6 +198,9 @@ internal fun StationCoordinates.boundingBox(radiusKm: Double): StationBoundingBo
 internal const val NEARBY_MINIMUM_RESULTS = 12
 internal val NEARBY_SEARCH_RADII_KM = listOf(10.0, 25.0, 50.0)
 
+/** The logical nearby boundary is selected before any map viewport is applied. */
+internal data class NearbySearchResult<T>(val radiusKm: Double, val items: List<T>)
+
 fun StationListItem.coordinatesOrNull(): StationCoordinates? =
     latitude?.let { lat -> longitude?.let { lon -> StationCoordinates(lat, lon) } }?.takeIf { it.isValid() }
 
@@ -243,17 +246,23 @@ internal fun withDistancesAndSort(
 internal fun nearbyStations(
     stations: List<StationListItem>,
     origin: StationCoordinates
-): List<StationListItem> {
+): List<StationListItem> = nearbyStationSelection(stations, origin).items
+
+internal fun nearbyStationSelection(
+    stations: List<StationListItem>,
+    origin: StationCoordinates
+): NearbySearchResult<StationListItem> {
     val withDistance = stations.mapNotNull { station ->
         station.coordinatesOrNull()?.let { point -> station.copy(distanceMeters = origin.distanceToMeters(point)) }
     }
     val selectedRadiusKm = NEARBY_SEARCH_RADII_KM.firstOrNull { radius ->
         withDistance.count { (it.distanceMeters ?: Double.MAX_VALUE) <= radius * 1_000 } >= NEARBY_MINIMUM_RESULTS
     } ?: NEARBY_SEARCH_RADII_KM.last()
-    return withDistance.asSequence()
+    val items = withDistance.asSequence()
         .filter { (it.distanceMeters ?: Double.MAX_VALUE) <= selectedRadiusKm * 1_000 }
         .sortedWith(compareBy<StationListItem> { it.distanceMeters }.thenBy { it.price }.thenBy { it.name })
         .toList()
+    return NearbySearchResult(selectedRadiusKm, items)
 }
 
 /** Great-circle distance. Suitable for the approximate distances shown in the station list. */

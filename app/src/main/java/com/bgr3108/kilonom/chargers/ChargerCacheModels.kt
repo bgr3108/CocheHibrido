@@ -9,6 +9,7 @@ import com.bgr3108.kilonom.stations.StationSearchScope
 import com.bgr3108.kilonom.stations.distanceToMeters
 import com.bgr3108.kilonom.stations.NEARBY_MINIMUM_RESULTS
 import com.bgr3108.kilonom.stations.NEARBY_SEARCH_RADII_KM
+import com.bgr3108.kilonom.stations.NearbySearchResult
 
 /** Public RIPREE installation data. This cache is separate from Kilonom's personal database. */
 @Entity(
@@ -237,10 +238,10 @@ internal fun filterAndSortChargers(
     )
     .toList()
 
-internal fun nearbyChargers(
+internal fun nearbyChargerSelection(
     chargers: List<ChargerListItem>,
     origin: StationCoordinates
-): List<ChargerListItem> {
+): NearbySearchResult<ChargerListItem> {
     val withDistance = chargers.mapNotNull { charger ->
         charger.coordinatesOrNull()?.let { point -> charger.copy(distanceMeters = origin.distanceToMeters(point)) }
     }
@@ -250,10 +251,11 @@ internal fun nearbyChargers(
     val selectedRadiusKm = NEARBY_SEARCH_RADII_KM.firstOrNull { radius ->
         (countsByRadius[radius] ?: 0) >= NEARBY_MINIMUM_RESULTS
     } ?: NEARBY_SEARCH_RADII_KM.last()
-    return withDistance.asSequence()
+    val items = withDistance.asSequence()
         .filter { (it.distanceMeters ?: Double.MAX_VALUE) <= selectedRadiusKm * 1_000 }
         .sortedWith(compareBy<ChargerListItem> { it.distanceMeters }.thenBy { it.name })
         .toList()
+    return NearbySearchResult(selectedRadiusKm, items)
 }
 
 internal fun Double.formatPower(): String =
