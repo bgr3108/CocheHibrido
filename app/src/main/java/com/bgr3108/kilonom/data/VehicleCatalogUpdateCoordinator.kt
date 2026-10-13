@@ -10,6 +10,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.flow.first
+import java.io.IOException
 
 private val Context.catalogUpdateDataStore by preferencesDataStore(
     name = "catalog_update_preferences"
@@ -52,6 +53,7 @@ internal class VehicleCatalogUpdateCoordinator(
     private val currentTimeMillis: () -> Long = System::currentTimeMillis
 ) : VehicleCatalogUpdateChecker {
     private val checkMutex = Mutex()
+    private var lastCompletedCheck: Long? = null
 
     override fun activeCatalogVersion(): Int = updateChecker.activeCatalogVersion()
 
@@ -63,11 +65,14 @@ internal class VehicleCatalogUpdateCoordinator(
     /** Performs a silent check only when the persisted 24-hour interval has elapsed. */
     suspend fun checkAutomaticallyIfDue(): VehicleCatalogAutomaticCheckResult = checkMutex.withLock {
         val now = currentTimeMillis()
+        if (lastCompletedCheck?.let { !isAutomaticCatalogCheckDue(it, now) } == true) {
+            return@withLock VehicleCatalogAutomaticCheckResult.NotDue
+        }
         val lastCheck = try {
             timestampStore.lastCatalogCheck()
         } catch (exception: CancellationException) {
             throw exception
-        } catch (_: Exception) {
+        } catch (_: IOException) {
             return@withLock VehicleCatalogAutomaticCheckResult.Failed
         }
         if (!isAutomaticCatalogCheckDue(lastCheck, now)) {
@@ -78,7 +83,7 @@ internal class VehicleCatalogUpdateCoordinator(
             VehicleCatalogAutomaticCheckResult.Completed(completeCheckAndRemember())
         } catch (exception: CancellationException) {
             throw exception
-        } catch (_: Exception) {
+        } catch (_: IOException) {
             VehicleCatalogAutomaticCheckResult.Failed
         }
     }
@@ -86,7 +91,15 @@ internal class VehicleCatalogUpdateCoordinator(
     private suspend fun completeCheckAndRemember(): VehicleCatalogUpdateResult {
         val result = updateChecker.checkForUpdate()
         currentCoroutineContext().ensureActive()
-        timestampStore.saveLastCatalogCheck(currentTimeMillis())
+        val completedAt = currentTimeMillis()
+        try {
+            timestampStore.saveLastCatalogCheck(completedAt)
+        } catch (_: IOException) {
+            // Auxiliary metadata must not replace an already completed update result.
+            // Keep the interval in memory; a later process can safely try again.
+        }
+        currentCoroutineContext().ensureActive()
+        lastCompletedCheck = completedAt
         return result
     }
 }

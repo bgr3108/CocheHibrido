@@ -6,8 +6,58 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import java.io.IOException
 
 class FuelStationsRefreshCoordinatorTest {
+    @Test
+    fun cacheClearCannotOverlapAnActiveRefresh() = runBlocking {
+        val started = CompletableDeferred<Unit>()
+        val finish = CompletableDeferred<Unit>()
+        val coordinator = coordinator(refresh = { started.complete(Unit); finish.await(); Result.success(1) })
+        val job = launch { coordinator.refreshManually() }
+        started.await()
+        var deletions = 0
+        assertFalse(coordinator.clearCache { deletions++ })
+        assertEquals(0, deletions)
+        finish.complete(Unit)
+        job.join()
+        assertTrue(coordinator.clearCache { deletions++ })
+        assertEquals(1, deletions)
+    }
+
+    @Test
+    fun failedAndCancelledCacheClearReleaseTheGuardForRetry() = runBlocking {
+        val coordinator = coordinator(refresh = { Result.success(1) })
+        try {
+            coordinator.clearCache { throw IOException() }
+            throw AssertionError("Expected IOException")
+        } catch (_: IOException) { }
+        try {
+            coordinator.clearCache { throw CancellationException() }
+            throw AssertionError("Expected cancellation")
+        } catch (_: CancellationException) { }
+        assertTrue(coordinator.clearCache { })
+    }
+
+    @Test
+    fun failedMetadataReadDoesNotDownloadAndAllowsManualRetry() = runBlocking {
+        var calls = 0
+        val coordinator = StationsRefreshCoordinator<Long>(
+            metadataProvider = { throw IOException() },
+            refresh = { calls++; Result.success(1) },
+            isStale = { true },
+            elapsedRealtime = { 0L }
+        )
+        try {
+            coordinator.refreshAutomaticallyIfNeeded()
+            throw AssertionError("Expected IOException")
+        } catch (_: IOException) { }
+        assertEquals(0, calls)
+        coordinator.refreshManually()
+        assertEquals(1, calls)
+    }
     @Test
     fun creationWithoutOpeningStations_neverStartsARefresh() {
         var calls = 0

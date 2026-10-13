@@ -40,6 +40,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -95,6 +96,15 @@ private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: Stations
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val persistenceError by viewModel.persistenceError.collectAsStateWithLifecycle()
+    val fuelPricesRetry by viewModel.fuelPricesRetry.collectAsStateWithLifecycle()
+    LaunchedEffect(persistenceError) {
+        persistenceError?.let { message ->
+            if (snackbarHostState.showSnackbar(message, actionLabel = "Reintentar") == SnackbarResult.ActionPerformed) {
+                viewModel.retryPersistenceOperation()
+            } else viewModel.clearPersistenceError()
+        }
+    }
     var showFilters by remember { mutableStateOf(false) }
     var selectedStation by remember { mutableStateOf<StationListItem?>(null) }
     var selectedStationFuelPrices by remember { mutableStateOf<List<StationFuelPrice>>(emptyList()) }
@@ -112,10 +122,10 @@ private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: Stations
         val visibleStations = if (state.viewMode == StationsViewMode.MAP) mapStations else distanceStations
         selectedStation = selectedStationAfterFiltering(selectedStation, visibleStations)
     }
-    LaunchedEffect(selectedStation?.externalId) {
+    LaunchedEffect(selectedStation?.externalId, fuelPricesRetry) {
         selectedStationFuelPrices = emptyList()
         selectedStation?.externalId?.let { stationId ->
-            selectedStationFuelPrices = viewModel.getVisibleFuelPrices(stationId)
+            viewModel.getVisibleFuelPrices(stationId)?.let { selectedStationFuelPrices = it }
         }
     }
 

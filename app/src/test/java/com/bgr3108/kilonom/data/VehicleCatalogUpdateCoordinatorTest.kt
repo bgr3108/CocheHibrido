@@ -12,8 +12,75 @@ import org.junit.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import java.io.IOException
+import kotlinx.coroutines.CancellationException
 
 class VehicleCatalogUpdateCoordinatorTest {
+
+    @Test
+    fun completedUpdateSurvivesTimestampWriteFailureAndIsThrottledInMemory() = runBlocking {
+        val checker = FakeChecker(VehicleCatalogUpdateResult.Updated(2))
+        val timestamps = FakeTimestampStore(NOW - AUTOMATIC_CATALOG_CHECK_INTERVAL_MILLIS)
+        timestamps.writeError = IOException("disk unavailable")
+        val coordinator = coordinator(checker, timestamps)
+        assertEquals(VehicleCatalogUpdateResult.Updated(2), coordinator.checkForUpdate())
+        assertEquals(NOW - AUTOMATIC_CATALOG_CHECK_INTERVAL_MILLIS, timestamps.lastCheck)
+        assertEquals(VehicleCatalogAutomaticCheckResult.NotDue, coordinator.checkAutomaticallyIfDue())
+        assertEquals(1, checker.checkCalls.get())
+        timestamps.writeError = null
+        assertEquals(VehicleCatalogUpdateResult.Updated(2), coordinator.checkForUpdate())
+        assertEquals(NOW, timestamps.lastCheck)
+        assertEquals(2, checker.checkCalls.get())
+    }
+
+    @Test
+    fun automaticReadFailureDoesNotCheckOrOverwriteMetadataAndManualStillWorks() = runBlocking {
+        val checker = FakeChecker()
+        val timestamps = FakeTimestampStore(NOW)
+        timestamps.readError = IOException("read unavailable")
+        val coordinator = coordinator(checker, timestamps)
+        assertEquals(VehicleCatalogAutomaticCheckResult.Failed, coordinator.checkAutomaticallyIfDue())
+        assertEquals(0, checker.checkCalls.get())
+        assertEquals(NOW, timestamps.lastCheck)
+        assertEquals(VehicleCatalogUpdateResult.UpToDate(1), coordinator.checkForUpdate())
+        assertEquals(1, checker.checkCalls.get())
+    }
+
+    @Test
+    fun automaticCompletedResultSurvivesAuxiliaryWriteFailure() = runBlocking {
+        val checker = FakeChecker()
+        val timestamps = FakeTimestampStore()
+        timestamps.writeError = IOException()
+        val coordinator = coordinator(checker, timestamps)
+        assertEquals(VehicleCatalogAutomaticCheckResult.Completed(VehicleCatalogUpdateResult.UpToDate(1)), coordinator.checkAutomaticallyIfDue())
+        assertEquals(VehicleCatalogAutomaticCheckResult.NotDue, coordinator.checkAutomaticallyIfDue())
+        assertEquals(null, timestamps.lastCheck)
+        assertEquals(1, checker.checkCalls.get())
+    }
+
+    @Test
+    fun cancellationWhileSavingTimestampPropagatesAndDoesNotRecordCompletion() = runBlocking {
+        val checker = FakeChecker()
+        val timestamps = FakeTimestampStore()
+        timestamps.writeError = CancellationException()
+        val coordinator = coordinator(checker, timestamps)
+        try {
+            coordinator.checkForUpdate()
+            throw AssertionError("Expected cancellation")
+        } catch (_: CancellationException) { }
+        assertEquals(null, timestamps.lastCheck)
+        timestamps.writeError = null
+        assertTrue(coordinator.checkAutomaticallyIfDue() is VehicleCatalogAutomaticCheckResult.Completed)
+        assertEquals(2, checker.checkCalls.get())
+    }
+
+    @Test(expected = IllegalStateException::class)
+    fun programmingErrorsInTimestampStoreAreNotSwallowed() = runBlocking {
+        val timestamps = FakeTimestampStore()
+        timestamps.readError = IllegalStateException("programming error")
+        coordinator(FakeChecker(), timestamps).checkAutomaticallyIfDue()
+        Unit
+    }
 
     @Test
     fun noTimestamp_runsTheFirstAutomaticCheck() = runBlocking {
@@ -184,9 +251,15 @@ class VehicleCatalogUpdateCoordinatorTest {
     private class FakeTimestampStore(
         var lastCheck: Long? = null
     ) : VehicleCatalogUpdateTimestampStore {
-        override suspend fun lastCatalogCheck(): Long? = lastCheck
+        var readError: Exception? = null
+        var writeError: Exception? = null
+        override suspend fun lastCatalogCheck(): Long? {
+            readError?.let { throw it }
+            return lastCheck
+        }
 
         override suspend fun saveLastCatalogCheck(epochMillis: Long) {
+            writeError?.let { throw it }
             lastCheck = epochMillis
         }
     }

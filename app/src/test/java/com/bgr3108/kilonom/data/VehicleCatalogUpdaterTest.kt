@@ -17,6 +17,26 @@ import java.io.IOException
 class VehicleCatalogUpdaterTest {
 
     @Test
+    fun installedCatalogIsNotRevertedOrReportedAsFailedWhenTimestampCannotBeSaved() = runBlocking {
+        val seed = bundledSeedBytes()
+        val version = seedCatalogVersion() + 1
+        val candidate = catalogWithVersion(version)
+        val storage = FakeInstallStorage(seed = seed)
+        val remote = FakeRemoteSource(manifest = manifestFor(candidate, version), catalog = candidate)
+        val timestamps = object : VehicleCatalogUpdateTimestampStore {
+            override suspend fun lastCatalogCheck(): Long? = null
+            override suspend fun saveLastCatalogCheck(epochMillis: Long) { throw IOException("write failed") }
+        }
+        val coordinator = VehicleCatalogUpdateCoordinator(VehicleCatalogUpdater(remote, VehicleCatalogInstaller(storage)), timestamps)
+        assertEquals(VehicleCatalogUpdateResult.Updated(version), coordinator.checkForUpdate())
+        assertArrayEquals(candidate, storage.installed)
+        assertEquals(version, coordinator.activeCatalogVersion())
+        assertEquals(VehicleCatalogAutomaticCheckResult.NotDue, coordinator.checkAutomaticallyIfDue())
+        assertEquals(1, remote.manifestDownloads)
+        assertEquals(1, remote.catalogDownloads)
+    }
+
+    @Test
     fun sameRemoteVersion_isUpToDateAndNeverDownloadsTheCatalog() = runBlocking {
         val seed = bundledSeedBytes()
         val baseVersion = seedCatalogVersion()

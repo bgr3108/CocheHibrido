@@ -37,6 +37,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -88,6 +89,14 @@ internal fun ChargersContent(innerPadding: PaddingValues, viewModel: StationsVie
     )
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val persistenceError by viewModel.persistenceError.collectAsStateWithLifecycle()
+    LaunchedEffect(persistenceError) {
+        persistenceError?.let { message ->
+            if (snackbarHostState.showSnackbar(message, actionLabel = "Reintentar") == SnackbarResult.ActionPerformed) {
+                viewModel.retryPersistenceOperation()
+            } else viewModel.clearPersistenceError()
+        }
+    }
     var showFilters by remember { mutableStateOf(false) }
     var selectedCharger by remember { mutableStateOf<ChargerListItem?>(null) }
     var isLocating by remember { mutableStateOf(false) }

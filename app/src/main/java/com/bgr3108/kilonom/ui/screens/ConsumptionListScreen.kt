@@ -59,6 +59,8 @@ fun ConsumptionListScreen(
     val filteredEntries by viewModel.filteredEntries.collectAsStateWithLifecycle()
     val filterState by viewModel.filterState.collectAsStateWithLifecycle()
     val vehicle by homeViewModel.vehicle.collectAsStateWithLifecycle()
+    val isDeleting by viewModel.isDeleting.collectAsStateWithLifecycle()
+    val deleteError by viewModel.deleteError.collectAsStateWithLifecycle()
     val isDark = isSystemInDarkTheme()
     val entryToDelete = remember { mutableStateOf<FuelEntry?>(null) }
     var isDateMenuExpanded by remember { mutableStateOf(false) }
@@ -268,7 +270,7 @@ fun ConsumptionListScreen(
                         entry = entry,
                         isDark = isDark,
                         onEdit = { navController.navigate("edit_refuel/${entry.id}") },
-                        onDelete = { entryToDelete.value = entry }
+                        onDelete = { viewModel.clearDeleteError(); entryToDelete.value = entry }
                     )
             }
         }
@@ -293,22 +295,21 @@ fun ConsumptionListScreen(
     // 🔥 CONFIRMACIÓN BORRAR
     entryToDelete.value?.let { entry ->
         AlertDialog(
-            onDismissRequest = { entryToDelete.value = null },
+            onDismissRequest = { if (!isDeleting) entryToDelete.value = null },
             confirmButton = {
-                TextButton(onClick = {
-                    viewModel.deleteEntry(entry)
-                    entryToDelete.value = null
+                TextButton(enabled = !isDeleting, onClick = {
+                    viewModel.deleteEntry(entry) { entryToDelete.value = null }
                 }) {
-                    Text("Eliminar")
+                    Text(if (isDeleting) "Eliminando…" else "Eliminar")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { entryToDelete.value = null }) {
+                TextButton(enabled = !isDeleting, onClick = { entryToDelete.value = null }) {
                     Text("Cancelar")
                 }
             },
             title = { Text("Eliminar consumo") },
-            text = { Text("¿Seguro que quieres eliminar este consumo?") }
+            text = { Text(deleteError ?: "¿Seguro que quieres eliminar este consumo?") }
         )
     }
     }

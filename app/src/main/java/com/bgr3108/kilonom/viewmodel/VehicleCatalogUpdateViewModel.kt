@@ -2,6 +2,7 @@ package com.bgr3108.kilonom.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.database.sqlite.SQLiteException
 import com.bgr3108.kilonom.data.VehicleCatalogUpdateChecker
 import com.bgr3108.kilonom.data.VehicleCatalogUpdateResult
 import kotlinx.coroutines.Dispatchers
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.IOException
 
 internal data class VehicleCatalogUpdateUiState(
     val activeCatalogVersion: Int? = null,
@@ -44,24 +46,52 @@ internal class VehicleCatalogUpdateViewModel(
         if (!canStartCatalogUpdate(_uiState.value)) return
         _uiState.value = catalogUpdateCheckingUiState(_uiState.value.activeCatalogVersion)
         viewModelScope.launch {
-            val result = updateChecker.checkForUpdate()
-            val version = when (result) {
-                is VehicleCatalogUpdateResult.Updated -> activeCatalogVersionOrNull()
-                is VehicleCatalogUpdateResult.UpToDate -> result.activeCatalogVersion
-                else -> _uiState.value.activeCatalogVersion
+            try {
+                val result = updateChecker.checkForUpdate()
+                val version = when (result) {
+                    is VehicleCatalogUpdateResult.Updated -> activeCatalogVersionOrNull() ?: result.catalogVersion
+                    is VehicleCatalogUpdateResult.UpToDate -> result.activeCatalogVersion
+                    else -> _uiState.value.activeCatalogVersion
+                }
+                _uiState.value = catalogUpdateUiStateForResult(version, result)
+            } catch (_: IOException) {
+                showPersistenceError()
+            } catch (_: SQLiteException) {
+                showPersistenceError()
+            } finally {
+                if (_uiState.value.status == VehicleCatalogUpdateStatus.Checking) {
+                    _uiState.update { it.copy(status = VehicleCatalogUpdateStatus.Idle) }
+                }
             }
-            _uiState.value = catalogUpdateUiStateForResult(version, result)
         }
+    }
+
+    private fun showPersistenceError() {
+        _uiState.update { it.copy(status = VehicleCatalogUpdateStatus.Error(VehicleCatalogUpdateErrorKind.CATALOG)) }
     }
 
     private fun refreshActiveCatalogVersion() {
         viewModelScope.launch {
-            _uiState.update { it.copy(activeCatalogVersion = activeCatalogVersionOrNull()) }
+            val version = activeCatalogVersionOrNull()
+            _uiState.update {
+                if (it.status != VehicleCatalogUpdateStatus.Idle) it
+                else it.copy(
+                    activeCatalogVersion = version,
+                    status = if (version == null) VehicleCatalogUpdateStatus.Error(VehicleCatalogUpdateErrorKind.CATALOG)
+                        else it.status
+                )
+            }
         }
     }
 
     private suspend fun activeCatalogVersionOrNull(): Int? = withContext(Dispatchers.IO) {
-        runCatching { updateChecker.activeCatalogVersion() }.getOrNull()
+        try {
+            updateChecker.activeCatalogVersion()
+        } catch (_: IOException) {
+            null
+        } catch (_: SQLiteException) {
+            null
+        }
     }
 }
 

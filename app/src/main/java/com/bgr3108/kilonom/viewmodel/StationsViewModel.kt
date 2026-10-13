@@ -2,6 +2,7 @@ package com.bgr3108.kilonom.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.database.sqlite.SQLiteException
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.bgr3108.kilonom.chargers.ChargerCacheMetadataEntity
@@ -36,6 +37,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.IOException
 import org.json.JSONException
 
@@ -62,6 +66,12 @@ class StationsViewModel(
     private val locationIntroVisible = MutableStateFlow(false)
     private val locationPermissionRequested = MutableStateFlow(false)
     private var stationEntryHandled = false
+    private val preferenceMutex = Mutex()
+    private val _persistenceError = MutableStateFlow<String?>(null)
+    val persistenceError: StateFlow<String?> = _persistenceError
+    private var persistenceRetry: (() -> Unit)? = null
+    private val _fuelPricesRetry = MutableStateFlow(0L)
+    val fuelPricesRetry: StateFlow<Long> = _fuelPricesRetry
     private val fuelStationsRefreshCoordinator = StationsRefreshCoordinator(
         metadataProvider = repository::getMetadata,
         refresh = ::refreshFuelStationsInternal,
@@ -236,33 +246,63 @@ class StationsViewModel(
         if (stationEntryHandled) return
         stationEntryHandled = true
         viewModelScope.launch {
-            locationIntroVisible.value = !stationPreferences.hasSeenLocationIntro()
-            locationPermissionRequested.value = stationPreferences.hasRequestedLocationPermission()
-            fuelStationsRefreshCoordinator.refreshIfNeededOnStationsOpened()
+            var preferencesLoaded = false
+            try {
+                preferencesLoaded = runPersistenceAction(::onStationsOpened) {
+                    preferenceMutex.withLock {
+                        val seenIntro = stationPreferences.hasSeenLocationIntro()
+                        val requestedPermission = stationPreferences.hasRequestedLocationPermission()
+                        locationIntroVisible.value = !seenIntro
+                        locationPermissionRequested.value = requestedPermission
+                    }
+                }
+                if (preferencesLoaded) runPersistenceAction(::refresh) {
+                    fuelStationsRefreshCoordinator.refreshIfNeededOnStationsOpened()
+                }
+            } finally {
+                if (!preferencesLoaded) stationEntryHandled = false
+            }
         }
     }
     fun dismissLocationIntro() {
         locationIntroVisible.value = false
-        viewModelScope.launch { stationPreferences.markLocationIntroSeen() }
+        viewModelScope.launch {
+            runPersistenceAction(::dismissLocationIntro) {
+                preferenceMutex.withLock { stationPreferences.markLocationIntroSeen() }
+            }
+        }
     }
     fun markLocationPermissionRequested() {
         locationPermissionRequested.value = true
-        viewModelScope.launch { stationPreferences.markLocationPermissionRequested() }
+        viewModelScope.launch {
+            runPersistenceAction(::markLocationPermissionRequested) {
+                preferenceMutex.withLock { stationPreferences.markLocationPermissionRequested() }
+            }
+        }
     }
 
     fun refresh() {
-        viewModelScope.launch { fuelStationsRefreshCoordinator.refreshManually() }
+        viewModelScope.launch { runPersistenceAction(::refresh) { fuelStationsRefreshCoordinator.refreshManually() } }
     }
-    fun clearCache() = viewModelScope.launch { repository.clearCache(); refreshError.value = null }
+    fun clearCache(): Job = viewModelScope.launch {
+        runPersistenceAction({ clearCache() }, "No se pudo limpiar la caché. Los datos guardados se conservan. Inténtalo de nuevo.") {
+            if (fuelStationsRefreshCoordinator.clearCache(repository::clearCache)) {
+                refreshError.value = null
+                refreshSucceeded.value = false
+            }
+        }
+    }
 
     fun selectContentType(type: StationsContentType) {
         contentType.value = type
         if (type == StationsContentType.FUEL) stationMapViewport.value = null else chargerMapViewport.value = null
         if (type == StationsContentType.CHARGERS) viewModelScope.launch {
-            chargerRefreshCoordinator.refreshAutomaticallyIfNeeded()
+            runPersistenceAction({ refreshChargers() }) { chargerRefreshCoordinator.refreshAutomaticallyIfNeeded() }
         }
     }
-    fun refreshChargers() = viewModelScope.launch { chargerRefreshCoordinator.refreshManually() }
+    fun refreshChargers(): Job = viewModelScope.launch {
+        runPersistenceAction({ refreshChargers() }) { chargerRefreshCoordinator.refreshManually() }
+    }
     fun refreshActiveContent() { if (contentType.value == StationsContentType.CHARGERS) refreshChargers() else refresh() }
     private suspend fun refreshFuelStationsInternal() =
         runRefreshWithUiState(refreshing, refreshError, refreshSucceeded, repository::refresh)
@@ -270,10 +310,50 @@ class StationsViewModel(
     private suspend fun refreshChargersInternal() =
         runRefreshWithUiState(chargerRefreshing, chargerRefreshError, chargerRefreshSucceeded, chargerRepository::refresh)
 
-    fun clearChargerCache() = viewModelScope.launch { chargerRepository.clearCache(); chargerRefreshError.value = null }
+    fun clearChargerCache(): Job = viewModelScope.launch {
+        runPersistenceAction({ clearChargerCache() }, "No se pudo limpiar la caché. Los datos guardados se conservan. Inténtalo de nuevo.") {
+            if (chargerRefreshCoordinator.clearCache(chargerRepository::clearCache)) {
+                chargerRefreshError.value = null
+                chargerRefreshSucceeded.value = false
+            }
+        }
+    }
     fun isChargerCacheStale(metadata: ChargerCacheMetadataEntity?): Boolean = chargerRepository.isStale(metadata)
-    suspend fun getVisibleFuelPrices(stationId: String): List<StationFuelPrice> =
-        repository.getVisibleFuelPrices(stationId)
+    suspend fun getVisibleFuelPrices(stationId: String): List<StationFuelPrice>? {
+        var prices: List<StationFuelPrice>? = null
+        runPersistenceAction({ _fuelPricesRetry.value += 1L }) {
+            prices = repository.getVisibleFuelPrices(stationId)
+        }
+        return prices
+    }
+
+    fun retryPersistenceOperation() {
+        val retry = persistenceRetry ?: return
+        clearPersistenceError()
+        retry()
+    }
+
+    fun clearPersistenceError() {
+        _persistenceError.value = null
+        persistenceRetry = null
+    }
+
+    private suspend fun runPersistenceAction(
+        retry: () -> Unit,
+        message: String = "No se pudo acceder a los datos guardados. Inténtalo de nuevo.",
+        action: suspend () -> Unit
+    ): Boolean = try {
+        action()
+        true
+    } catch (_: IOException) {
+        persistenceRetry = retry
+        _persistenceError.value = message
+        false
+    } catch (_: SQLiteException) {
+        persistenceRetry = retry
+        _persistenceError.value = message
+        false
+    }
 
     fun applyFilter(newFilter: StationFilter) {
         val wasNearby = filter.value.province == null && currentLocation.value != null

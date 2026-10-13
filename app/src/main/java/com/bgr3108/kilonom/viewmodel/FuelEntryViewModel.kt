@@ -2,6 +2,8 @@ package com.bgr3108.kilonom.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.database.sqlite.SQLiteException
+import java.io.IOException
 import com.bgr3108.kilonom.data.FuelEntry
 import com.bgr3108.kilonom.data.FuelRepository
 import com.bgr3108.kilonom.data.FuelType
@@ -90,6 +92,10 @@ class FuelEntryViewModel(
     private val saveMutex = Mutex()
     private val _isSaving = MutableStateFlow(false)
     val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
+    private val _isDeleting = MutableStateFlow(false)
+    val isDeleting: StateFlow<Boolean> = _isDeleting.asStateFlow()
+    private val _deleteError = MutableStateFlow<String?>(null)
+    val deleteError: StateFlow<String?> = _deleteError.asStateFlow()
 
     val filteredEntries: StateFlow<List<FuelEntry>> =
         combine(entries, filterState, _dateFilterRefresh) { entries, filters, _ ->
@@ -149,10 +155,33 @@ class FuelEntryViewModel(
     }
 
     // 🔥 BORRAR
-    fun deleteEntry(entry: FuelEntry) {
+    fun clearDeleteError() { _deleteError.value = null }
+
+    fun deleteEntry(entry: FuelEntry, onDeleted: () -> Unit) {
+        if (!saveMutex.tryLock()) return
+        _isDeleting.value = true
+        _deleteError.value = null
         viewModelScope.launch {
-            val activeVehicleId = vehicleRepository.activeVehicleId.value ?: return@launch
-            repository.deleteEntryForVehicle(entry, activeVehicleId)
+            try {
+                val activeVehicleId = vehicleRepository.activeVehicleId.value
+                if (activeVehicleId == null || activeVehicleId != entry.vehicleId) {
+                    _deleteError.value = "El consumo ya no pertenece al vehículo seleccionado."
+                    return@launch
+                }
+                repository.deleteEntryForVehicle(entry, activeVehicleId)
+                onDeleted()
+            } catch (_: IOException) {
+                showDeleteError()
+            } catch (_: SQLiteException) {
+                showDeleteError()
+            } finally {
+                _isDeleting.value = false
+                saveMutex.unlock()
+            }
         }
+    }
+
+    private fun showDeleteError() {
+        _deleteError.value = "No se pudo eliminar el consumo. Inténtalo de nuevo."
     }
 }

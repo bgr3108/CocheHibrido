@@ -25,6 +25,17 @@ internal class StationsRefreshCoordinator<T>(
 
     suspend fun refreshManually() = refreshIfAllowed(manual = true)
 
+    /** Cache deletion shares the refresh lock; it never runs during an active replacement. */
+    suspend fun clearCache(clear: suspend () -> Unit): Boolean {
+        if (!mutex.tryLock()) return false
+        try {
+            clear()
+            return true
+        } finally {
+            mutex.unlock()
+        }
+    }
+
     private suspend fun refreshIfAllowed(manual: Boolean) {
         val generation = refreshGeneration
         if (!mutex.tryLock()) {
