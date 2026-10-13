@@ -63,7 +63,7 @@ class FuelEntryViewModel(
 ) : ViewModel() {
 
     private val activeContext = repository
-        .observeActiveVehicleEntries(vehicleRepository.activeVehicle)
+        .observeActiveVehicleEntries(vehicleRepository)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),

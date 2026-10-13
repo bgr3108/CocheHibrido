@@ -26,12 +26,12 @@ class ActiveVehicleEntriesTest {
         val fuelRepository = FuelRepository(entries)
 
         repository.isLoading.first { !it }
-        assertEquals(1L, fuelRepository.observeActiveVehicleEntries(repository.activeVehicle)
+        assertEquals(1L, fuelRepository.observeActiveVehicleEntries(repository)
             .first { it.vehicle.id == 1L }.vehicle.id)
         assertEquals(1_250.0, repository.currentKm(1), 0.0)
 
         repository.selectActiveVehicle(2)
-        val activeB = fuelRepository.observeActiveVehicleEntries(repository.activeVehicle)
+        val activeB = fuelRepository.observeActiveVehicleEntries(repository)
             .first { it.vehicle.id == 2L }
 
         assertEquals(emptyList<FuelEntry>(), activeB.entries)

@@ -92,7 +92,7 @@ class HomeViewModel(
     // ============================================================
 
     private val activeContext = fuelRepository
-        .observeActiveVehicleEntries(vehicleRepository.activeVehicle)
+        .observeActiveVehicleEntries(vehicleRepository)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -103,8 +103,9 @@ class HomeViewModel(
         .map { it.vehicle }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Vehicle())
 
-    val isVehicleLoading =
-        vehicleRepository.isLoading
+    val vehicleLoadState = vehicleRepository.loadState
+
+    fun retryVehicleLoad() = vehicleRepository.retryVehicleLoad()
 
     val showReleaseNotes = vehicleRepository.showReleaseNotes
 

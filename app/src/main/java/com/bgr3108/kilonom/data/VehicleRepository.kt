@@ -1,5 +1,6 @@
 package com.bgr3108.kilonom.data
 
+import android.database.sqlite.SQLiteException
 import com.bgr3108.kilonom.database.FuelEntryDao
 import com.bgr3108.kilonom.database.MaintenanceDao
 import com.bgr3108.kilonom.database.VehicleDao
@@ -16,9 +17,29 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.io.IOException
+
+sealed interface VehicleLoadState {
+    data object Loading : VehicleLoadState
+    data object Empty : VehicleLoadState
+    data class Ready(val vehicle: VehicleEntity) : VehicleLoadState
+    data class Error(val cause: Exception) : VehicleLoadState
+}
 
 internal const val RELEASE_NOTES_VERSION = "1.5.0"
 
@@ -38,7 +59,8 @@ class VehicleRepository(
     private val vehiclePreferences: VehiclePreferencesStore,
     private val vehicleDao: VehicleDao,
     private val fuelEntryDao: FuelEntryDao,
-    private val maintenanceDao: MaintenanceDao
+    private val maintenanceDao: MaintenanceDao,
+    repositoryScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 ) {
 
     data class VehicleSummary(
@@ -49,27 +71,31 @@ class VehicleRepository(
         val minimumValidRecordedKm: Double?
     )
 
-    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val _vehicle = MutableStateFlow(Vehicle())
     private val _activeVehicleId = MutableStateFlow<Long?>(null)
-    private val _isLoading = MutableStateFlow(true)
-    private val _loadError = MutableStateFlow<Throwable?>(null)
+    private val _loadState = MutableStateFlow<VehicleLoadState>(VehicleLoadState.Loading)
+    private val loadRequests = MutableStateFlow(0L)
+    private val observationFailure = MutableStateFlow<Exception?>(null)
+    private val _activeVehicle = MutableStateFlow<VehicleEntity?>(null)
+    private val _vehicleSummaries = MutableStateFlow<List<VehicleSummary>>(emptyList())
     private val _showReleaseNotes = MutableStateFlow(false)
     private val releaseNotesMutex = Mutex()
     private val vehicleMutex = Mutex()
 
-    val isLoading: StateFlow<Boolean> = _isLoading
-    val loadError: StateFlow<Throwable?> = _loadError
+    val loadState: StateFlow<VehicleLoadState> = _loadState.asStateFlow()
+    /** Compatibility views; the application shell consumes the authoritative [loadState]. */
+    val isLoading: StateFlow<Boolean> = loadState.map { it is VehicleLoadState.Loading }
+        .stateIn(repositoryScope, SharingStarted.Eagerly, true)
     val activeVehicleId: StateFlow<Long?> = _activeVehicleId
-    val activeVehicle: StateFlow<VehicleEntity?> = _activeVehicleId
-        .flatMapLatest { id -> id?.let(vehicleDao::observeVehicle) ?: flowOf(null) }
-        .stateIn(repositoryScope, SharingStarted.Eagerly, null)
+    val activeVehicle: StateFlow<VehicleEntity?> = _activeVehicle.asStateFlow()
     /** Compatibility snapshot; active data consumers use [activeVehicle] instead. */
     val vehicle: StateFlow<Vehicle> = _vehicle
     val showReleaseNotes: StateFlow<Boolean> = _showReleaseNotes
 
     /** All Room snapshots with their own derived kilometre readings and entry counts. */
-    val vehicleSummaries = vehicleDao.observeAllVehicles()
+    val vehicleSummaries: StateFlow<List<VehicleSummary>> = _vehicleSummaries.asStateFlow()
+
+    private fun observeVehicleSummaries() = vehicleDao.observeAllVehicles()
         .flatMapLatest { vehicles ->
             if (vehicles.isEmpty()) {
                 flowOf(emptyList())
@@ -97,55 +123,90 @@ class VehicleRepository(
                 }) { summaries -> summaries.toList() }
             }
         }
-        .stateIn(repositoryScope, SharingStarted.Eagerly, emptyList())
 
     init {
         repositoryScope.launch {
-            val hasExistingInstallation = hasExistingInstallation()
-            try {
-                bootstrapLegacyVehicle()
-            } catch (error: Throwable) {
-                _activeVehicleId.value = null
-                _vehicle.value = Vehicle()
-                _loadError.value = error
-            } finally {
-                _showReleaseNotes.value = runCatching {
-                    val lastSeenVersion = vehiclePreferences.lastSeenReleaseNotesVersion()
-                    if (hasExistingInstallation) {
-                        shouldShowReleaseNotes(
-                            hasExistingInstallation = true,
-                            lastSeenReleaseNotesVersion = lastSeenVersion,
-                            currentReleaseNotesVersion = RELEASE_NOTES_VERSION
-                        )
-                    } else {
-                        vehiclePreferences.markReleaseNotesAsSeen(RELEASE_NOTES_VERSION)
-                        false
+            loadRequests.collectLatest {
+                _loadState.value = VehicleLoadState.Loading
+                observationFailure.value = null
+                try {
+                    bootstrapLegacyVehicle()
+                    combine(
+                        _activeVehicleId.flatMapLatest { id -> id?.let(vehicleDao::observeVehicle) ?: flowOf(null) },
+                        observeVehicleSummaries(),
+                        observationFailure
+                    ) { active, summaries, error ->
+                        error?.let { throw it }
+                        active to summaries
+                    }.collect { (active, summaries) ->
+                        // A vehicle switch can invalidate the two Room observations separately.
+                        if (active?.id != _activeVehicleId.value) return@collect
+                        if (active != null && summaries.none { it.vehicle == active }) return@collect
+                        publishLoadedVehicles(active, summaries)
                     }
-                }.getOrDefault(false)
-                _isLoading.value = false
+                } catch (error: CancellationException) {
+                    throw error
+                } catch (error: IOException) {
+                    _loadState.value = VehicleLoadState.Error(error)
+                } catch (error: SQLiteException) {
+                    _loadState.value = VehicleLoadState.Error(error)
+                }
             }
         }
     }
 
-    /** Captured before legacy bootstrap so a clean installation is never mistaken for an update. */
-    private suspend fun hasExistingInstallation(): Boolean =
-        runCatching { vehiclePreferences.hasStoredAppState() }.getOrDefault(false) ||
-            runCatching { vehicleDao.getFirstVehicle() != null }.getOrDefault(false)
+    /** Restarts both bootstrap and Room observations after a recoverable storage failure. */
+    fun retryVehicleLoad() {
+        if (_loadState.value !is VehicleLoadState.Error) return
+        _loadState.value = VehicleLoadState.Loading
+        loadRequests.update { it + 1L }
+    }
+
+    /** Associated Room reads share the same error/retry lifecycle without emitting false empty data. */
+    internal fun <T> observeLoadedVehicle(read: (VehicleEntity?) -> Flow<T>): Flow<T> =
+        loadState.flatMapLatest { state ->
+            when (state) {
+                is VehicleLoadState.Ready -> guardedVehicleRead(state.vehicle, read)
+                VehicleLoadState.Empty -> guardedVehicleRead(null, read)
+                VehicleLoadState.Loading, is VehicleLoadState.Error -> emptyFlow()
+            }
+        }
+
+    private fun <T> guardedVehicleRead(vehicle: VehicleEntity?, read: (VehicleEntity?) -> Flow<T>): Flow<T> =
+        flow { emitAll(read(vehicle)) }.catch { error ->
+            currentCoroutineContext().ensureActive()
+            when (error) {
+                is IOException -> observationFailure.value = error
+                is SQLiteException -> observationFailure.value = error
+                else -> throw error
+            }
+        }
+
+    private fun publishLoadedVehicles(active: VehicleEntity?, summaries: List<VehicleSummary>) {
+        _activeVehicle.value = active
+        _vehicle.value = active?.toVehicle() ?: Vehicle()
+        _vehicleSummaries.value = summaries
+        _loadState.value = active?.let { VehicleLoadState.Ready(it) } ?: VehicleLoadState.Empty
+    }
 
     /**
      * Reconciles the legacy DataStore snapshot with Room. Re-running it updates the recovery
      * anchor rather than creating another vehicle, so an interrupted bootstrap stays safe.
      */
     private suspend fun bootstrapLegacyVehicle() = vehicleMutex.withLock {
-        val legacyVehicle = readBootstrapPreferenceOr(Vehicle()) {
-            vehiclePreferences.loadVehicle()
-        }
-        val configuredLegacyVehicle = legacyVehicle.takeIf { it.isConfigured() }
-        val storedActiveId = readBootstrapPreferenceOr(null) {
-            vehiclePreferences.loadActiveVehicleId()
-        }
-        val storedActiveVehicle = storedActiveId?.let { vehicleDao.getVehicle(it) }
+        // Complete every initial read before importing/enriching legacy data or writing preferences.
+        // A failed read leaves the previous published snapshot intact and blocks the application shell.
         val firstVehicle = vehicleDao.getFirstVehicle()
+        val summaries = observeVehicleSummaries().first()
+        val legacyVehicle = vehiclePreferences.loadVehicle()
+        val configuredLegacyVehicle = legacyVehicle.takeIf { it.isConfigured() }
+        val storedActiveId = vehiclePreferences.loadActiveVehicleId()
+        val storedActiveVehicle = storedActiveId?.let { vehicleDao.getVehicle(it) }
+        val existingActive = storedActiveVehicle ?: firstVehicle
+        existingActive?.let { vehicleDao.observeVehicle(it.id).first() }
+        val hasExistingInstallation = vehiclePreferences.hasStoredAppState() || firstVehicle != null
+        val lastSeenVersion = vehiclePreferences.lastSeenReleaseNotesVersion()
+        currentCoroutineContext().ensureActive()
 
         val activeVehicle = when {
             storedActiveVehicle != null -> {
@@ -175,50 +236,27 @@ class VehicleRepository(
             }
 
             configuredLegacyVehicle != null -> {
-                val id = vehicleDao.insert(
-                    configuredLegacyVehicle.toEntity(createdAt = System.currentTimeMillis())
-                )
-                vehicleDao.getVehicle(id) ?: error("No se pudo recuperar el vehículo creado")
+                val candidate = configuredLegacyVehicle.toEntity(createdAt = System.currentTimeMillis())
+                candidate.copy(id = vehicleDao.insert(candidate))
             }
 
             else -> null
         }
 
+        activeVehicle?.let { vehiclePreferences.saveActiveVehicleId(it.id) }
+        if (!hasExistingInstallation) vehiclePreferences.markReleaseNotesAsSeen(RELEASE_NOTES_VERSION)
+        _showReleaseNotes.value = shouldShowReleaseNotes(
+            hasExistingInstallation, lastSeenVersion, RELEASE_NOTES_VERSION
+        )
         _activeVehicleId.value = activeVehicle?.id
-        _vehicle.value = activeVehicle?.toVehicle() ?: Vehicle()
-        activeVehicle?.let { vehicle -> saveBootstrapActiveVehicleId(vehicle.id) }
-    }
-
-    /**
-     * DataStore is only a legacy/bootstrap snapshot. A read failure must not make valid Room
-     * vehicle snapshots disappear from the active context.
-     */
-    private suspend fun <T> readBootstrapPreferenceOr(
-        defaultValue: T,
-        read: suspend () -> T
-    ): T = try {
-        read()
-    } catch (error: Throwable) {
-        if (error is CancellationException) throw error
-
-        recordBootstrapPreferenceFailure(error)
-        defaultValue
-    }
-
-    private fun recordBootstrapPreferenceFailure(error: Throwable) {
-        if (_loadError.value == null) {
-            _loadError.value = error
+        val loadedSummaries = summaries.map { summary ->
+            if (summary.vehicle.id == activeVehicle?.id) {
+                summary.copy(vehicle = activeVehicle, currentKm = maxOf(summary.currentKm, activeVehicle.initialKm))
+            } else summary
         }
-    }
-
-    private suspend fun saveBootstrapActiveVehicleId(vehicleId: Long) {
-        try {
-            vehiclePreferences.saveActiveVehicleId(vehicleId)
-        } catch (error: Throwable) {
-            if (error is CancellationException) throw error
-
-            recordBootstrapPreferenceFailure(error)
-        }
+        publishLoadedVehicles(activeVehicle, if (activeVehicle != null && loadedSummaries.none { it.vehicle.id == activeVehicle.id }) {
+            loadedSummaries + VehicleSummary(activeVehicle, activeVehicle.initialKm, 0, 0, null)
+        } else loadedSummaries)
     }
 
     /** Saves the legacy snapshot as a safety net and then commits the Room vehicle as the active one. */

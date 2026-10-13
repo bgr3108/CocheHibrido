@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
@@ -59,7 +60,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.bgr3108.kilonom.data.Vehicle
+import com.bgr3108.kilonom.data.VehicleLoadState
 import com.bgr3108.kilonom.ads.AdsManager
 import com.bgr3108.kilonom.ui.components.AdBannerSlot
 import com.bgr3108.kilonom.ui.components.routeUsesAdBannerSlot
@@ -161,10 +162,7 @@ internal fun AppContent(
     adsManager: AdsManager
 ) {
     val navController = rememberNavController()
-    val isVehicleLoading by homeViewModel
-        .isVehicleLoading
-        .collectAsStateWithLifecycle()
-    val vehicle by homeViewModel.vehicle.collectAsStateWithLifecycle()
+    val vehicleLoadState by homeViewModel.vehicleLoadState.collectAsStateWithLifecycle()
     val resetState by homeViewModel.resetState.collectAsStateWithLifecycle()
     val showReleaseNotes by homeViewModel.showReleaseNotes.collectAsStateWithLifecycle()
     val adsUiState by adsManager.uiState.collectAsStateWithLifecycle()
@@ -174,11 +172,17 @@ internal fun AppContent(
         activity?.let(adsManager::requestConsent)
     }
 
-    if (isVehicleLoading) {
+    if (vehicleLoadState is VehicleLoadState.Loading) {
 
-        CircularProgressIndicator()
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
 
-    } else if (shouldShowSetup(vehicle, resetState)) {
+    } else if (vehicleLoadState is VehicleLoadState.Error) {
+
+        VehicleLoadErrorContent(onRetry = homeViewModel::retryVehicleLoad)
+
+    } else if (shouldShowSetup(vehicleLoadState, resetState)) {
 
         SetupScreen(
             homeViewModel = homeViewModel,
@@ -338,8 +342,28 @@ internal fun AppContent(
 }
 
 /** Keeps the current shell visible until a reset has completed successfully. */
-internal fun shouldShowSetup(vehicle: Vehicle, resetState: ResetState): Boolean =
-    vehicle.type == null && resetState == ResetState.IDLE
+internal fun shouldShowSetup(loadState: VehicleLoadState, resetState: ResetState): Boolean =
+    resetState == ResetState.IDLE && when (loadState) {
+        VehicleLoadState.Empty -> true
+        // A successfully read recovery anchor retains the existing legacy setup flow.
+        is VehicleLoadState.Ready -> loadState.vehicle.type == null
+        VehicleLoadState.Loading, is VehicleLoadState.Error -> false
+    }
+
+@Composable
+private fun VehicleLoadErrorContent(onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+    ) {
+        Text("No se pudieron cargar tus vehículos. Inténtalo de nuevo.")
+        Spacer(Modifier.height(12.dp))
+        Text("Tus datos guardados no se han borrado.")
+        Spacer(Modifier.height(16.dp))
+        TextButton(onClick = onRetry) { Text("Reintentar") }
+    }
+}
 
 @Composable
 private fun ResetAllDataDialog(

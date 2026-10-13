@@ -36,7 +36,7 @@ class PeriodSummaryViewModel(
 ) : ViewModel() {
 
     private val activeContext = fuelRepository
-        .observeActiveVehicleEntries(vehicleRepository.activeVehicle)
+        .observeActiveVehicleEntries(vehicleRepository)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),

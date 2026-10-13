@@ -8,9 +8,7 @@ import com.bgr3108.kilonom.domain.createMaintenanceTrackingKey
 import com.bgr3108.kilonom.domain.MaintenanceNextDue
 import com.bgr3108.kilonom.domain.MaintenanceNextDueUpdate
 import com.bgr3108.kilonom.domain.resolveNextMaintenanceDueUpdate
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
@@ -18,26 +16,25 @@ import kotlinx.coroutines.flow.map
  * Vehicle-scoped persistence boundary for maintenance. It owns structural validation and never
  * trusts a global item or record id without resolving its vehicle parent first.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class MaintenanceRepository(
     private val database: HybridCarDatabase,
     private val maintenanceDao: MaintenanceDao,
     private val vehicleRepository: VehicleRepository
 ) {
     fun observeActiveItems(): Flow<List<MaintenanceItemEntity>> =
-        vehicleRepository.activeVehicle.flatMapLatest { vehicle ->
+        vehicleRepository.observeLoadedVehicle { vehicle ->
             vehicle?.let { maintenanceDao.observeItems(it.id) } ?: flowOf(emptyList())
         }
 
     fun observeActiveRecords(): Flow<List<MaintenanceRecordWithItem>> =
-        vehicleRepository.activeVehicle.flatMapLatest { vehicle ->
+        vehicleRepository.observeLoadedVehicle { vehicle ->
             vehicle?.let { entity ->
                 maintenanceDao.observeRecordsForVehicle(entity.id).map { rows -> rows.map { it.toDomain() } }
             } ?: flowOf(emptyList())
         }
 
     fun observeRecordsForActiveItem(itemId: Long): Flow<List<MaintenanceRecordEntity>> =
-        vehicleRepository.activeVehicle.flatMapLatest { vehicle ->
+        vehicleRepository.observeLoadedVehicle { vehicle ->
             vehicle?.let { maintenanceDao.observeRecordsForItem(itemId, it.id) } ?: flowOf(emptyList())
         }
 

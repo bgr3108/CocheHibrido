@@ -10,6 +10,7 @@ import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertThrows
 import org.junit.Test
+import java.io.IOException
 
 class VehicleRepositoryTest {
 
@@ -282,18 +283,18 @@ class VehicleRepositoryTest {
 
     @Test
     fun loadFailure_isExposedAndEndsLoading() = runBlocking {
-        val error = IllegalStateException("DataStore unavailable")
+        val error = IOException("DataStore unavailable")
         val repository = repository(preferences = FakeVehiclePreferences(loadError = error))
 
         repository.isLoading.first { !it }
 
-        assertSame(error, repository.loadError.value)
+        assertSame(error, (repository.loadState.value as VehicleLoadState.Error).cause)
         assertFalse(repository.isLoading.value)
     }
 
     @Test
-    fun dataStoreSnapshotFailure_recoversTheResolvableActiveRoomVehicle() = runBlocking {
-        val error = IllegalStateException("DataStore unavailable")
+    fun dataStoreSnapshotFailure_blocksStartupUntilPreferencesCanBeRead() = runBlocking {
+        val error = IOException("DataStore unavailable")
         val active = entity(id = 2, createdAt = 2)
         val repository = repository(
             preferences = FakeVehiclePreferences(loadError = error, activeVehicleId = active.id),
@@ -302,12 +303,13 @@ class VehicleRepositoryTest {
 
         repository.isLoading.first { !it }
 
-        assertEquals(active.id, repository.activeVehicleId.value)
+        assertSame(error, (repository.loadState.value as VehicleLoadState.Error).cause)
+        assertNull(repository.activeVehicleId.value)
     }
 
     @Test
-    fun dataStoreSnapshotFailureAndInvalidActiveId_usesTheOldestRoomVehicle() = runBlocking {
-        val error = IllegalStateException("DataStore unavailable")
+    fun dataStoreSnapshotFailureAndInvalidActiveId_doesNotGuessAReplacement() = runBlocking {
+        val error = IOException("DataStore unavailable")
         val first = entity(id = 2, createdAt = 1)
         val repository = repository(
             preferences = FakeVehiclePreferences(loadError = error, activeVehicleId = 999),
@@ -316,12 +318,13 @@ class VehicleRepositoryTest {
 
         repository.isLoading.first { !it }
 
-        assertEquals(first.id, repository.activeVehicleId.value)
+        assertSame(error, (repository.loadState.value as VehicleLoadState.Error).cause)
+        assertNull(repository.activeVehicleId.value)
     }
 
     @Test
-    fun completeDataStoreFailure_recoversTheOldestConfiguredRoomVehicle() = runBlocking {
-        val error = IllegalStateException("DataStore unavailable")
+    fun completeDataStoreFailure_keepsStartupInError() = runBlocking {
+        val error = IOException("DataStore unavailable")
         val first = entity(id = 2, createdAt = 1)
         val repository = repository(
             preferences = FakeVehiclePreferences(
@@ -334,13 +337,13 @@ class VehicleRepositoryTest {
 
         repository.isLoading.first { !it }
 
-        assertEquals(first.id, repository.activeVehicleId.value)
-        assertEquals(first.type, repository.vehicle.value.type)
+        assertSame(error, (repository.loadState.value as VehicleLoadState.Error).cause)
+        assertNull(repository.activeVehicleId.value)
     }
 
     @Test
-    fun dataStoreFailureWithNoRoomVehicle_keepsTheInstallationUnconfigured() = runBlocking {
-        val error = IllegalStateException("DataStore unavailable")
+    fun dataStoreFailureWithNoRoomVehicle_isAnErrorRatherThanAnEmptyInstallation() = runBlocking {
+        val error = IOException("DataStore unavailable")
         val repository = repository(
             preferences = FakeVehiclePreferences(
                 loadError = error,
@@ -351,11 +354,12 @@ class VehicleRepositoryTest {
         repository.isLoading.first { !it }
 
         assertNull(repository.activeVehicleId.value)
+        assertTrue(repository.loadState.value is VehicleLoadState.Error)
     }
 
     @Test
-    fun dataStoreFailureWithRecoveryVehicle_preservesItAndItsEntriesForSafeSetup() = runBlocking {
-        val error = IllegalStateException("DataStore unavailable")
+    fun dataStoreFailureWithRecoveryVehicle_preservesItAndItsEntriesWithoutStartingSetup() = runBlocking {
+        val error = IOException("DataStore unavailable")
         val fuelEntries = InMemoryFuelEntryDao(mutableListOf(entry(km = 1_250.0)))
         val vehicleDao = InMemoryVehicleDao(listOf(entity(id = 1, configured = false)))
         val repository = repository(
@@ -373,6 +377,7 @@ class VehicleRepositoryTest {
         assertEquals(1, vehicleDao.vehicles.size)
         assertEquals(1, fuelEntries.entries.size)
         assertNull(repository.vehicle.value.type)
+        assertTrue(repository.loadState.value is VehicleLoadState.Error)
     }
 
     @Test
