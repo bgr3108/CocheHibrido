@@ -27,7 +27,8 @@ class AppContainer(context: Context) {
         VehiclePreferences(context),
         database.vehicleDao(),
         database.fuelEntryDao(),
-        database.maintenanceDao()
+        database.maintenanceDao(),
+        clearPersonalRoomData = database::clearPersonalData
     )
 
     private val vehicleCatalogUpdater: VehicleCatalogUpdateChecker by lazy {

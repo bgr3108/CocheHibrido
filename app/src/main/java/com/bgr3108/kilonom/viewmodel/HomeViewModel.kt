@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bgr3108.kilonom.data.FuelEntry
 import com.bgr3108.kilonom.data.FuelRepository
-import com.bgr3108.kilonom.data.CarRepository
 import com.bgr3108.kilonom.data.FuelType
 import com.bgr3108.kilonom.data.MonthlyCost
 import com.bgr3108.kilonom.data.MonthlyPrice
@@ -21,6 +20,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import android.database.sqlite.SQLiteException
+import java.io.IOException
 import kotlinx.coroutines.sync.Mutex
 import com.bgr3108.kilonom.domain.calculateAverageElectricConsumption
 import com.bgr3108.kilonom.domain.calculateBestElectricConsumption
@@ -72,18 +76,13 @@ private data class ActiveVehicleTrend(
 )
 
 internal suspend fun resetApplicationData(
-    fuelRepository: FuelRepository,
-    carRepository: CarRepository,
     vehicleRepository: VehicleRepository
 ) {
-    fuelRepository.deleteAll()
-    carRepository.deleteAll()
     vehicleRepository.clearVehicle()
 }
 
 class HomeViewModel(
-    private val fuelRepository: FuelRepository,
-    private val carRepository: CarRepository,
+    fuelRepository: FuelRepository,
     private val vehicleRepository: VehicleRepository
 ) : ViewModel() {
 
@@ -727,15 +726,17 @@ class HomeViewModel(
 
         _resetState.value = ResetState.LOADING
 
-        viewModelScope.launch {
+        viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
             try {
-                resetApplicationData(fuelRepository, carRepository, vehicleRepository)
+                currentCoroutineContext().ensureActive()
+                resetApplicationData(vehicleRepository)
                 _resetState.value = ResetState.IDLE
-            } catch (error: Throwable) {
-                if (error is CancellationException) throw error
-
+            } catch (_: IOException) {
+                _resetState.value = ResetState.ERROR
+            } catch (_: SQLiteException) {
                 _resetState.value = ResetState.ERROR
             } finally {
+                if (_resetState.value == ResetState.LOADING) _resetState.value = ResetState.ERROR
                 resetMutex.unlock()
             }
         }

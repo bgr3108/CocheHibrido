@@ -1,6 +1,8 @@
 package com.bgr3108.kilonom.data
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
@@ -25,9 +27,10 @@ interface VehiclePreferencesStore {
     suspend fun markReleaseNotesAsSeen(versionName: String) = Unit
 }
 
-class VehiclePreferences(
-    private val context: Context
+class VehiclePreferences internal constructor(
+    private val preferencesStore: DataStore<Preferences>
 ) : VehiclePreferencesStore {
+    constructor(context: Context) : this(context.dataStore)
 
     private object Keys {
 
@@ -66,7 +69,7 @@ class VehiclePreferences(
         vehicle: Vehicle
     ) {
 
-        context.dataStore.edit { prefs ->
+        preferencesStore.edit { prefs ->
 
             prefs[Keys.BRAND] = vehicle.brand
             prefs[Keys.MODEL] = vehicle.model
@@ -91,7 +94,7 @@ class VehiclePreferences(
     override suspend fun loadVehicle(): Vehicle {
 
         val prefs =
-            context.dataStore.data.first()
+            preferencesStore.data.first()
 
         return Vehicle(
 
@@ -120,36 +123,36 @@ class VehiclePreferences(
     }
 
     override suspend fun loadActiveVehicleId(): Long? =
-        context.dataStore.data.first()[Keys.ACTIVE_VEHICLE_ID]
+        preferencesStore.data.first()[Keys.ACTIVE_VEHICLE_ID]
 
     override suspend fun saveActiveVehicleId(vehicleId: Long) {
-        context.dataStore.edit { preferences ->
+        preferencesStore.edit { preferences ->
             preferences[Keys.ACTIVE_VEHICLE_ID] = vehicleId
         }
     }
 
     override suspend fun clearActiveVehicleId() {
-        context.dataStore.edit { preferences ->
+        preferencesStore.edit { preferences ->
             preferences.remove(Keys.ACTIVE_VEHICLE_ID)
         }
     }
 
     override suspend fun hasStoredAppState(): Boolean =
-        context.dataStore.data.first().asMap().isNotEmpty()
+        preferencesStore.data.first().asMap().isNotEmpty()
 
     override suspend fun clearVehicle() {
 
-        context.dataStore.edit {
+        preferencesStore.edit {
 
             it.clear()
         }
     }
 
     override suspend fun lastSeenReleaseNotesVersion(): String? =
-        context.dataStore.data.first()[Keys.LAST_SEEN_RELEASE_NOTES_VERSION]
+        preferencesStore.data.first()[Keys.LAST_SEEN_RELEASE_NOTES_VERSION]
 
     override suspend fun markReleaseNotesAsSeen(versionName: String) {
-        context.dataStore.edit { preferences ->
+        preferencesStore.edit { preferences ->
             preferences[Keys.LAST_SEEN_RELEASE_NOTES_VERSION] = versionName
         }
     }

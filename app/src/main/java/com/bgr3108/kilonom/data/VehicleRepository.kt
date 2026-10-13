@@ -60,7 +60,8 @@ class VehicleRepository(
     private val vehicleDao: VehicleDao,
     private val fuelEntryDao: FuelEntryDao,
     private val maintenanceDao: MaintenanceDao,
-    repositoryScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    repositoryScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+    private val clearPersonalRoomData: suspend () -> Unit = { vehicleDao.deleteAll() }
 ) {
 
     data class VehicleSummary(
@@ -380,10 +381,18 @@ class VehicleRepository(
     }
 
     suspend fun clearVehicle() = vehicleMutex.withLock {
-        vehicleDao.deleteAll()
-        vehiclePreferences.clearVehicle()
-        _activeVehicleId.value = null
-        _vehicle.value = Vehicle()
+        try {
+            // DataStore commits first: Room must never be empty with a surviving legacy snapshot.
+            vehiclePreferences.clearVehicle()
+            currentCoroutineContext().ensureActive()
+            clearPersonalRoomData()
+            _activeVehicleId.value = null
+            publishLoadedVehicles(null, emptyList())
+        } finally {
+            // Re-read authoritative storage, including cancellation at the transaction boundary.
+            // Bootstrap only reads/reconciles here; it never resumes a pending deletion.
+            loadRequests.update { it + 1L }
+        }
     }
 
     /**

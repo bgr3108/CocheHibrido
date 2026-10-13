@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.withTransaction
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.bgr3108.kilonom.data.Car
@@ -26,6 +27,13 @@ abstract class HybridCarDatabase : RoomDatabase() {
     abstract fun fuelEntryDao(): FuelEntryDao
     abstract fun vehicleDao(): VehicleDao
     abstract fun maintenanceDao(): MaintenanceDao
+
+    /** Deletes only personal Room data; child consumption/maintenance rows cascade with vehicles. */
+    internal suspend fun clearPersonalData() = withTransaction {
+        fuelEntryDao().deleteAll()
+        carDao().deleteAll()
+        vehicleDao().deleteAll()
+    }
 
     companion object {
         @Volatile
