@@ -1,21 +1,56 @@
 package com.bgr3108.kilonom.viewmodel
 
-import com.bgr3108.kilonom.stations.StationCacheMetadataEntity
-import com.bgr3108.kilonom.stations.StationRepository
+import kotlinx.coroutines.sync.Mutex
 
-/** Defers the first MITECO request until the user actually opens Estaciones. */
-internal class FuelStationsRefreshCoordinator(
-    private val metadataProvider: suspend () -> StationCacheMetadataEntity?,
-    private val refresh: suspend () -> Unit,
-    private val isStale: (StationCacheMetadataEntity?) -> Boolean = StationRepository::isStale
+/** Per-source coordination: cache age for automatic refresh, in-memory cooldown after failure. */
+internal class StationsRefreshCoordinator<T>(
+    private val metadataProvider: suspend () -> T?,
+    private val refresh: suspend () -> Result<*>?,
+    private val isStale: (T?) -> Boolean,
+    private val elapsedRealtime: () -> Long = android.os.SystemClock::elapsedRealtime
 ) {
     private var stationEntryHandled = false
+    private val mutex = Mutex()
+    private var lastAutomaticFailure: Long? = null
+    private var refreshInProgress = false
+    private var refreshGeneration = 0L
 
     suspend fun refreshIfNeededOnStationsOpened() {
         if (stationEntryHandled) return
         stationEntryHandled = true
-        if (isStale(metadataProvider())) refresh()
+        refreshAutomaticallyIfNeeded()
     }
 
-    suspend fun refreshManually() = refresh()
+    suspend fun refreshAutomaticallyIfNeeded() = refreshIfAllowed(manual = false)
+
+    suspend fun refreshManually() = refreshIfAllowed(manual = true)
+
+    private suspend fun refreshIfAllowed(manual: Boolean) {
+        val generation = refreshGeneration
+        if (!mutex.tryLock()) {
+            // Manual actions may wait for a local metadata check, never for an active download.
+            if (!manual || refreshInProgress) return
+            mutex.lock()
+        }
+        try {
+            if (generation != refreshGeneration) return
+            if (!manual) {
+                val sinceFailure = lastAutomaticFailure?.let { elapsedRealtime() - it }
+                if (sinceFailure != null && sinceFailure in 0 until FAILURE_COOLDOWN_MILLIS) return
+                if (!isStale(metadataProvider())) return
+            }
+            refreshInProgress = true
+            refreshGeneration++
+            val result = refresh() ?: return
+            if (result.isSuccess) lastAutomaticFailure = null
+            else if (!manual) lastAutomaticFailure = elapsedRealtime()
+        } finally {
+            refreshInProgress = false
+            mutex.unlock()
+        }
+    }
+
+    companion object {
+        const val FAILURE_COOLDOWN_MILLIS = 10L * 60L * 1000L
+    }
 }

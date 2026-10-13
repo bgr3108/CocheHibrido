@@ -102,7 +102,6 @@ fun StationMap(
         initialValue = StationMapPreparation.Loading,
         key1 = stations
     ) {
-        value = StationMapPreparation.Loading
         value = withContext(Dispatchers.Default) { prepareStationMap(stations) }
     }
     when (val currentPreparation = preparation) {
@@ -140,7 +139,7 @@ private fun StationMapContent(
     val selectStation by rememberUpdatedState(onStationSelected)
     val scope = rememberCoroutineScope()
     var activeMapState by remember { mutableStateOf<org.maplibre.compose.map.MapState?>(null) }
-    val locationGeoJson = remember(currentLocation) { currentLocation.toLocationGeoJson() }
+    val locationGeoJson = currentLocation.toLocationGeoJson()
     val mapState = rememberMapState(
         baseStyle = BaseStyle.Uri(OPEN_FREE_MAP_STYLE_URL),
         initialCameraPosition = StationMapDefaults.initialCamera
@@ -208,7 +207,7 @@ private fun StationMapContent(
         activeMapState = mapState
     }
     LaunchedEffect(initialBounds, waitForInitialCamera) {
-        if (waitForInitialCamera && initialBounds != null) {
+        if (waitingForInitialCamera && initialBounds != null) {
             mapState.animateCameraPosition(
                 initialBounds.toMapCameraPosition(),
                 animation = CameraAnimation.Ease(USER_LOCATION_ANIMATION_DURATION)

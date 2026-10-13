@@ -36,6 +36,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.IOException
+import org.json.JSONException
 
 /** Shared search scope for List and Map. There is deliberately no national default query. */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -53,14 +55,22 @@ class StationsViewModel(
     private val refreshError = MutableStateFlow<String?>(null)
     private val chargerRefreshing = MutableStateFlow(false)
     private val chargerRefreshError = MutableStateFlow<String?>(null)
+    private val refreshSucceeded = MutableStateFlow(false)
+    private val chargerRefreshSucceeded = MutableStateFlow(false)
     private val stationMapViewport = MutableStateFlow<StationMapBounds?>(null)
     private val chargerMapViewport = MutableStateFlow<StationMapBounds?>(null)
     private val locationIntroVisible = MutableStateFlow(false)
     private val locationPermissionRequested = MutableStateFlow(false)
     private var stationEntryHandled = false
-    private val fuelStationsRefreshCoordinator = FuelStationsRefreshCoordinator(
+    private val fuelStationsRefreshCoordinator = StationsRefreshCoordinator(
         metadataProvider = repository::getMetadata,
-        refresh = ::refreshFuelStationsInternal
+        refresh = ::refreshFuelStationsInternal,
+        isStale = StationRepository::isStale
+    )
+    private val chargerRefreshCoordinator = StationsRefreshCoordinator(
+        metadataProvider = chargerRepository::getMetadata,
+        refresh = ::refreshChargersInternal,
+        isStale = chargerRepository::isStale
     )
 
     private val stationSearchScope = combine(filter, currentLocation) { activeFilter, location ->
@@ -207,13 +217,15 @@ class StationsViewModel(
             navigation.viewMode, navigation.contentType, navigation.searchScope, navigation.showLocationIntro,
             navigation.locationPermissionRequested
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StationsUiState())
+    }.combine(refreshSucceeded) { state, succeeded -> state.copy(refreshSucceeded = succeeded) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StationsUiState())
 
     val chargerUiState: StateFlow<ChargerUiState> = combine(
         chargerFilter, chargerMetadata, chargerRefreshing, chargerRefreshError, chargerSearchScope
     ) { activeFilter, cache, isRefreshing, error, scope ->
         ChargerUiState(activeFilter, cache, isRefreshing, error, scope)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ChargerUiState())
+    }.combine(chargerRefreshSucceeded) { state, succeeded -> state.copy(refreshSucceeded = succeeded) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ChargerUiState())
 
     val activeContentRefreshing: StateFlow<Boolean> = combine(contentType, refreshing, chargerRefreshing) {
             type, fuelRefreshing, chargersRefreshing ->
@@ -247,19 +259,16 @@ class StationsViewModel(
         contentType.value = type
         if (type == StationsContentType.FUEL) stationMapViewport.value = null else chargerMapViewport.value = null
         if (type == StationsContentType.CHARGERS) viewModelScope.launch {
-            val cache = chargerRepository.getMetadata()
-            val stale = cache == null || chargerRepository.isStale(cache)
-            if (stale) refreshChargersInternal()
+            chargerRefreshCoordinator.refreshAutomaticallyIfNeeded()
         }
     }
-    fun refreshChargers() = viewModelScope.launch { refreshChargersInternal() }
+    fun refreshChargers() = viewModelScope.launch { chargerRefreshCoordinator.refreshManually() }
     fun refreshActiveContent() { if (contentType.value == StationsContentType.CHARGERS) refreshChargers() else refresh() }
-    private suspend fun refreshFuelStationsInternal() {
-        runRefreshWithUiState(refreshing, refreshError, repository::refresh)
-    }
-    private suspend fun refreshChargersInternal() {
-        runRefreshWithUiState(chargerRefreshing, chargerRefreshError, chargerRepository::refresh)
-    }
+    private suspend fun refreshFuelStationsInternal() =
+        runRefreshWithUiState(refreshing, refreshError, refreshSucceeded, repository::refresh)
+
+    private suspend fun refreshChargersInternal() =
+        runRefreshWithUiState(chargerRefreshing, chargerRefreshError, chargerRefreshSucceeded, chargerRepository::refresh)
 
     fun clearChargerCache() = viewModelScope.launch { chargerRepository.clearCache(); chargerRefreshError.value = null }
     fun isChargerCacheStale(metadata: ChargerCacheMetadataEntity?): Boolean = chargerRepository.isStale(metadata)
@@ -308,16 +317,28 @@ class StationsViewModel(
 internal suspend fun runRefreshWithUiState(
     refreshing: MutableStateFlow<Boolean>,
     refreshError: MutableStateFlow<String?>,
+    succeeded: MutableStateFlow<Boolean>? = null,
     refresh: suspend () -> Result<*>
-) {
-    if (refreshing.value) return
+): Result<*>? {
+    if (refreshing.value) return null
     refreshing.value = true
     refreshError.value = null
+    succeeded?.value = false
     try {
-        refresh().onFailure { refreshError.value = it.message }
+        return refresh().onFailure { refreshError.value = stationRefreshErrorMessage(it) }
+            .onSuccess { succeeded?.value = true }
     } finally {
         refreshing.value = false
     }
+}
+
+internal fun stationRefreshErrorMessage(error: Throwable): String = when {
+    error.message?.contains("HTTP ") == true -> "El servidor no está disponible. Inténtalo de nuevo más tarde."
+    error is IOException -> "No se pudo conectar. Revisa tu conexión e inténtalo de nuevo."
+    error is JSONException || error is IllegalArgumentException || error is IllegalStateException &&
+        listOf("CSV", "RIPREE", "MITECO", "Descarga").any { error.message.orEmpty().contains(it) } ->
+        "Los datos recibidos no son válidos. Inténtalo de nuevo más tarde."
+    else -> "No se pudieron actualizar los datos. Inténtalo de nuevo."
 }
 
 private data class SearchInput(val contentType: StationsContentType, val filter: StationFilter, val location: StationCoordinates?, val mode: StationsViewMode, val scope: StationSearchScope)
@@ -376,7 +397,8 @@ internal fun shouldLoadChargerMapResults(
 data class ChargerUiState(
     val filter: ChargerFilter = ChargerFilter(), val metadata: ChargerCacheMetadataEntity? = null,
     val refreshing: Boolean = false, val error: String? = null,
-    val searchScope: StationSearchScope = StationSearchScope.None
+    val searchScope: StationSearchScope = StationSearchScope.None,
+    val refreshSucceeded: Boolean = false
 ) { val hasCache: Boolean get() = metadata != null }
 
 data class StationsUiState(
@@ -386,7 +408,8 @@ data class StationsUiState(
     val contentType: StationsContentType = StationsContentType.FUEL,
     val searchScope: StationSearchScope = StationSearchScope.None,
     val showLocationIntro: Boolean = false,
-    val locationPermissionRequested: Boolean = false
+    val locationPermissionRequested: Boolean = false,
+    val refreshSucceeded: Boolean = false
 ) {
     val hasCache: Boolean get() = metadata != null
     val isStale: Boolean get() = StationRepository.isStale(metadata)

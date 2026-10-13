@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class StationsViewModelTest {
@@ -59,6 +60,27 @@ class StationsViewModelTest {
         assertFalse(chargerRefreshing.value)
         assertTrue(fuelError.value == null)
         assertTrue(chargerError.value == null)
+    }
+
+    @Test
+    fun refreshFeedback_reportsSuccessAndFailureWhileRestoringState() = runBlocking {
+        val refreshing = MutableStateFlow(false)
+        val error = MutableStateFlow<String?>(null)
+        val succeeded = MutableStateFlow(false)
+        runRefreshWithUiState(refreshing, error, succeeded) { Result.success(1) }
+        assertTrue(succeeded.value)
+        assertFalse(refreshing.value)
+        runRefreshWithUiState(refreshing, error, succeeded) { Result.failure<Int>(java.io.IOException()) }
+        assertFalse(succeeded.value)
+        assertFalse(refreshing.value)
+        assertEquals("No se pudo conectar. Revisa tu conexión e inténtalo de nuevo.", error.value)
+    }
+
+    @Test
+    fun errorMessagesNeverExposeTechnicalExceptions() {
+        assertEquals("El servidor no está disponible. Inténtalo de nuevo más tarde.", stationRefreshErrorMessage(IllegalStateException("RIPREE respondió con HTTP 503")))
+        assertEquals("Los datos recibidos no son válidos. Inténtalo de nuevo más tarde.", stationRefreshErrorMessage(IllegalStateException("CSV RIPREE truncado")))
+        assertEquals("No se pudieron actualizar los datos. Inténtalo de nuevo.", stationRefreshErrorMessage(Exception("internal details")))
     }
 
     private suspend fun assertCancellation(block: suspend () -> Unit) {

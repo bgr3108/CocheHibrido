@@ -75,7 +75,6 @@ fun ChargerMap(
         initialValue = ChargerMapPreparation.Loading,
         key1 = chargers
     ) {
-        value = ChargerMapPreparation.Loading
         value = withContext(Dispatchers.Default) { prepareChargerMap(chargers) }
     }
     when (val preparation = mapPreparation) {
@@ -137,7 +136,7 @@ private fun ChargerMapContent(
     }
     LaunchedEffect(mapState) { activeMapState = mapState }
     LaunchedEffect(initialBounds, waitForInitialCamera) {
-        if (waitForInitialCamera && initialBounds != null) {
+        if (waitingForInitialCamera && initialBounds != null) {
             mapState.animateCameraPosition(
                 initialBounds.toMapCameraPosition(),
                 animation = CameraAnimation.Ease(500.milliseconds)

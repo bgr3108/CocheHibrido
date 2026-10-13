@@ -43,6 +43,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -159,11 +160,13 @@ private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: Stations
             selected = state.contentType,
             onSelected = viewModel::selectContentType
         )
-        CacheStatus(
-            hasCache = state.hasCache,
-            isStale = state.isStale,
+        StationsUpdateStatus(
+            stale = state.isStale,
+            refreshing = state.isRefreshing,
             error = state.refreshError,
-            downloadedAtMillis = state.metadata?.downloadedAtMillis
+            downloadedAtMillis = state.metadata?.downloadedAtMillis,
+            succeeded = state.refreshSucceeded,
+            onRefresh = viewModel::refreshActiveContent
         )
 
         if (state.hasCache && state.searchScope !is StationSearchScope.None) {
@@ -180,7 +183,7 @@ private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: Stations
                 state.viewMode == StationsViewMode.LIST && state.filter.sortOrder == StationSortOrder.PRICE -> {
                     val pagedStations = viewModel.stationPaging.collectAsLazyPagingItems()
                     when {
-                        pagedStations.loadState.refresh is LoadState.Loading -> CircularProgressIndicator(
+                        pagedStations.loadState.refresh is LoadState.Loading && pagedStations.itemCount == 0 -> CircularProgressIndicator(
                             modifier = Modifier.padding(vertical = 24.dp).align(Alignment.CenterHorizontally)
                         )
                         pagedStations.itemCount == 0 -> EmptyStationsMessage()
@@ -199,15 +202,17 @@ private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: Stations
                     )
                 }
                 else -> Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                    StationMap(
-                        stations = mapStations,
-                        currentLocation = state.currentLocation.takeIf { state.searchScope is StationSearchScope.Nearby },
-                        initialBounds = mapInitialBounds,
-                        waitForInitialCamera = state.searchScope is StationSearchScope.ManualZone,
-                        onViewportChanged = viewModel::updateStationMapViewport,
-                        onStationSelected = { selectedStation = it },
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    key(state.filter, state.searchScope) {
+                        StationMap(
+                            stations = mapStations,
+                            currentLocation = state.currentLocation.takeIf { state.searchScope is StationSearchScope.Nearby },
+                            initialBounds = mapInitialBounds,
+                            waitForInitialCamera = state.searchScope is StationSearchScope.ManualZone,
+                            onViewportChanged = viewModel::updateStationMapViewport,
+                            onStationSelected = { selectedStation = it },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                     FloatingActionButton(
                         onClick = { if (!isLocating) requestLocation() },
                         modifier = Modifier
@@ -360,24 +365,6 @@ internal fun selectedStationAfterFiltering(
     visibleStations: List<StationListItem>
 ): StationListItem? = selectedStation?.let { selected ->
     visibleStations.firstOrNull { it.externalId == selected.externalId }
-}
-
-@Composable
-private fun CacheStatus(
-    hasCache: Boolean,
-    isStale: Boolean,
-    error: String?,
-    downloadedAtMillis: Long?
-) {
-    val text = when {
-        error != null && hasCache -> "No se pudieron actualizar los datos. Mostrando última información disponible."
-        hasCache && isStale -> "Hay una actualización de estaciones disponible."
-        hasCache -> "Datos guardados: ${downloadedAtMillis?.toDisplayDateTime().orEmpty()}"
-        else -> ""
-    }
-    if (text.isNotBlank()) {
-        Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
 }
 
 /** A first import is the only refresh state that replaces the normal station content. */

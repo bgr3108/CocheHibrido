@@ -40,6 +40,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -124,12 +125,13 @@ internal fun ChargersContent(innerPadding: PaddingValues, viewModel: StationsVie
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         StationsContentSelector(StationsContentType.CHARGERS, viewModel::selectContentType)
-        ChargerCacheStatus(
-            hasCache = chargerState.hasCache,
+        StationsUpdateStatus(
             stale = chargerState.metadata?.let { viewModel.isChargerCacheStale(it) } ?: true,
             refreshing = chargerState.refreshing,
             error = chargerState.error,
-            downloadedAt = chargerState.metadata?.downloadedAtMillis
+            downloadedAtMillis = chargerState.metadata?.downloadedAtMillis,
+            succeeded = chargerState.refreshSucceeded,
+            onRefresh = viewModel::refreshActiveContent
         )
         if (chargerState.hasCache && chargerState.searchScope !is StationSearchScope.None) {
             ChargerToolbar(
@@ -145,7 +147,7 @@ internal fun ChargersContent(innerPadding: PaddingValues, viewModel: StationsVie
                 state.viewMode == StationsViewMode.LIST && chargerState.filter.sortOrder != ChargerSortOrder.DISTANCE -> {
                     val pagedChargers = viewModel.chargerPaging.collectAsLazyPagingItems()
                     when {
-                        pagedChargers.loadState.refresh is LoadState.Loading -> CircularProgressIndicator(
+                        pagedChargers.loadState.refresh is LoadState.Loading && pagedChargers.itemCount == 0 -> CircularProgressIndicator(
                             modifier = Modifier.padding(vertical = 24.dp).align(Alignment.CenterHorizontally)
                         )
                         pagedChargers.itemCount == 0 -> EmptyChargersMessage()
@@ -164,15 +166,17 @@ internal fun ChargersContent(innerPadding: PaddingValues, viewModel: StationsVie
                     )
                 }
                 else -> Box(Modifier.weight(1f).fillMaxWidth()) {
-                    ChargerMap(
-                        mapChargers,
-                        state.currentLocation.takeIf { chargerState.searchScope is StationSearchScope.Nearby },
-                        mapInitialBounds,
-                        chargerState.searchScope is StationSearchScope.ManualZone,
-                        viewModel::updateChargerMapViewport,
-                        { selectedCharger = it },
-                        Modifier.fillMaxSize()
-                    )
+                    key(chargerState.filter, chargerState.searchScope) {
+                        ChargerMap(
+                            mapChargers,
+                            state.currentLocation.takeIf { chargerState.searchScope is StationSearchScope.Nearby },
+                            mapInitialBounds,
+                            chargerState.searchScope is StationSearchScope.ManualZone,
+                            viewModel::updateChargerMapViewport,
+                            { selectedCharger = it },
+                            Modifier.fillMaxSize()
+                        )
+                    }
                     FloatingActionButton(
                         onClick = { if (!isLocating) requestLocation() },
                         modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
@@ -222,19 +226,6 @@ internal fun ChargersContent(innerPadding: PaddingValues, viewModel: StationsVie
             }
         }
     }
-}
-
-@Composable
-private fun ChargerCacheStatus(hasCache: Boolean, stale: Boolean, refreshing: Boolean, error: String?, downloadedAt: Long?) {
-    val text = when {
-        refreshing && !hasCache -> "Cargando puntos de recarga…"
-        error != null && hasCache -> "No se pudieron actualizar los datos. Mostrando última información disponible."
-        error != null -> "Necesitas conexión para cargar los puntos de recarga por primera vez."
-        stale -> "Hay una actualización de puntos de recarga disponible."
-        hasCache -> "Datos guardados: ${downloadedAt?.toChargerDisplayDateTime().orEmpty()}"
-        else -> ""
-    }
-    if (text.isNotBlank()) Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 @Composable
