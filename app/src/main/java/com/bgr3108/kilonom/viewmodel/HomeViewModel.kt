@@ -12,6 +12,8 @@ import com.bgr3108.kilonom.data.VehicleCategory
 import com.bgr3108.kilonom.data.VehicleRepository
 import com.bgr3108.kilonom.data.ActiveVehicleEntries
 import com.bgr3108.kilonom.data.observeActiveVehicleEntries
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -80,6 +82,14 @@ internal suspend fun resetApplicationData(
 ) {
     vehicleRepository.clearVehicle()
 }
+
+/** Computes only while observed, with one five-second grace period per result. */
+internal fun <T> Flow<List<FuelEntry>>.subscribedEntryStatistic(
+    scope: CoroutineScope,
+    initialValue: T,
+    calculate: (List<FuelEntry>) -> T
+): StateFlow<T> = map(calculate)
+    .stateIn(scope, SharingStarted.WhileSubscribed(5_000), initialValue)
 
 class HomeViewModel(
     fuelRepository: FuelRepository,
@@ -405,11 +415,13 @@ class HomeViewModel(
     // Precios
     // ============================================================
 
-    private val _precioGasolina = MutableStateFlow(0.0)
-    val precioGasolina: StateFlow<Double> = _precioGasolina
+    val precioGasolina = entries.subscribedEntryStatistic(
+        viewModelScope, 0.0, ::calculateAverageFuelPrice
+    )
 
-    private val _precioElectrico = MutableStateFlow(0.0)
-    val precioElectrico: StateFlow<Double> = _precioElectrico
+    val precioElectrico = entries.subscribedEntryStatistic(
+        viewModelScope, 0.0, ::calculateAverageElectricPrice
+    )
 
     val precioMinimoGasolina = entries
         .map(::calculateMinFuelPrice)
@@ -458,41 +470,30 @@ class HomeViewModel(
             SharingStarted.WhileSubscribed(5000),
             0
         )
-    private val _monthlyGasolinePrices =
-        MutableStateFlow<List<MonthlyPrice>>(emptyList())
+    val monthlyGasolinePrices = entries.subscribedEntryStatistic(
+        viewModelScope, emptyList<MonthlyPrice>()
+    ) { list -> calculateMonthlyPrices(list.filter { it.tipo == FuelType.GASOLINA }) }
 
-    val monthlyGasolinePrices:
-            StateFlow<List<MonthlyPrice>> =
-        _monthlyGasolinePrices
+    val monthlyElectricPrices = entries.subscribedEntryStatistic(
+        viewModelScope, emptyList<MonthlyPrice>()
+    ) { list -> calculateMonthlyPrices(list.filter { it.tipo == FuelType.ELECTRICO }) }
 
-    private val _monthlyElectricPrices =
-        MutableStateFlow<List<MonthlyPrice>>(emptyList())
+    val monthlyGasolineCosts = entries.subscribedEntryStatistic(
+        viewModelScope, emptyList<MonthlyCost>()
+    ) { list -> calculateMonthlyCosts(list.filter { it.tipo == FuelType.GASOLINA }) }
 
-    val monthlyElectricPrices:
-            StateFlow<List<MonthlyPrice>> =
-        _monthlyElectricPrices
+    val monthlyElectricCosts = entries.subscribedEntryStatistic(
+        viewModelScope, emptyList<MonthlyCost>()
+    ) { list -> calculateMonthlyCosts(list.filter { it.tipo == FuelType.ELECTRICO }) }
 
-    private val _monthlyGasolineCosts =
-        MutableStateFlow<List<MonthlyCost>>(emptyList())
-
-    val monthlyGasolineCosts:
-            StateFlow<List<MonthlyCost>> =
-        _monthlyGasolineCosts
-
-    private val _monthlyElectricCosts =
-        MutableStateFlow<List<MonthlyCost>>(emptyList())
-
-    val monthlyElectricCosts:
-            StateFlow<List<MonthlyCost>> =
-        _monthlyElectricCosts
-
+    // Monthly sources already own the grace period; chart projections must not add another.
     val historialPreciosGasolina = monthlyGasolinePrices
         .map { prices ->
             createChartPoints(prices.map { it.averagePrice })
         }
         .stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
+            SharingStarted.WhileSubscribed(),
             emptyList()
         )
 
@@ -502,7 +503,7 @@ class HomeViewModel(
         }
         .stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
+            SharingStarted.WhileSubscribed(),
             emptyList()
         )
 
@@ -512,7 +513,7 @@ class HomeViewModel(
         }
         .stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
+            SharingStarted.WhileSubscribed(),
             emptyList()
         )
 
@@ -522,13 +523,9 @@ class HomeViewModel(
         }
         .stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
+            SharingStarted.WhileSubscribed(),
             emptyList()
         )
-
-    init {
-        observarDatos()
-    }
 
     val costeTotalGasolina = entries
         .map(::calculateTotalFuelCost)
@@ -590,137 +587,6 @@ class HomeViewModel(
     // Funciones privadas
     // ============================================================
 
-    private fun calculateMonthlyPrices(
-        entries: List<FuelEntry>
-    ): List<MonthlyPrice> {
-
-        return groupEntriesByMonth(entries.filter(::isValidEconomicEntry))
-            .map { (month, entriesMes) ->
-                MonthlyPrice(
-                    month = month,
-                    averagePrice = when (entriesMes.first().tipo) {
-                        FuelType.GASOLINA -> calculateAverageFuelPrice(entriesMes)
-                        FuelType.ELECTRICO -> calculateAverageElectricPrice(entriesMes)
-                    }
-                )
-            }
-    }
-
-    private fun calculateMonthlyCosts(
-        entries: List<FuelEntry>
-    ): List<MonthlyCost> {
-
-        return groupEntriesByMonth(entries.filter(::isValidEconomicEntry))
-            .map { (month, entriesMes) ->
-                MonthlyCost(
-                    month = month,
-                    totalCost = calculateTotalCost(entriesMes)
-                )
-            }
-    }
-
-    private fun groupEntriesByMonth(
-        entries: List<FuelEntry>
-    ): List<Pair<String, List<FuelEntry>>> {
-
-        val monthFormatter = java.text.SimpleDateFormat(
-            "MM/yyyy",
-            java.util.Locale.getDefault()
-        )
-
-        return entries
-            .groupBy {
-                monthFormatter.format(java.util.Date(it.fecha))
-            }
-            .entries
-            .sortedBy { (_, entriesMes) ->
-                entriesMes.minOf { it.fecha }
-            }
-            .map { it.key to it.value }
-    }
-
-    private fun createChartPoints(
-        values: List<Double>
-    ): List<ChartPoint> {
-
-        return values.mapIndexed { index, value ->
-            ChartPoint(
-                x = index.toDouble(),
-                y = value.toFloat()
-            )
-        }
-    }
-
-    private fun observarDatos() {
-
-        viewModelScope.launch {
-
-            entries
-                .collect { lista ->
-
-                    if (lista.isEmpty()) {
-
-                        _precioGasolina.value = 0.0
-                        _precioElectrico.value = 0.0
-
-                        _monthlyGasolinePrices.value =
-                            emptyList()
-
-                        _monthlyElectricPrices.value =
-                            emptyList()
-
-                        _monthlyGasolineCosts.value =
-                            emptyList()
-
-                        _monthlyElectricCosts.value =
-                            emptyList()
-
-                        return@collect
-                    }
-
-                    val validEntries = lista.filter(::isValidEconomicEntry)
-
-                    val gasolinaEntries =
-                        validEntries.filter {
-                            it.tipo == FuelType.GASOLINA
-                        }
-
-                    val electricEntries =
-                        validEntries.filter {
-                            it.tipo == FuelType.ELECTRICO
-                        }
-
-                    _precioGasolina.value =
-                        calculateAverageFuelPrice(lista)
-
-                    _precioElectrico.value =
-                        calculateAverageElectricPrice(lista)
-
-                    // Precios medios mensuales
-
-                    _monthlyGasolinePrices.value =
-                        calculateMonthlyPrices(
-                            gasolinaEntries
-                        )
-
-                    _monthlyElectricPrices.value =
-                        calculateMonthlyPrices(
-                            electricEntries
-                        )
-
-                    _monthlyGasolineCosts.value =
-                        calculateMonthlyCosts(
-                            gasolinaEntries
-                        )
-
-                    _monthlyElectricCosts.value =
-                        calculateMonthlyCosts(
-                            electricEntries
-                        )
-                }
-        }
-    }
-
     fun resetApplication() {
         if (!resetMutex.tryLock()) return
 
@@ -746,5 +612,66 @@ class HomeViewModel(
         if (_resetState.value == ResetState.ERROR) {
             _resetState.value = ResetState.IDLE
         }
+    }
+}
+
+internal fun calculateMonthlyPrices(
+    entries: List<FuelEntry>
+): List<MonthlyPrice> {
+
+    return groupEntriesByMonth(entries.filter(::isValidEconomicEntry))
+        .map { (month, entriesMes) ->
+            MonthlyPrice(
+                month = month,
+                averagePrice = when (entriesMes.first().tipo) {
+                    FuelType.GASOLINA -> calculateAverageFuelPrice(entriesMes)
+                    FuelType.ELECTRICO -> calculateAverageElectricPrice(entriesMes)
+                }
+            )
+        }
+}
+
+internal fun calculateMonthlyCosts(
+    entries: List<FuelEntry>
+): List<MonthlyCost> {
+
+    return groupEntriesByMonth(entries.filter(::isValidEconomicEntry))
+        .map { (month, entriesMes) ->
+            MonthlyCost(
+                month = month,
+                totalCost = calculateTotalCost(entriesMes)
+            )
+        }
+}
+
+private fun groupEntriesByMonth(
+    entries: List<FuelEntry>
+): List<Pair<String, List<FuelEntry>>> {
+
+    val monthFormatter = java.text.SimpleDateFormat(
+        "MM/yyyy",
+        java.util.Locale.getDefault()
+    )
+
+    return entries
+        .groupBy {
+            monthFormatter.format(java.util.Date(it.fecha))
+        }
+        .entries
+        .sortedBy { (_, entriesMes) ->
+            entriesMes.minOf { it.fecha }
+        }
+        .map { it.key to it.value }
+}
+
+private fun createChartPoints(
+    values: List<Double>
+): List<ChartPoint> {
+
+    return values.mapIndexed { index, value ->
+        ChartPoint(
+            x = index.toDouble(),
+            y = value.toFloat()
+        )
     }
 }
