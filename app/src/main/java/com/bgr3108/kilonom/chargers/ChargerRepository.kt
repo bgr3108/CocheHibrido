@@ -159,22 +159,30 @@ class ChargerRepository(
     }
 
     suspend fun refresh(): Result<Int> = withContext(Dispatchers.IO) {
+        val trace = ChargerRefreshDebugTrace.create()
         runCatching {
-            val parsed = remoteDataSource.download()
+            val parsed = (remoteDataSource as? MitecoChargersRemoteDataSource)?.download(trace) ?: remoteDataSource.download()
             if (parsed.installations.isEmpty() || parsed.connectors.isEmpty()) error("RIPREE no devolvió cargadores válidos")
+            trace?.summaryStarted()
+            val installations = parsed.installations.withConnectorSummaries(parsed.connectors)
+            trace?.summaryCompleted(installations.size, parsed.connectors.size)
+            trace?.roomStarted()
             database.withTransaction {
                 dao.replaceCache(
-                    parsed.installations.withConnectorSummaries(parsed.connectors),
+                    installations,
                     parsed.connectors,
                     ChargerCacheMetadataEntity(
                         downloadedAtMillis = System.currentTimeMillis(),
                         sourceUpdatedAtMillis = parsed.sourceUpdatedAtMillis,
                         sourceUrl = MITECO_CHARGERS_URL
-                    )
+                    ),
+                    trace
                 )
             }
+            trace?.roomCompleted()
+            trace?.completed(installations.size, parsed.connectors.size, trace.lastDownloadedBytes)
             parsed.installations.size
-        }
+        }.onFailure { trace?.failed(it) }
     }
 
     suspend fun getMetadata(): ChargerCacheMetadataEntity? = dao.getMetadata()

@@ -221,13 +221,24 @@ interface ChargerCacheDao {
     suspend fun replaceCache(
         installations: List<ChargerInstallationEntity>,
         connectors: List<ChargerConnectorEntity>,
-        metadata: ChargerCacheMetadataEntity
+        metadata: ChargerCacheMetadataEntity,
+        trace: ChargerRefreshDebugTrace? = null
     ) {
+        var startedAt = trace?.now()
         deleteConnectors()
+        startedAt?.let { trace?.roomStep("delete-connectors", it) }
+        startedAt = trace?.now()
         deleteInstallations()
+        startedAt?.let { trace?.roomStep("delete-installations", it) }
+        startedAt = trace?.now()
         installations.chunked(500).forEach { insertInstallations(it) }
+        startedAt?.let { trace?.roomStep("insert-installations", it, " batches=${(installations.size + 499) / 500}") }
+        startedAt = trace?.now()
         connectors.chunked(1_000).forEach { insertConnectors(it) }
+        startedAt?.let { trace?.roomStep("insert-connectors", it, " batches=${(connectors.size + 999) / 1_000}") }
+        startedAt = trace?.now()
         insertMetadata(metadata)
+        startedAt?.let { trace?.roomStep("insert-metadata", it) }
     }
 
     @Transaction

@@ -1,6 +1,8 @@
 package com.bgr3108.kilonom.chargers
 
 import java.io.InputStreamReader
+import java.io.FilterInputStream
+import java.io.InputStream
 import java.io.PushbackReader
 import java.io.Reader
 import java.net.HttpURLConnection
@@ -26,87 +28,147 @@ data class ParsedChargers(
 internal object MitecoChargersParser {
     private val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
 
-    fun parse(reader: Reader): ParsedChargers {
+    fun parse(reader: Reader, trace: ChargerRefreshDebugTrace? = null): ParsedChargers {
+        trace?.parseStarted()
         val records = SemicolonCsvRecords(reader)
-        val headers = records.next() ?: return ParsedChargers(emptyList(), emptyList(), null)
-        val headerIndex = headers.mapIndexed { index, name -> name.trim().uppercase() to index }.toMap()
+        val headers = records.next() ?: return ParsedChargers(emptyList(), emptyList(), null).also {
+            trace?.parseCompleted(rows = 0, discardedRows = 0, installations = 0, connectors = 0)
+        }
+        val columns = ChargerCsvColumns(headers)
         val installations = LinkedHashMap<String, ChargerInstallationEntity>()
         val connectors = LinkedHashMap<String, ChargerConnectorEntity>()
+        val parsedDates = HashMap<String, Long?>()
         var latestUpdate: Long? = null
         var rowIndex = 0
+        var discardedRows = 0
         while (true) {
             val row = records.next() ?: break
             rowIndex++
-            val raw = headerIndex.mapValues { (_, index) -> row.getOrNull(index)?.trim().orEmpty() }
-            val mapped = MitecoChargerMapper.map(raw, rowIndex) ?: continue
-            installations.putIfAbsent(mapped.installation.externalId, mapped.installation)
+            val installationId = columns.value(row, "COD.INSTALACION")
+            if (installationId == null) {
+                discardedRows++
+                continue
+            }
+            val mapped = MitecoChargerMapper.map(
+                values = { key -> columns.value(row, key) },
+                rowIndex = rowIndex,
+                installationId = installationId,
+                createInstallation = installationId !in installations,
+                parseDate = { value -> parsedDates.parse(value) }
+            )
+            if (mapped == null) {
+                discardedRows++
+                continue
+            }
+            mapped.installation?.let { installations.putIfAbsent(it.externalId, it) }
             connectors[mapped.connector.externalId] = mapped.connector
-            latestUpdate = listOfNotNull(latestUpdate, mapped.installation.sourceUpdatedAtMillis).maxOrNull()
+            latestUpdate = maxOfNullable(latestUpdate, mapped.sourceUpdatedAtMillis)
         }
-        return ParsedChargers(installations.values.toList(), connectors.values.toList(), latestUpdate)
+        return ParsedChargers(installations.values.toList(), connectors.values.toList(), latestUpdate).also {
+            trace?.parseCompleted(rowIndex, discardedRows, it.installations.size, it.connectors.size)
+        }
     }
 
     internal fun parseDate(value: String?): Long? = value?.trim()?.takeIf(String::isNotEmpty)?.let {
         runCatching { LocalDateTime.parse(it, dateFormatter).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() }.getOrNull()
     }
+
+    private fun MutableMap<String, Long?>.parse(value: String?): Long? {
+        if (value == null) return null
+        if (containsKey(value)) return this[value]
+        return parseDate(value).also { put(value, it) }
+    }
 }
 
 internal data class MappedCharger(
-    val installation: ChargerInstallationEntity,
-    val connector: ChargerConnectorEntity
+    val installation: ChargerInstallationEntity?,
+    val connector: ChargerConnectorEntity,
+    val sourceUpdatedAtMillis: Long?
 )
 
 internal object MitecoChargerMapper {
     fun map(raw: Map<String, String>, rowIndex: Int): MappedCharger? {
-        val installationId = raw.value("COD.INSTALACION") ?: return null
-        val latitude = raw.value("LATITUD")?.toSpanishNumber()
-        val longitude = raw.value("LONGITUD")?.toSpanishNumber()
+        val values: (String) -> String? = { key -> raw[key]?.trim()?.takeIf(String::isNotEmpty) }
+        val installationId = values("COD.INSTALACION") ?: return null
+        return map(values, rowIndex, installationId, createInstallation = true, MitecoChargersParser::parseDate)
+    }
+
+    fun map(
+        values: (String) -> String?,
+        rowIndex: Int,
+        installationId: String,
+        createInstallation: Boolean,
+        parseDate: (String?) -> Long?
+    ): MappedCharger? {
+        val latitude = values("LATITUD")?.toSpanishNumber()
+        val longitude = values("LONGITUD")?.toSpanishNumber()
         if (latitude != null && latitude !in -90.0..90.0) return null
         if (longitude != null && longitude !in -180.0..180.0) return null
-        val updatedAt = MitecoChargersParser.parseDate(raw.value("FECHA DE ULTIMA MODIFICACION"))
-        val installation = ChargerInstallationEntity(
-            externalId = installationId,
-            name = raw.value("NOMBRE INSTALACION") ?: "Punto de recarga",
-            operatorName = raw.value("NOMBRE OPERADOR"),
-            operatorCode = raw.value("COD.OPERADOR"),
-            address = raw.value("DIRECCIÓN") ?: "",
-            municipality = raw.value("MUNICIPIO") ?: "",
-            province = raw.value("PROVINCIA") ?: "",
-            postalCode = raw.value("CODIGO POSTAL"),
-            locality = raw.value("LOCALIZACION"),
-            schedule = raw.value("HORARIO APERTURA"),
-            scheduleType = raw.value("TIPO HORARIO APERTURA"),
-            latitude = latitude,
-            longitude = longitude,
-            sourceUpdatedAtMillis = updatedAt
-        )
-        val pointId = raw.value("ID. PUNTO DE RECARGA")
-        val pointCode = raw.value("COD. PUNTO DE RECARGA")
-        val sourceConnectorId = raw.value("ID. CONECTOR")
+        val updatedAt = parseDate(values("FECHA DE ULTIMA MODIFICACION"))
+        val installation = if (createInstallation) {
+            ChargerInstallationEntity(
+                externalId = installationId,
+                name = values("NOMBRE INSTALACION") ?: "Punto de recarga",
+                operatorName = values("NOMBRE OPERADOR"),
+                operatorCode = values("COD.OPERADOR"),
+                address = values("DIRECCIÓN") ?: "",
+                municipality = values("MUNICIPIO") ?: "",
+                province = values("PROVINCIA") ?: "",
+                postalCode = values("CODIGO POSTAL"),
+                locality = values("LOCALIZACION"),
+                schedule = values("HORARIO APERTURA"),
+                scheduleType = values("TIPO HORARIO APERTURA"),
+                latitude = latitude,
+                longitude = longitude,
+                sourceUpdatedAtMillis = updatedAt
+            )
+        } else null
+        val pointId = values("ID. PUNTO DE RECARGA")
+        val pointCode = values("COD. PUNTO DE RECARGA")
+        val sourceConnectorId = values("ID. CONECTOR")
         // RIPREE can number connectors from one again for each EVSE in the same installation,
         // so the connector id must be scoped by the public charging-point identifier too.
         // The deterministic fallback prevents a malformed row without connector id from aborting
         // the rest of the export.
         val pointKey = pointId ?: pointCode
         val connectorId = sourceConnectorId?.let { "$installationId|${pointKey ?: "point"}|$it" }
-            ?: listOf(installationId, pointCode ?: pointId ?: "point", raw.value("TIPO CONECTOR") ?: "connector", rowIndex.toString())
+            ?: listOf(installationId, pointCode ?: pointId ?: "point", values("TIPO CONECTOR") ?: "connector", rowIndex.toString())
                 .joinToString("|")
         val connector = ChargerConnectorEntity(
             externalId = connectorId,
             installationId = installationId,
             pointId = pointId,
             pointCode = pointCode,
-            connectorType = raw.value("TIPO CONECTOR"),
-            chargeType = raw.value("TIPO DE CARGA"),
-            connectorFormat = raw.value("FORMATO"),
-            maxPowerKw = raw.value("POTENCIA MAXIMA")?.toKw(),
-            voltage = raw.value("VOLTAJE")?.toSpanishNumber(),
-            amperage = raw.value("INTENSIDAD")?.toSpanishNumber()
+            connectorType = values("TIPO CONECTOR"),
+            chargeType = values("TIPO DE CARGA"),
+            connectorFormat = values("FORMATO"),
+            maxPowerKw = values("POTENCIA MAXIMA")?.toKw(),
+            voltage = values("VOLTAJE")?.toSpanishNumber(),
+            amperage = values("INTENSIDAD")?.toSpanishNumber()
         )
-        return MappedCharger(installation, connector)
+        return MappedCharger(installation, connector, updatedAt)
     }
 
-    private fun Map<String, String>.value(key: String): String? = this[key]?.trim()?.takeIf(String::isNotEmpty)
+}
+
+/** Resolves normalized RIPREE headers once, avoiding a header-keyed map for every CSV row. */
+internal class ChargerCsvColumns(headers: List<String>) {
+    private val indices = HashMap<String, Int>(headers.size)
+
+    init {
+        headers.forEachIndexed { index, name -> indices[name.trim().uppercase()] = index }
+    }
+
+    fun value(row: List<String>, key: String): String? = indices[key]
+        ?.let(row::getOrNull)
+        ?.trim()
+        ?.takeIf(String::isNotEmpty)
+}
+
+private fun maxOfNullable(first: Long?, second: Long?): Long? = when {
+    first == null -> second
+    second == null -> first
+    else -> maxOf(first, second)
 }
 
 internal fun String.toSpanishNumber(): Double? {
@@ -171,7 +233,10 @@ internal class SemicolonCsvRecords(reader: Reader) {
 fun interface ChargerRemoteDataSource { fun download(): ParsedChargers }
 
 class MitecoChargersRemoteDataSource : ChargerRemoteDataSource {
-    override fun download(): ParsedChargers {
+    override fun download(): ParsedChargers = download(trace = null)
+
+    internal fun download(trace: ChargerRefreshDebugTrace?): ParsedChargers {
+        trace?.httpStarted()
         val connection = (URL(MITECO_CHARGERS_EXPORT_URL).openConnection() as HttpURLConnection).apply {
             requestMethod = "POST"
             doOutput = true
@@ -183,10 +248,53 @@ class MitecoChargersRemoteDataSource : ChargerRemoteDataSource {
         }
         return try {
             connection.outputStream.use { it.write("{\"model\":null,\"soloConsolidado\":true}".toByteArray(StandardCharsets.UTF_8)) }
-            if (connection.responseCode !in 200..299) error("RIPREE respondió con HTTP ${connection.responseCode}")
-            InputStreamReader(connection.inputStream, StandardCharsets.UTF_16LE).buffered().use(MitecoChargersParser::parse)
+            val statusCode = connection.responseCode
+            trace?.responseAvailable(
+                statusCode = statusCode,
+                contentLength = connection.contentLengthLong,
+                contentType = connection.contentType,
+                contentEncoding = connection.contentEncoding,
+                transferEncoding = connection.getHeaderField("Transfer-Encoding")
+            )
+            if (statusCode !in 200..299) error("RIPREE respondió con HTTP $statusCode")
+            if (trace == null) {
+                InputStreamReader(connection.inputStream, StandardCharsets.UTF_16LE).buffered().use(MitecoChargersParser::parse)
+            } else {
+                CountingInputStream(connection.inputStream).use { input ->
+                    InputStreamReader(input, StandardCharsets.UTF_16LE).buffered().use { reader ->
+                        MitecoChargersParser.parse(reader, trace).also {
+                            trace.streamConsumed(input.bytesRead, input.readElapsedMs)
+                        }
+                    }
+                }
+            }
         } finally {
             connection.disconnect()
         }
     }
+}
+
+private class CountingInputStream(input: InputStream) : FilterInputStream(input) {
+    var bytesRead: Long = 0
+        private set
+    var readElapsedMs: Long = 0
+        private set
+
+    override fun read(): Int {
+        val startedAt = android.os.SystemClock.elapsedRealtime()
+        return super.read().also {
+            readElapsedMs += android.os.SystemClock.elapsedRealtime() - startedAt
+            if (it != -1) bytesRead++
+        }
+    }
+
+    override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+        val startedAt = android.os.SystemClock.elapsedRealtime()
+        return super.read(buffer, offset, length).also {
+            readElapsedMs += android.os.SystemClock.elapsedRealtime() - startedAt
+            if (it > 0) bytesRead += it
+        }
+    }
+
+    override fun skip(byteCount: Long): Long = super.skip(byteCount).also { bytesRead += it }
 }

@@ -7,7 +7,10 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.ByteArrayInputStream
 import java.io.StringReader
+import java.io.InputStreamReader
+import java.nio.charset.StandardCharsets
 
 class MitecoChargersTest {
     @Test
@@ -56,6 +59,34 @@ class MitecoChargersTest {
             listOf("installation|ES*ONE*E001|1", "installation|ES*ONE*E002|1"),
             parsed.connectors.map(ChargerConnectorEntity::externalId)
         )
+        assertEquals(1, parsed.installations.size)
+    }
+
+    @Test
+    fun parser_keepsQuotedMultilineFieldsAndEscapedQuotesAcrossCrLfRecords() {
+        val csv = listOf(
+            "COD.INSTALACION;NOMBRE INSTALACION;LATITUD;LONGITUD;ID. CONECTOR",
+            "\"one\";\"Centro \"\"Norte\"\"; planta baja",
+            "acceso lateral\";\"28.1000\";\"-15.4000\";\"1\"",
+            "\"two\";\"Segundo\";\"28.2000\";\"-15.5000\";\"2\""
+        ).joinToString("\r\n")
+
+        val parsed = MitecoChargersParser.parse(StringReader(csv))
+
+        assertEquals(listOf("one", "two"), parsed.installations.map(ChargerInstallationEntity::externalId))
+        assertEquals("Centro \"Norte\"; planta baja\r\nacceso lateral", parsed.installations.first().name)
+    }
+
+    @Test
+    fun parser_readsUtf16LeAndFinalRecordWithoutNewline() {
+        val csv = "COD.INSTALACION;NOMBRE INSTALACION;LATITUD;LONGITUD;ID. CONECTOR\n" +
+            "\"área\";\"Cargador español\";\"28.1000\";\"-15.4000\";\"1\""
+        val bytes = csv.toByteArray(StandardCharsets.UTF_16LE)
+
+        val parsed = InputStreamReader(ByteArrayInputStream(bytes), StandardCharsets.UTF_16LE).use(MitecoChargersParser::parse)
+
+        assertEquals("área", parsed.installations.single().externalId)
+        assertEquals("Cargador español", parsed.installations.single().name)
     }
 
     @Test
