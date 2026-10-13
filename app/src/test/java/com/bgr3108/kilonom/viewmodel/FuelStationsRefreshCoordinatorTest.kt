@@ -3,12 +3,15 @@ package com.bgr3108.kilonom.viewmodel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import java.io.IOException
+import com.bgr3108.kilonom.stations.StationCacheMetadataEntity
+import com.bgr3108.kilonom.stations.StationRepository
 
 class FuelStationsRefreshCoordinatorTest {
     @Test
@@ -66,12 +69,28 @@ class FuelStationsRefreshCoordinatorTest {
     }
 
     @Test
-    fun openingStations_refreshesMissingCacheOnlyOncePerEntry() = runBlocking {
+    fun entryChecksReevaluateCacheAgeAndRefreshAgainAtExactlyTwentyFourHours() = runBlocking {
+        var now = 1L
+        var metadata: StationCacheMetadataEntity? = null
         var calls = 0
-        val coordinator = coordinator(refresh = { calls++; Result.success(1) })
-        coordinator.refreshIfNeededOnStationsOpened()
-        coordinator.refreshIfNeededOnStationsOpened()
+        val coordinator = StationsRefreshCoordinator(
+            metadataProvider = { metadata },
+            refresh = {
+                calls++
+                metadata = StationCacheMetadataEntity(downloadedAtMillis = now, sourceUpdatedAtMillis = null, sourceUrl = "fixture")
+                Result.success(1)
+            },
+            isStale = { StationRepository.isStale(it, now) },
+            elapsedRealtime = { now }
+        )
+        coordinator.refreshAutomaticallyIfNeeded()
+        coordinator.refreshAutomaticallyIfNeeded()
+        now += StationRepository.CACHE_STALE_AFTER_MILLIS - 1
+        coordinator.refreshAutomaticallyIfNeeded()
         assertEquals(1, calls)
+        now++
+        coordinator.refreshAutomaticallyIfNeeded()
+        assertEquals(2, calls)
     }
 
     @Test
@@ -176,6 +195,28 @@ class FuelStationsRefreshCoordinatorTest {
         finishReading.complete(Unit)
         automatic.join()
         manual.join()
+        assertEquals(1, calls)
+    }
+
+    @Test
+    fun cancellationDuringMetadataReadAllowsTheNextEntryWithoutStartingCooldown() = runBlocking {
+        val reading = CompletableDeferred<Unit>()
+        val blocked = CompletableDeferred<Unit>()
+        var shouldBlock = true
+        var calls = 0
+        val coordinator = StationsRefreshCoordinator<Long>(
+            metadataProvider = { if (shouldBlock) { reading.complete(Unit); blocked.await() }; null },
+            refresh = { calls++; Result.success(1) },
+            isStale = { true },
+            elapsedRealtime = { 0L }
+        )
+        val firstEntry = launch { coordinator.refreshAutomaticallyIfNeeded() }
+        reading.await()
+        firstEntry.cancelAndJoin()
+        assertTrue(firstEntry.isCancelled)
+        assertEquals(0, calls)
+        shouldBlock = false
+        coordinator.refreshAutomaticallyIfNeeded()
         assertEquals(1, calls)
     }
 

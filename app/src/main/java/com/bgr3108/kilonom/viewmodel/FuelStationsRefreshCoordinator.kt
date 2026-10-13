@@ -9,17 +9,10 @@ internal class StationsRefreshCoordinator<T>(
     private val isStale: (T?) -> Boolean,
     private val elapsedRealtime: () -> Long = android.os.SystemClock::elapsedRealtime
 ) {
-    private var stationEntryHandled = false
     private val mutex = Mutex()
     private var lastAutomaticFailure: Long? = null
     private var refreshInProgress = false
     private var refreshGeneration = 0L
-
-    suspend fun refreshIfNeededOnStationsOpened() {
-        if (stationEntryHandled) return
-        stationEntryHandled = true
-        refreshAutomaticallyIfNeeded()
-    }
 
     suspend fun refreshAutomaticallyIfNeeded() = refreshIfAllowed(manual = false)
 

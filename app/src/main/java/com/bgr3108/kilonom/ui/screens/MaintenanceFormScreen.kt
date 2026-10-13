@@ -55,12 +55,14 @@ import com.bgr3108.kilonom.data.DEFAULT_REMINDER_LEAD_DAYS
 import com.bgr3108.kilonom.data.DEFAULT_REMINDER_LEAD_KM
 import com.bgr3108.kilonom.domain.MaintenanceNextDue
 import com.bgr3108.kilonom.domain.MaintenanceNextDueUpdate
+import com.bgr3108.kilonom.domain.MaintenanceRecurrenceException
 import com.bgr3108.kilonom.domain.calculateNextMaintenanceDue
 import com.bgr3108.kilonom.domain.isDocumentMaintenance
 import com.bgr3108.kilonom.viewmodel.MaintenanceItemDraft
 import com.bgr3108.kilonom.viewmodel.MaintenanceRecordDraft
 import com.bgr3108.kilonom.viewmodel.MaintenanceViewModel
 import java.util.Calendar
+import java.time.ZoneId
 
 enum class MaintenanceFormMode {
     CREATE_ITEM,
@@ -156,17 +158,18 @@ fun MaintenanceFormScreen(
     val intervalValuesAreComplete =
         (!hasIntervalKm || intervalKm.toLongOrNull()?.let { it > 0L } == true) &&
             (!hasIntervalTime || (intervalTimeValue.toIntOrNull()?.let { it > 0 } == true && intervalUnit != null))
-    val calculatedAutomaticDue = if (includeRecord && configuredInterval && intervalValuesAreComplete) {
-        calculateNextMaintenanceDue(
+    val automaticCalculation = if (editableReminder && includeRecord && configuredInterval && intervalValuesAreComplete) {
+        calculateMaintenanceFormDue(
             performedDate = recordDate,
             performedKm = optionalOdometerKm(recordKm),
-            intervalKm = intervalKm.toLongOrNull(),
-            intervalTimeValue = intervalTimeValue.toIntOrNull(),
-            intervalTimeUnit = intervalUnit
+            intervalKm = intervalKm.toLongOrNull().takeIf { hasIntervalKm },
+            intervalTimeValue = intervalTimeValue.toIntOrNull().takeIf { hasIntervalTime },
+            intervalTimeUnit = intervalUnit.takeIf { hasIntervalTime }
         )
     } else {
         null
     }
+    val calculatedAutomaticDue = automaticCalculation?.getOrNull()
     val automaticAvailable = editableReminder && calculatedAutomaticDue?.let {
         it.nextDueKm != null || it.nextDueDate != null
     } == true
@@ -408,7 +411,9 @@ fun MaintenanceFormScreen(
                 }
             }
         }
-        formError.value?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        (automaticCalculation?.exceptionOrNull()?.message ?: formError.value)?.let {
+            Text(it, color = MaterialTheme.colorScheme.error)
+        }
         state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         Button(
             onClick = {
@@ -430,12 +435,14 @@ fun MaintenanceFormScreen(
                     hasDueDate = manualHasDueDate,
                     dueDate = dueDate
                 )
-                if (formError.value == null) {
+                if (formError.value == null && editableReminder) {
                     formError.value = validateIntervalConfiguration(
                         mode = recurrence,
                         intervalKm = intervalKm,
                         intervalTimeValue = intervalTimeValue,
-                        intervalTimeUnit = intervalUnit
+                        intervalTimeUnit = intervalUnit,
+                        performedKm = optionalOdometerKm(recordKm).takeIf { includeRecord },
+                        performedDate = recordDate.takeIf { includeRecord }
                     ) ?: validateReminderLeads(
                         leadKm = reminderLeadKm,
                         leadDays = reminderLeadDays,
@@ -737,7 +744,10 @@ internal fun validateIntervalConfiguration(
     mode: MaintenanceIntervalMode,
     intervalKm: String,
     intervalTimeValue: String,
-    intervalTimeUnit: MaintenanceTimeUnit?
+    intervalTimeUnit: MaintenanceTimeUnit?,
+    performedKm: Long? = null,
+    performedDate: Long? = null,
+    zoneId: ZoneId = ZoneId.systemDefault()
 ): String? {
     val hasKm = mode == MaintenanceIntervalMode.KM || mode == MaintenanceIntervalMode.BOTH
     val hasTime = mode == MaintenanceIntervalMode.TIME || mode == MaintenanceIntervalMode.BOTH
@@ -748,7 +758,27 @@ internal fun validateIntervalConfiguration(
         return "Introduce un intervalo de tiempo válido."
     }
     if (hasTime && intervalTimeUnit == null) return "Selecciona una unidad de tiempo."
-    return null
+    // Without a recorded base, check representability from today's date and zero kilometres.
+    // Larger representable intervals remain valid; no arbitrary business limit is imposed.
+    return calculateMaintenanceFormDue(
+        performedDate = (performedDate ?: todayAtStartOfDayForForm()).takeIf { hasTime },
+        performedKm = (performedKm ?: 0L).takeIf { hasKm },
+        intervalKm = intervalKm.toLongOrNull().takeIf { hasKm },
+        intervalTimeValue = intervalTimeValue.toIntOrNull().takeIf { hasTime },
+        intervalTimeUnit = intervalTimeUnit.takeIf { hasTime },
+        zoneId = zoneId
+    ).exceptionOrNull()?.message
+}
+
+/** A failed preview is editable and never escapes into Compose's recomposition. */
+internal fun calculateMaintenanceFormDue(
+    performedDate: Long?, performedKm: Long?, intervalKm: Long?,
+    intervalTimeValue: Int?, intervalTimeUnit: MaintenanceTimeUnit?,
+    zoneId: ZoneId = ZoneId.systemDefault()
+): Result<MaintenanceNextDue> = try {
+    Result.success(calculateNextMaintenanceDue(performedDate, performedKm, intervalKm, intervalTimeValue, intervalTimeUnit, zoneId))
+} catch (error: MaintenanceRecurrenceException) {
+    Result.failure(error)
 }
 
 internal fun validateReminderLeads(

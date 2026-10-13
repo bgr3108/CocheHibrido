@@ -51,7 +51,8 @@ import org.json.JSONException
 class StationsViewModel(
     private val repository: StationRepository,
     private val chargerRepository: ChargerRepository,
-    private val stationPreferences: StationPreferencesStore = NoOpStationPreferences
+    private val stationPreferences: StationPreferencesStore = NoOpStationPreferences,
+    elapsedRealtime: () -> Long = android.os.SystemClock::elapsedRealtime
 ) : ViewModel() {
     private val filter = MutableStateFlow(StationFilter())
     private val chargerFilter = MutableStateFlow(ChargerFilter())
@@ -69,6 +70,7 @@ class StationsViewModel(
     private val locationIntroVisible = MutableStateFlow(false)
     private val locationPermissionRequested = MutableStateFlow(false)
     private var stationEntryHandled = false
+    private var stationEntryGeneration = 0L
     private val preferenceMutex = Mutex()
     private val _persistenceError = MutableStateFlow<String?>(null)
     val persistenceError: StateFlow<String?> = _persistenceError
@@ -78,12 +80,14 @@ class StationsViewModel(
     private val fuelStationsRefreshCoordinator = StationsRefreshCoordinator(
         metadataProvider = repository::getMetadata,
         refresh = ::refreshFuelStationsInternal,
-        isStale = StationRepository::isStale
+        isStale = StationRepository::isStale,
+        elapsedRealtime = elapsedRealtime
     )
     private val chargerRefreshCoordinator = StationsRefreshCoordinator(
         metadataProvider = chargerRepository::getMetadata,
         refresh = ::refreshChargersInternal,
-        isStale = chargerRepository::isStale
+        isStale = chargerRepository::isStale,
+        elapsedRealtime = elapsedRealtime
     )
 
     private val stationSearchScope = combine(filter, currentLocation) { activeFilter, location ->
@@ -280,6 +284,7 @@ class StationsViewModel(
     fun onStationsOpened() {
         if (stationEntryHandled) return
         stationEntryHandled = true
+        val entryGeneration = ++stationEntryGeneration
         viewModelScope.launch {
             var preferencesLoaded = false
             try {
@@ -292,12 +297,16 @@ class StationsViewModel(
                     }
                 }
                 if (preferencesLoaded) runPersistenceAction(::refresh) {
-                    fuelStationsRefreshCoordinator.refreshIfNeededOnStationsOpened()
+                    fuelStationsRefreshCoordinator.refreshAutomaticallyIfNeeded()
                 }
             } finally {
-                if (!preferencesLoaded) stationEntryHandled = false
+                if (!preferencesLoaded && stationEntryGeneration == entryGeneration) stationEntryHandled = false
             }
         }
+    }
+    fun onStationsClosed() {
+        stationEntryHandled = false
+        stationEntryGeneration++
     }
     fun dismissLocationIntro() {
         locationIntroVisible.value = false

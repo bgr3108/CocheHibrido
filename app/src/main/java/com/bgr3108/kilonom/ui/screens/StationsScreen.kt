@@ -56,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.bgr3108.kilonom.stations.StationFilter
 import com.bgr3108.kilonom.stations.StationFuelPrice
 import com.bgr3108.kilonom.stations.StationFuelType
@@ -81,7 +82,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun StationsScreen(innerPadding: PaddingValues, viewModel: StationsViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) { viewModel.onStationsOpened() }
+    LifecycleResumeEffect(viewModel) {
+        viewModel.onStationsOpened()
+        onPauseOrDispose { viewModel.onStationsClosed() }
+    }
     when (state.contentType) {
         StationsContentType.FUEL -> FuelStationsContent(innerPadding, viewModel)
         StationsContentType.CHARGERS -> ChargersContent(innerPadding, viewModel)

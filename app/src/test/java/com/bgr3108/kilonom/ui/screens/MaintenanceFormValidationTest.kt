@@ -8,7 +8,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 class MaintenanceFormValidationTest {
 
@@ -151,6 +154,46 @@ class MaintenanceFormValidationTest {
             MaintenanceNextDueMode.NONE.toRepositoryUpdate(50_000L to 1L)
         )
     }
+
+    @Test
+    fun unrepresentableNumericTextAndTimeIntervalsReturnFormErrors() {
+        assertEquals("Introduce un intervalo de kilometraje válido.",
+            validateIntervalConfiguration(MaintenanceIntervalMode.KM, "9223372036854775808", "", null))
+        assertEquals("Introduce un intervalo de tiempo válido.",
+            validateIntervalConfiguration(MaintenanceIntervalMode.TIME, "", "2147483648", MaintenanceTimeUnit.YEARS))
+        assertEquals("El intervalo genera una fecha fuera del rango admitido.",
+            validateIntervalConfiguration(MaintenanceIntervalMode.TIME, "", Int.MAX_VALUE.toString(), MaintenanceTimeUnit.YEARS,
+                performedDate = formBaseDate(), zoneId = ZoneOffset.UTC))
+    }
+
+    @Test
+    fun actualBaseKilometresAndDateAreValidatedBeforeSaving() {
+        assertEquals("El intervalo genera un kilometraje fuera del rango admitido.",
+            validateIntervalConfiguration(MaintenanceIntervalMode.KM, "1", "", null, performedKm = Long.MAX_VALUE))
+        assertEquals("El intervalo genera una fecha fuera del rango admitido.",
+            validateIntervalConfiguration(MaintenanceIntervalMode.TIME, "", "1", MaintenanceTimeUnit.DAYS,
+                performedDate = Long.MAX_VALUE, zoneId = ZoneOffset.UTC))
+        assertNull(validateIntervalConfiguration(MaintenanceIntervalMode.KM, Long.MAX_VALUE.toString(), "", null, performedKm = 0L))
+    }
+
+    @Test
+    fun failedPreviewCanBeCorrectedAndRecalculatedWithoutLosingValidValues() {
+        val invalid = calculateMaintenanceFormDue(formBaseDate(), 42_000, Long.MAX_VALUE, 1, MaintenanceTimeUnit.YEARS, ZoneOffset.UTC)
+        assertTrue(invalid.isFailure)
+        val corrected = calculateMaintenanceFormDue(formBaseDate(), 42_000, 30_000, 1, MaintenanceTimeUnit.YEARS, ZoneOffset.UTC).getOrThrow()
+        assertEquals(72_000L, corrected.nextDueKm)
+        assertEquals(LocalDate.of(2027, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(), corrected.nextDueDate)
+        assertNull(validateIntervalConfiguration(MaintenanceIntervalMode.BOTH, "30000", "1", MaintenanceTimeUnit.YEARS,
+            performedKm = 42_000, performedDate = formBaseDate(), zoneId = ZoneOffset.UTC))
+    }
+
+    @Test
+    fun malformedImportedRecurrenceHasAnEditablePreviewError() {
+        assertTrue(calculateMaintenanceFormDue(formBaseDate(), 42_000, -1, 1, MaintenanceTimeUnit.YEARS, ZoneOffset.UTC).isFailure)
+        assertTrue(calculateMaintenanceFormDue(formBaseDate(), 42_000, 30_000, 1, null, ZoneOffset.UTC).isFailure)
+    }
+
+    private fun formBaseDate() = LocalDate.of(2026, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
 
     private fun validate(
         type: MaintenanceType = MaintenanceType.BRAKES,
