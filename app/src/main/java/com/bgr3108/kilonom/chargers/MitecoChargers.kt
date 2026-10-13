@@ -199,6 +199,7 @@ internal class SemicolonCsvRecords(reader: Reader) {
             val next = reader.read()
             if (next == -1) {
                 if (!readAny) return null
+                check(!inQuotes) { "CSV RIPREE truncado: final de archivo dentro de un campo entrecomillado" }
                 values += field.toString()
                 return values
             }
@@ -257,14 +258,14 @@ class MitecoChargersRemoteDataSource : ChargerRemoteDataSource {
                 transferEncoding = connection.getHeaderField("Transfer-Encoding")
             )
             if (statusCode !in 200..299) error("RIPREE respondió con HTTP $statusCode")
-            if (trace == null) {
-                InputStreamReader(connection.inputStream, StandardCharsets.UTF_16LE).buffered().use(MitecoChargersParser::parse)
-            } else {
-                CountingInputStream(connection.inputStream).use { input ->
-                    InputStreamReader(input, StandardCharsets.UTF_16LE).buffered().use { reader ->
-                        MitecoChargersParser.parse(reader, trace).also {
-                            trace.streamConsumed(input.bytesRead, input.readElapsedMs)
-                        }
+            CountingInputStream(connection.inputStream, measureReadDuration = trace != null).use { input ->
+                InputStreamReader(input, StandardCharsets.UTF_16LE).buffered().use { reader ->
+                    MitecoChargersParser.parse(reader, trace).also {
+                        trace?.streamConsumed(input.bytesRead, input.readElapsedMs)
+                        input.requireCompleteResponse(
+                            expectedContentLength = connection.contentLengthLong,
+                            contentEncoding = connection.contentEncoding
+                        )
                     }
                 }
             }
@@ -274,27 +275,47 @@ class MitecoChargersRemoteDataSource : ChargerRemoteDataSource {
     }
 }
 
-private class CountingInputStream(input: InputStream) : FilterInputStream(input) {
+internal class CountingInputStream(
+    input: InputStream,
+    private val elapsedRealtime: () -> Long = android.os.SystemClock::elapsedRealtime,
+    private val measureReadDuration: Boolean = true
+) : FilterInputStream(input) {
     var bytesRead: Long = 0
         private set
     var readElapsedMs: Long = 0
         private set
 
     override fun read(): Int {
-        val startedAt = android.os.SystemClock.elapsedRealtime()
+        if (!measureReadDuration) return super.read().also { if (it != -1) bytesRead++ }
+        val startedAt = elapsedRealtime()
         return super.read().also {
-            readElapsedMs += android.os.SystemClock.elapsedRealtime() - startedAt
+            readElapsedMs += elapsedRealtime() - startedAt
             if (it != -1) bytesRead++
         }
     }
 
     override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
-        val startedAt = android.os.SystemClock.elapsedRealtime()
+        if (!measureReadDuration) return super.read(buffer, offset, length).also { if (it > 0) bytesRead += it }
+        val startedAt = elapsedRealtime()
         return super.read(buffer, offset, length).also {
-            readElapsedMs += android.os.SystemClock.elapsedRealtime() - startedAt
+            readElapsedMs += elapsedRealtime() - startedAt
             if (it > 0) bytesRead += it
         }
     }
 
     override fun skip(byteCount: Long): Long = super.skip(byteCount).also { bytesRead += it }
+
+    /**
+     * A declared length can only be compared to bytes delivered to this stream when the response
+     * is unencoded. Transparent gzip handling intentionally clears Content-Length on Android; a
+     * non-identity encoding must not be compared to decoded bytes.
+     */
+    fun requireCompleteResponse(expectedContentLength: Long, contentEncoding: String?) {
+        if (expectedContentLength < 0 || !contentEncoding.isNullOrBlank() && !contentEncoding.equals("identity", ignoreCase = true)) {
+            return
+        }
+        check(bytesRead == expectedContentLength) {
+            "Descarga RIPREE incompleta: se recibieron $bytesRead de $expectedContentLength bytes"
+        }
+    }
 }

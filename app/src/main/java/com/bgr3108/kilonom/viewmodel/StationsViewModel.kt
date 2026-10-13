@@ -255,19 +255,12 @@ class StationsViewModel(
     fun refreshChargers() = viewModelScope.launch { refreshChargersInternal() }
     fun refreshActiveContent() { if (contentType.value == StationsContentType.CHARGERS) refreshChargers() else refresh() }
     private suspend fun refreshFuelStationsInternal() {
-        if (refreshing.value) return
-        refreshing.value = true
-        refreshError.value = null
-        repository.refresh().onFailure { refreshError.value = it.message }
-        refreshing.value = false
+        runRefreshWithUiState(refreshing, refreshError, repository::refresh)
     }
     private suspend fun refreshChargersInternal() {
-        if (chargerRefreshing.value) return
-        chargerRefreshing.value = true
-        chargerRefreshError.value = null
-        chargerRepository.refresh().onFailure { chargerRefreshError.value = it.message }
-        chargerRefreshing.value = false
+        runRefreshWithUiState(chargerRefreshing, chargerRefreshError, chargerRepository::refresh)
     }
+
     fun clearChargerCache() = viewModelScope.launch { chargerRepository.clearCache(); chargerRefreshError.value = null }
     fun isChargerCacheStale(metadata: ChargerCacheMetadataEntity?): Boolean = chargerRepository.isStale(metadata)
     suspend fun getVisibleFuelPrices(stationId: String): List<StationFuelPrice> =
@@ -309,6 +302,21 @@ class StationsViewModel(
             if (filter.value.province == null) filter.value = filter.value.copy(sortOrder = StationSortOrder.DISTANCE)
             if (chargerFilter.value.province == null) chargerFilter.value = chargerFilter.value.copy(sortOrder = ChargerSortOrder.DISTANCE)
         }
+    }
+}
+
+internal suspend fun runRefreshWithUiState(
+    refreshing: MutableStateFlow<Boolean>,
+    refreshError: MutableStateFlow<String?>,
+    refresh: suspend () -> Result<*>
+) {
+    if (refreshing.value) return
+    refreshing.value = true
+    refreshError.value = null
+    try {
+        refresh().onFailure { refreshError.value = it.message }
+    } finally {
+        refreshing.value = false
     }
 }
 

@@ -5,6 +5,9 @@ import com.bgr3108.kilonom.stations.StationCoordinates
 import com.bgr3108.kilonom.stations.StationMapBounds
 import com.bgr3108.kilonom.stations.StationSearchScope
 import com.bgr3108.kilonom.stations.StationsViewMode
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -40,5 +43,30 @@ class StationsViewModelTest {
         assertFalse(shouldLoadFuelMapResults(StationsContentType.FUEL, nearby, StationsViewMode.LIST, viewport))
         assertTrue(shouldLoadFuelMapResults(StationsContentType.FUEL, nearby, StationsViewMode.MAP, viewport))
         assertTrue(shouldLoadChargerMapResults(StationsContentType.CHARGERS, nearby, StationsViewMode.MAP, viewport))
+    }
+
+    @Test
+    fun cancelledFuelAndChargerRefreshesAlwaysRestoreTheirLoadingFlags() = runBlocking {
+        val fuelRefreshing = MutableStateFlow(false)
+        val fuelError = MutableStateFlow<String?>("old fuel error")
+        val chargerRefreshing = MutableStateFlow(false)
+        val chargerError = MutableStateFlow<String?>("old charger error")
+
+        assertCancellation { runRefreshWithUiState(fuelRefreshing, fuelError) { throw CancellationException() } }
+        assertCancellation { runRefreshWithUiState(chargerRefreshing, chargerError) { throw CancellationException() } }
+
+        assertFalse(fuelRefreshing.value)
+        assertFalse(chargerRefreshing.value)
+        assertTrue(fuelError.value == null)
+        assertTrue(chargerError.value == null)
+    }
+
+    private suspend fun assertCancellation(block: suspend () -> Unit) {
+        try {
+            block()
+            throw AssertionError("Expected CancellationException")
+        } catch (_: CancellationException) {
+            // Cancellation is intentionally propagated after the loading state is cleared.
+        }
     }
 }

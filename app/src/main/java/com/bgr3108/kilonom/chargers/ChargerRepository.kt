@@ -12,6 +12,7 @@ import com.bgr3108.kilonom.stations.toStationMapBoundsOrNull
 import com.bgr3108.kilonom.stations.boundingBox
 import com.bgr3108.kilonom.stations.NEARBY_SEARCH_RADII_KM
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -160,7 +161,7 @@ class ChargerRepository(
 
     suspend fun refresh(): Result<Int> = withContext(Dispatchers.IO) {
         val trace = ChargerRefreshDebugTrace.create()
-        runCatching {
+        try {
             val parsed = (remoteDataSource as? MitecoChargersRemoteDataSource)?.download(trace) ?: remoteDataSource.download()
             if (parsed.installations.isEmpty() || parsed.connectors.isEmpty()) error("RIPREE no devolvió cargadores válidos")
             trace?.summaryStarted()
@@ -181,8 +182,13 @@ class ChargerRepository(
             }
             trace?.roomCompleted()
             trace?.completed(installations.size, parsed.connectors.size, trace.lastDownloadedBytes)
-            parsed.installations.size
-        }.onFailure { trace?.failed(it) }
+            Result.success(parsed.installations.size)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Throwable) {
+            trace?.failed(error)
+            Result.failure(error)
+        }
     }
 
     suspend fun getMetadata(): ChargerCacheMetadataEntity? = dao.getMetadata()

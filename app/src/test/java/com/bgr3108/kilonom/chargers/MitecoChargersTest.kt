@@ -6,6 +6,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.io.StringReader
@@ -90,6 +91,38 @@ class MitecoChargersTest {
     }
 
     @Test
+    fun csvReader_acceptsCompleteRecordsAtEof_andRejectsUnclosedQuotedFields() {
+        assertEquals(listOf("último"), SemicolonCsvRecords(StringReader("\"último\"")).next())
+        assertEquals(listOf("sin salto"), SemicolonCsvRecords(StringReader("sin salto")).next())
+        assertEquals(listOf("con salto"), SemicolonCsvRecords(StringReader("con salto\n")).next())
+
+        assertCsvTruncated("\"incompleto")
+        assertCsvTruncated("\"primera línea\nsegunda línea")
+    }
+
+    @Test
+    fun countedStream_requiresDeclaredUnencodedContentLength_andAcceptsUnknownLength() {
+        val bytes = "datos UTF-16".toByteArray(StandardCharsets.UTF_16LE)
+        CountingInputStream(ByteArrayInputStream(bytes), elapsedRealtime = { 0L }).use { input ->
+            drain(input)
+            input.requireCompleteResponse(bytes.size.toLong(), contentEncoding = null)
+        }
+        CountingInputStream(ByteArrayInputStream(bytes), elapsedRealtime = { 0L }).use { input ->
+            drain(input)
+            input.requireCompleteResponse(expectedContentLength = -1, contentEncoding = null)
+        }
+        CountingInputStream(ByteArrayInputStream(bytes.copyOf(bytes.size - 1)), elapsedRealtime = { 0L }).use { input ->
+            drain(input)
+            try {
+                input.requireCompleteResponse(bytes.size.toLong(), contentEncoding = null)
+                fail("Expected an incomplete-response failure")
+            } catch (_: IllegalStateException) {
+                // Expected: the declared unencoded size did not arrive.
+            }
+        }
+    }
+
+    @Test
     fun mapper_ignoresInvalidCoordinates_withoutBreakingOtherRows() {
         val invalid = mapOf("COD.INSTALACION" to "bad", "LATITUD" to "99", "LONGITUD" to "-3")
         assertNull(MitecoChargerMapper.map(invalid, 1))
@@ -168,4 +201,20 @@ class MitecoChargersTest {
             schedule = null, latitude = latitude, longitude = longitude, sourceUpdatedAtMillis = null,
             connectorTypes = connectors, maxPowerKw = power
         )
+
+    private fun assertCsvTruncated(csv: String) {
+        try {
+            SemicolonCsvRecords(StringReader(csv)).next()
+            fail("Expected a truncated CSV failure")
+        } catch (_: IllegalStateException) {
+            // Expected: EOF occurred inside a quoted CSV field.
+        }
+    }
+
+    private fun drain(input: CountingInputStream) {
+        val buffer = ByteArray(32)
+        while (true) {
+            if (input.read(buffer) == -1) return
+        }
+    }
 }

@@ -6,6 +6,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -132,7 +133,7 @@ class StationRepository(
         }
 
     suspend fun refresh(): Result<Int> = withContext(Dispatchers.IO) {
-        runCatching {
+        try {
             val parsed = remoteDataSource.download()
             if (parsed.stations.isEmpty()) error("MITECO no devolvió estaciones válidas")
             database.withTransaction {
@@ -146,7 +147,11 @@ class StationRepository(
                     )
                 )
             }
-            parsed.stations.size
+            Result.success(parsed.stations.size)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Throwable) {
+            Result.failure(error)
         }
     }
 

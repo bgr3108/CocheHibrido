@@ -6,10 +6,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CancellationException
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -67,6 +69,26 @@ class StationCacheDaoTest {
 
         assertTrue(repository.refresh().isFailure)
         assertEquals(listOf("a"), dao.observeStationsForProducts(StationFuelType.GASOLINE_95.productCodesByPriority, null, null).first().map { it.externalId })
+        assertEquals(1L, dao.getMetadata()!!.downloadedAtMillis)
+    }
+
+    @Test
+    fun cancelledRefresh_propagatesAndPreservesExistingCacheAndMetadata() = runBlocking {
+        dao.replaceCache(
+            stations = listOf(station("a", "Conservada")),
+            prices = listOf(price("a", 1.70)),
+            metadata = StationCacheMetadataEntity(downloadedAtMillis = 1L, sourceUpdatedAtMillis = null, sourceUrl = "https://miteco.test")
+        )
+        val repository = StationRepository(database, dao) { throw CancellationException("cancelled") }
+
+        try {
+            repository.refresh()
+            fail("Expected cancellation to propagate")
+        } catch (_: CancellationException) {
+            // Expected: cancellation is not a normal refresh failure.
+        }
+        assertEquals(listOf("a"), dao.observeStationsForProducts(StationFuelType.GASOLINE_95.productCodesByPriority, null, null).first().map { it.externalId })
+        assertEquals(1L, dao.getMetadata()!!.downloadedAtMillis)
     }
 
     @Test

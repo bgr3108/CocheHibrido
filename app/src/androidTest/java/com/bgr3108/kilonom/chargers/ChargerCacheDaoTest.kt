@@ -9,9 +9,11 @@ import android.os.SystemClock
 import android.util.Log
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CancellationException
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -56,7 +58,54 @@ class ChargerCacheDaoTest {
         )
         val repository = ChargerRepository(database, dao) { throw IOException("offline") }
         assertTrue(repository.refresh().isFailure)
-        assertEquals(listOf("preserved"), dao.observeInstallations().first().map { it.externalId })
+        assertPreservedCache()
+    }
+
+    @Test
+    fun malformedOrIncompleteChargerDownload_preservesExistingCacheAndMetadata() = runBlocking {
+        dao.replaceCache(
+            installations = listOf(installation("preserved")),
+            connectors = listOf(connector("preserved|1", "preserved", 22.0)),
+            metadata = ChargerCacheMetadataEntity(downloadedAtMillis = 1L, sourceUpdatedAtMillis = null, sourceUrl = "https://ripree.test")
+        )
+
+        val malformedRepository = ChargerRepository(database, dao) {
+            MitecoChargersParser.parse(java.io.StringReader("COD.INSTALACION;ID. CONECTOR\n\"partial"))
+        }
+        assertTrue(malformedRepository.refresh().isFailure)
+        assertPreservedCache()
+
+        val incompleteRepository = ChargerRepository(database, dao) {
+            val declared = "RIPREE body".toByteArray()
+            CountingInputStream(java.io.ByteArrayInputStream(declared.copyOf(declared.size - 1))).use { input ->
+                val buffer = ByteArray(16)
+                while (true) {
+                    if (input.read(buffer) == -1) break
+                }
+                input.requireCompleteResponse(declared.size.toLong(), contentEncoding = null)
+            }
+            error("Expected the incomplete body to fail")
+        }
+        assertTrue(incompleteRepository.refresh().isFailure)
+        assertPreservedCache()
+    }
+
+    @Test
+    fun cancelledChargerRefresh_propagatesAndPreservesExistingCacheAndMetadata() = runBlocking {
+        dao.replaceCache(
+            installations = listOf(installation("preserved")),
+            connectors = listOf(connector("preserved|1", "preserved", 22.0)),
+            metadata = ChargerCacheMetadataEntity(downloadedAtMillis = 1L, sourceUpdatedAtMillis = null, sourceUrl = "https://ripree.test")
+        )
+        val repository = ChargerRepository(database, dao) { throw CancellationException("cancelled") }
+
+        try {
+            repository.refresh()
+            fail("Expected cancellation to propagate")
+        } catch (_: CancellationException) {
+            // Expected: cancellation is not a normal refresh failure.
+        }
+        assertPreservedCache()
     }
 
     @Test
@@ -286,6 +335,12 @@ class ChargerCacheDaoTest {
         connectorType = type, chargeType = "AC", connectorFormat = "Cable",
         maxPowerKw = power, voltage = null, amperage = null
     )
+
+    private suspend fun assertPreservedCache() {
+        assertEquals(listOf("preserved"), dao.observeInstallations().first().map { it.externalId })
+        assertEquals(listOf("preserved"), dao.observeConnectorSummaries().first().map { it.installationId })
+        assertEquals(1L, dao.getMetadata()!!.downloadedAtMillis)
+    }
 }
 
 private fun <T : Any> PagingSource.LoadResult<Int, T>.requirePage(): PagingSource.LoadResult.Page<Int, T> =
