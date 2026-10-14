@@ -133,15 +133,17 @@ class HomeViewModel(
     private val _setupVehicleCategory = MutableStateFlow(VehicleCategory.COCHE)
     val setupVehicleCategory: StateFlow<VehicleCategory> = _setupVehicleCategory
 
-    val selectionCatalog = MutableStateFlow(
-        vehicleRepository.vehicleDataSource.loadSelectionCatalog(VehicleCategory.COCHE)
+    private val selectionLoader = VehicleSelectionLoader(
+        viewModelScope, vehicleRepository.vehicleDataSource, _setupVehicleCategory
     )
+    val selectionCatalog = selectionLoader.state
+
+    fun retrySelectionCatalog() = selectionLoader.retry()
 
     fun selectSetupVehicleCategory(category: VehicleCategory) {
         if (_setupVehicleCategory.value == category) return
 
         _setupVehicleCategory.value = category
-        selectionCatalog.value = vehicleRepository.vehicleDataSource.loadSelectionCatalog(category)
     }
 
     fun saveInitialVehicle(

@@ -6,7 +6,6 @@ import com.bgr3108.kilonom.data.Vehicle
 import com.bgr3108.kilonom.data.VehicleCategory
 import com.bgr3108.kilonom.data.VehicleEntity
 import com.bgr3108.kilonom.data.LegacyCatalogReconciliation
-import com.bgr3108.kilonom.data.VehicleSelectionCatalog
 import com.bgr3108.kilonom.data.VehicleRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,12 +31,16 @@ class MyVehiclesViewModel(
 
     private val _selectedCategory = MutableStateFlow(VehicleCategory.COCHE)
     val selectedCategory: StateFlow<VehicleCategory> = _selectedCategory
-    val selectionCatalog = MutableStateFlow(loadCatalog(VehicleCategory.COCHE))
+    private val selectionLoader = VehicleSelectionLoader(
+        viewModelScope, vehicleRepository.vehicleDataSource, _selectedCategory
+    )
+    val selectionCatalog = selectionLoader.state
+
+    fun retrySelectionCatalog() = selectionLoader.retry()
 
     fun selectCategory(category: VehicleCategory) {
         if (_selectedCategory.value == category) return
         _selectedCategory.value = category
-        selectionCatalog.value = loadCatalog(category)
     }
 
     fun selectVehicle(vehicleId: Long) = runAction(
@@ -97,6 +100,4 @@ class MyVehiclesViewModel(
         }
     }
 
-    private fun loadCatalog(category: VehicleCategory): VehicleSelectionCatalog =
-        vehicleRepository.vehicleDataSource.loadSelectionCatalog(category)
 }

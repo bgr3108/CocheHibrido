@@ -38,9 +38,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.bgr3108.kilonom.data.Vehicle
+import com.bgr3108.kilonom.R
 import com.bgr3108.kilonom.data.VehicleCategory
 import com.bgr3108.kilonom.data.VehicleInfo
 import com.bgr3108.kilonom.data.VehicleIdentificationField
@@ -99,12 +101,13 @@ fun VehicleForm(
     var skippedAssistantHints by remember { mutableStateOf<Set<VehicleIdentificationField>>(emptySet()) }
 
     val category = VehicleCategory.entries.firstOrNull { it.name == categoryName.value } ?: VehicleCategory.COCHE
+    val currentCatalog = selectionCatalog.takeIf { it.category == category }
 
     LaunchedEffect(category) {
         onCategoryChanged(category)
     }
 
-    val initialSelection = selectionCatalog.initialSelectionFor(initialVehicle)
+    val initialSelection = currentCatalog?.initialSelectionFor(initialVehicle)
     LaunchedEffect(selectionCatalog, category, initialId, initialSelection) {
         if (catalogEditable && selectionCatalog.category == category && brandId.isBlank()) {
             initialSelection?.let { selection ->
@@ -116,13 +119,14 @@ fun VehicleForm(
         }
     }
 
-    val brands = selectionCatalog.brands()
-    val models = if (brandId.isBlank()) emptyList() else selectionCatalog.modelsFor(brandId)
-    val years = if (modelId.isBlank()) emptyList() else selectionCatalog.yearsFor(brandId, modelId)
+    val brands = currentCatalog?.brands().orEmpty()
+    val models = if (brandId.isBlank()) emptyList() else currentCatalog?.modelsFor(brandId).orEmpty()
+    val years = if (modelId.isBlank()) emptyList() else currentCatalog?.yearsFor(brandId, modelId).orEmpty()
     val variants = year.toIntOrNull()?.let { selectedYear ->
-        selectionCatalog.variantsFor(brandId, modelId, selectedYear)
+        currentCatalog?.variantsFor(brandId, modelId, selectedYear)
     }.orEmpty()
     LaunchedEffect(selectionCatalog, brandId, modelId, year, variants) {
+        if (currentCatalog == null) return@LaunchedEffect
         variantId = when {
             variants.size == 1 -> variants.single().id
             variants.any { it.id == variantId } -> variantId
@@ -131,7 +135,7 @@ fun VehicleForm(
     }
     val selectedVariant = variants.firstOrNull { it.id == variantId }
     val assistant = year.toIntOrNull()?.let { selectedYear ->
-        selectionCatalog.versionAssistantFor(brandId, modelId, selectedYear)
+        currentCatalog?.versionAssistantFor(brandId, modelId, selectedYear)
     }
     val selectedAssistantEnergy = assistantEnergyName?.let { energyName ->
         VehicleType.entries.firstOrNull { it.name == energyName }
@@ -157,7 +161,7 @@ fun VehicleForm(
             "El kilometraje inicial no puede superar el primer kilometraje registrado"
         else -> null
     }
-    val isValid = isVehicleSelectionCompatible(selectedVehicle, category) &&
+    val isValid = currentCatalog != null && isVehicleSelectionCompatible(selectedVehicle, category) &&
         initialKm != null && initialKm >= 0.0 && kmError == null
 
     Column(
@@ -206,6 +210,9 @@ fun VehicleForm(
         }
 
         if (catalogEditable) {
+            if (currentCatalog == null) {
+                Text(stringResource(R.string.vehicle_selection_loading))
+            }
             CatalogDropdown(
                 label = "Marca",
                 value = brands.firstOrNull { it.id == brandId }?.displayName.orEmpty(),

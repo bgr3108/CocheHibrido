@@ -16,15 +16,17 @@ fun SetupScreen(
     val isSaving by homeViewModel.isSavingVehicle.collectAsStateWithLifecycle()
     val saveFailed by homeViewModel.vehicleSaveFailed.collectAsStateWithLifecycle()
 
-    VehicleForm(
-        title = "Configura tu vehículo",
-        initialVehicle = null,
-        selectionCatalog = catalog,
-        selectedCategory = category,
-        onCategoryChanged = homeViewModel::selectSetupVehicleCategory,
-        catalogEditable = true,
-        isSaving = isSaving,
-        errorMessage = if (saveFailed) "No se pudo guardar la configuración. Inténtalo de nuevo." else null,
-        onSubmit = { vehicle -> homeViewModel.saveInitialVehicle(vehicle, onDone) }
-    )
+    VehicleSelectionContent(catalog, homeViewModel::retrySelectionCatalog) { readyCatalog ->
+        VehicleForm(
+            title = "Configura tu vehículo",
+            initialVehicle = null,
+            selectionCatalog = readyCatalog,
+            selectedCategory = category,
+            onCategoryChanged = homeViewModel::selectSetupVehicleCategory,
+            catalogEditable = true,
+            isSaving = isSaving,
+            errorMessage = if (saveFailed) "No se pudo guardar la configuración. Inténtalo de nuevo." else null,
+            onSubmit = { vehicle -> homeViewModel.saveInitialVehicle(vehicle, onDone) }
+        )
+    }
 }

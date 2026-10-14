@@ -1,4 +1,7 @@
 <resources>
+    <string name="vehicle_selection_loading">Preparando catálogo de vehículos…</string>
+    <string name="vehicle_selection_failed">No se pudo cargar el catálogo de vehículos.</string>
+    <string name="vehicle_selection_retry">Reintentar</string>
     <string name="app_name">Kilonom</string>
     <string name="catalog_update_title">Catálogo de vehículos</string>
     <string name="catalog_update_version">Versión del catálogo: %1$d</string>
