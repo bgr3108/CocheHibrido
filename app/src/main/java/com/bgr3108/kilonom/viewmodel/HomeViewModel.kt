@@ -28,10 +28,10 @@ import kotlinx.coroutines.ensureActive
 import android.database.sqlite.SQLiteException
 import java.io.IOException
 import kotlinx.coroutines.sync.Mutex
-import com.bgr3108.kilonom.domain.calculateAverageElectricConsumption
-import com.bgr3108.kilonom.domain.calculateBestElectricConsumption
-import com.bgr3108.kilonom.domain.calculateElectricSegmentCount
-import com.bgr3108.kilonom.domain.calculateWorstElectricConsumption
+import com.bgr3108.kilonom.domain.calculateAverageElectricConsumptionFromSegments
+import com.bgr3108.kilonom.domain.calculateBestElectricConsumptionFromSegments
+import com.bgr3108.kilonom.domain.calculateElectricSegmentCountFromSegments
+import com.bgr3108.kilonom.domain.calculateWorstElectricConsumptionFromSegments
 import com.bgr3108.kilonom.domain.calculateAverageElectricPrice
 import com.bgr3108.kilonom.domain.calculateAverageFuelPrice
 import com.bgr3108.kilonom.domain.calculateCostPerKilometer
@@ -226,11 +226,16 @@ class HomeViewModel(
         .map(::calculateAverageFuelConsumptionFromSegments)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
-    val consumoElectrico = entries
-        .map(::calculateAverageElectricConsumption)
+    /** One construction shared by all electric consumption statistics and their chart. */
+    val electricConsumptionSegments = entries.subscribedEntryStatistic(
+        viewModelScope, emptyList(), ::calculateElectricSegments
+    )
+
+    val consumoElectrico = electricConsumptionSegments
+        .map(::calculateAverageElectricConsumptionFromSegments)
         .stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
+            SharingStarted.WhileSubscribed(),
             0.0
         )
 
@@ -259,27 +264,27 @@ class HomeViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    val mejorConsumoElectrico = entries
-        .map(::calculateBestElectricConsumption)
+    val mejorConsumoElectrico = electricConsumptionSegments
+        .map(::calculateBestElectricConsumptionFromSegments)
         .stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
+            SharingStarted.WhileSubscribed(),
             0.0
         )
 
-    val peorConsumoElectrico = entries
-        .map(::calculateWorstElectricConsumption)
+    val peorConsumoElectrico = electricConsumptionSegments
+        .map(::calculateWorstElectricConsumptionFromSegments)
         .stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
+            SharingStarted.WhileSubscribed(),
             0.0
         )
 
-    val numeroTramosElectricos = entries
-        .map(::calculateElectricSegmentCount)
+    val numeroTramosElectricos = electricConsumptionSegments
+        .map(::calculateElectricSegmentCountFromSegments)
         .stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
+            SharingStarted.WhileSubscribed(),
             0
         )
 
@@ -298,9 +303,9 @@ class HomeViewModel(
             initialValue = emptyList()
         )
 
-    val historialConsumoElectrico = entries
-        .map {
-            calculateElectricSegments(it).map { segment ->
+    val historialConsumoElectrico = electricConsumptionSegments
+        .map { segments ->
+            segments.map { segment ->
                 ChartPoint(
                     x = segment.endKm,
                     y = segment.consumption.toFloat()
@@ -309,7 +314,7 @@ class HomeViewModel(
         }
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.WhileSubscribed(),
             initialValue = emptyList()
         )
     // ============================================================

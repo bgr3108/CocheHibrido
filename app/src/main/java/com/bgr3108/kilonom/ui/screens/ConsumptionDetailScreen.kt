@@ -51,50 +51,6 @@ fun ConsumptionDetailScreen(
     onBack: () -> Unit
 ) {
 
-    val consumoGasolina by viewModel
-        .consumoGasolina
-        .collectAsStateWithLifecycle()
-
-    val consumoElectrico by viewModel
-        .consumoElectrico
-        .collectAsStateWithLifecycle()
-
-    val mejorConsumoGasolina by viewModel
-        .mejorConsumoGasolina
-        .collectAsStateWithLifecycle()
-
-    val peorConsumoGasolina by viewModel
-        .peorConsumoGasolina
-        .collectAsStateWithLifecycle()
-
-    val numeroTramosGasolina by viewModel
-        .numeroTramosGasolina
-        .collectAsStateWithLifecycle()
-
-    val mejorConsumoElectrico by viewModel
-        .mejorConsumoElectrico
-        .collectAsStateWithLifecycle()
-
-    val peorConsumoElectrico by viewModel
-        .peorConsumoElectrico
-        .collectAsStateWithLifecycle()
-
-    val numeroTramosElectricos by viewModel
-        .numeroTramosElectricos
-        .collectAsStateWithLifecycle()
-
-    val historialConsumoGasolina by viewModel
-        .historialConsumoGasolina
-        .collectAsStateWithLifecycle()
-
-    val currentEstimatedFuelConsumption by viewModel
-        .currentEstimatedFuelConsumption
-        .collectAsStateWithLifecycle()
-
-    val historialConsumoElectrico by viewModel
-        .historialConsumoElectrico
-        .collectAsStateWithLifecycle()
-
     val vehicle by viewModel
         .vehicle
         .collectAsStateWithLifecycle()
@@ -102,6 +58,50 @@ fun ConsumptionDetailScreen(
     val showFuel = vehicle.type.supportsFuelEntries
     val showElectric = vehicle.type.supportsElectricEntries
     val isPlugInHybrid = vehicle.type.isPlugInHybrid
+
+    val consumoGasolina = if (showFuel) {
+        viewModel.consumoGasolina.collectAsStateWithLifecycle().value
+    } else 0.0
+
+    val consumoElectrico = if (showElectric) {
+        viewModel.consumoElectrico.collectAsStateWithLifecycle().value
+    } else 0.0
+
+    val mejorConsumoGasolina = if (showFuel) {
+        viewModel.mejorConsumoGasolina.collectAsStateWithLifecycle().value
+    } else 0.0
+
+    val peorConsumoGasolina = if (showFuel) {
+        viewModel.peorConsumoGasolina.collectAsStateWithLifecycle().value
+    } else 0.0
+
+    val numeroTramosGasolina = if (showFuel) {
+        viewModel.numeroTramosGasolina.collectAsStateWithLifecycle().value
+    } else 0
+
+    val mejorConsumoElectrico = if (showElectric) {
+        viewModel.mejorConsumoElectrico.collectAsStateWithLifecycle().value
+    } else 0.0
+
+    val peorConsumoElectrico = if (showElectric) {
+        viewModel.peorConsumoElectrico.collectAsStateWithLifecycle().value
+    } else 0.0
+
+    val numeroTramosElectricos = if (showElectric) {
+        viewModel.numeroTramosElectricos.collectAsStateWithLifecycle().value
+    } else 0
+
+    val historialConsumoGasolina = if (showFuel) {
+        viewModel.historialConsumoGasolina.collectAsStateWithLifecycle().value
+    } else emptyList()
+
+    val currentEstimatedFuelConsumption = if (showFuel) {
+        viewModel.currentEstimatedFuelConsumption.collectAsStateWithLifecycle().value
+    } else null
+
+    val historialConsumoElectrico = if (showElectric) {
+        viewModel.historialConsumoElectrico.collectAsStateWithLifecycle().value
+    } else emptyList()
 
     Scaffold(
 

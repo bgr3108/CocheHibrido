@@ -37,8 +37,12 @@ fun calculateAverageElectricConsumption(
     entries: List<FuelEntry>
 ): Double {
 
-    val segments = calculateElectricSegments(entries)
+    return calculateAverageElectricConsumptionFromSegments(calculateElectricSegments(entries))
+}
 
+fun calculateAverageElectricConsumptionFromSegments(
+    segments: List<ElectricConsumptionSegment>
+): Double {
     var totalEnergy = 0.0
     var totalDistance = 0.0
 
@@ -314,19 +318,30 @@ fun calculateBestElectricConsumption(
     entries: List<FuelEntry>
 ): Double {
 
-    return calculateElectricSegments(entries)
-        .minOfOrNull { it.consumption } ?: 0.0
+    return calculateBestElectricConsumptionFromSegments(calculateElectricSegments(entries))
 }
 fun calculateWorstElectricConsumption(
     entries: List<FuelEntry>
 ): Double {
 
-    return calculateElectricSegments(entries)
-        .maxOfOrNull { it.consumption } ?: 0.0
+    return calculateWorstElectricConsumptionFromSegments(calculateElectricSegments(entries))
 }
 fun calculateElectricSegmentCount(
     entries: List<FuelEntry>
 ): Int {
 
-    return calculateElectricSegments(entries).size
+    return calculateElectricSegmentCountFromSegments(calculateElectricSegments(entries))
 }
+
+
+fun calculateBestElectricConsumptionFromSegments(
+    segments: List<ElectricConsumptionSegment>
+): Double = segments.minOfOrNull { it.consumption } ?: 0.0
+
+fun calculateWorstElectricConsumptionFromSegments(
+    segments: List<ElectricConsumptionSegment>
+): Double = segments.maxOfOrNull { it.consumption } ?: 0.0
+
+fun calculateElectricSegmentCountFromSegments(
+    segments: List<ElectricConsumptionSegment>
+): Int = segments.size

@@ -56,57 +56,144 @@ fun StatisticsScreen(
     initialTab: StatisticsTab = StatisticsTab.GLOBAL
 ){
 
+    var selectedTab by rememberSaveable(initialTab) { mutableStateOf(initialTab) }
+
+    StatisticsTabContent(
+        selectedTab = selectedTab,
+        global = {
+            GlobalStatisticsContent(
+                innerPadding, viewModel, { selectedTab = it },
+                onOpenConsumption, onOpenPrice, onOpenCost, onOpenTotal
+            )
+        },
+        periods = {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                StatisticsHeader(
+                    selectedTab = selectedTab,
+                    onTabSelected = { selectedTab = it },
+                    bottomPadding = 6.dp
+                )
+                PeriodSummaryContent(
+                    viewModel = periodSummaryViewModel,
+                    modifier = Modifier.weight(1f),
+                    topPadding = 6.dp
+                )
+            }
+        },
+        trends = {
+            val vehicle by viewModel.vehicle.collectAsStateWithLifecycle()
+            val trendSummary by viewModel.trendSummary.collectAsStateWithLifecycle()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                StatisticsHeader(
+                    selectedTab = selectedTab,
+                    onTabSelected = { selectedTab = it },
+                    bottomPadding = 6.dp
+                )
+                TrendsContent(
+                    summary = trendSummary,
+                    vehicleType = vehicle.type,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    )
+}
+
+/** Only the selected branch is composed, so hidden tabs own no collectors. */
+@Composable
+internal fun StatisticsTabContent(
+    selectedTab: StatisticsTab,
+    global: @Composable () -> Unit,
+    periods: @Composable () -> Unit,
+    trends: @Composable () -> Unit
+) {
+    when (selectedTab) {
+        StatisticsTab.GLOBAL -> global()
+        StatisticsTab.PERIODS -> periods()
+        StatisticsTab.TRENDS -> trends()
+    }
+}
+
+@Composable
+private fun GlobalStatisticsContent(
+    innerPadding: PaddingValues,
+    viewModel: HomeViewModel,
+    onTabSelected: (StatisticsTab) -> Unit,
+    onOpenConsumption: () -> Unit,
+    onOpenPrice: () -> Unit,
+    onOpenCost: () -> Unit,
+    onOpenTotal: () -> Unit
+) {
+    val vehicle by viewModel
+        .vehicle
+        .collectAsStateWithLifecycle()
+
+    val showFuel = vehicle.type.supportsFuelEntries
+
+    val showElectric = vehicle.type.supportsElectricEntries
+
+    val isPlugInHybrid = vehicle.type.isPlugInHybrid
+
+
     val entries by viewModel
         .entries
         .collectAsStateWithLifecycle(initialValue = emptyList())
 
-    val consumoGasolina by viewModel
-        .consumoGasolina
-        .collectAsStateWithLifecycle()
+    val consumoGasolina = if (showFuel) {
+        viewModel.consumoGasolina.collectAsStateWithLifecycle().value
+    } else 0.0
 
-    val mejorConsumoGasolina by viewModel
-        .mejorConsumoGasolina
-        .collectAsStateWithLifecycle()
+    val mejorConsumoGasolina = if (showFuel) {
+        viewModel.mejorConsumoGasolina.collectAsStateWithLifecycle().value
+    } else 0.0
 
-    val peorConsumoGasolina by viewModel
-        .peorConsumoGasolina
-        .collectAsStateWithLifecycle()
+    val peorConsumoGasolina = if (showFuel) {
+        viewModel.peorConsumoGasolina.collectAsStateWithLifecycle().value
+    } else 0.0
 
-    val numeroTramosGasolina by viewModel
-        .numeroTramosGasolina
-        .collectAsStateWithLifecycle()
+    val numeroTramosGasolina = if (showFuel) {
+        viewModel.numeroTramosGasolina.collectAsStateWithLifecycle().value
+    } else 0
 
-    val currentEstimatedFuelConsumption by viewModel
-        .currentEstimatedFuelConsumption
-        .collectAsStateWithLifecycle()
+    val currentEstimatedFuelConsumption = if (showFuel) {
+        viewModel.currentEstimatedFuelConsumption.collectAsStateWithLifecycle().value
+    } else null
 
-    val consumoElectrico by viewModel
-        .consumoElectrico
-        .collectAsStateWithLifecycle()
+    val consumoElectrico = if (showElectric) {
+        viewModel.consumoElectrico.collectAsStateWithLifecycle().value
+    } else 0.0
 
-    val precioGasolina by viewModel
-        .precioGasolina
-        .collectAsStateWithLifecycle()
+    val precioGasolina = if (showFuel) {
+        viewModel.precioGasolina.collectAsStateWithLifecycle().value
+    } else 0.0
 
-    val precioElectrico by viewModel
-        .precioElectrico
-        .collectAsStateWithLifecycle()
+    val precioElectrico = if (showElectric) {
+        viewModel.precioElectrico.collectAsStateWithLifecycle().value
+    } else 0.0
 
-    val litrosTotales by viewModel
-        .litrosTotales
-        .collectAsStateWithLifecycle(0.0)
+    val litrosTotales = if (showFuel) {
+        viewModel.litrosTotales.collectAsStateWithLifecycle(0.0).value
+    } else 0.0
 
-    val gastoGasolinaTotal by viewModel
-        .gastoGasolinaTotal
-        .collectAsStateWithLifecycle(0.0)
+    val gastoGasolinaTotal = if (showFuel) {
+        viewModel.gastoGasolinaTotal.collectAsStateWithLifecycle(0.0).value
+    } else 0.0
 
-    val kwhTotales by viewModel
-        .kwhTotales
-        .collectAsStateWithLifecycle(0.0)
+    val kwhTotales = if (showElectric) {
+        viewModel.kwhTotales.collectAsStateWithLifecycle(0.0).value
+    } else 0.0
 
-    val gastoElectricoTotal by viewModel
-        .gastoElectricoTotal
-        .collectAsStateWithLifecycle(0.0)
+    val gastoElectricoTotal = if (showElectric) {
+        viewModel.gastoElectricoTotal.collectAsStateWithLifecycle(0.0).value
+    } else 0.0
 
     val totalKm by viewModel
         .totalKm
@@ -116,65 +203,16 @@ fun StatisticsScreen(
         .costPerHundredKm
         .collectAsStateWithLifecycle()
 
-    val vehicle by viewModel
-        .vehicle
-        .collectAsStateWithLifecycle()
 
-    val trendSummary by viewModel
-        .trendSummary
-        .collectAsStateWithLifecycle()
-
-    val showFuel = vehicle.type.supportsFuelEntries
-
-    val showElectric = vehicle.type.supportsElectricEntries
-
-    val isPlugInHybrid = vehicle.type.isPlugInHybrid
-
-    var selectedTab by rememberSaveable(initialTab) { mutableStateOf(initialTab) }
-
-    if (selectedTab == StatisticsTab.PERIODS) {
+    if (entries.isEmpty()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
             StatisticsHeader(
-                selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it },
-                bottomPadding = 6.dp
-            )
-            PeriodSummaryContent(
-                viewModel = periodSummaryViewModel,
-                modifier = Modifier.weight(1f),
-                topPadding = 6.dp
-            )
-        }
-    } else if (selectedTab == StatisticsTab.TRENDS) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            StatisticsHeader(
-                selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it },
-                bottomPadding = 6.dp
-            )
-            TrendsContent(
-                summary = trendSummary,
-                vehicleType = vehicle.type,
-                modifier = Modifier.weight(1f)
-            )
-        }
-    } else if (entries.isEmpty()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            StatisticsHeader(
-                selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it }
+                selectedTab = StatisticsTab.GLOBAL,
+                onTabSelected = onTabSelected
             )
             Column(
                 modifier = Modifier
@@ -207,8 +245,8 @@ fun StatisticsScreen(
             .padding(innerPadding)
     ) {
         StatisticsHeader(
-            selectedTab = selectedTab,
-            onTabSelected = { selectedTab = it }
+            selectedTab = StatisticsTab.GLOBAL,
+            onTabSelected = onTabSelected
         )
 
         Column(
