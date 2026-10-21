@@ -97,8 +97,19 @@ fun VehicleForm(
     var variantsExpanded by rememberSaveable { mutableStateOf(false) }
     var showVersionAssistant by rememberSaveable(initialId) { mutableStateOf(false) }
     var assistantEnergyName by rememberSaveable(initialId) { mutableStateOf<String?>(null) }
-    var assistantAnswers by remember { mutableStateOf<Map<VehicleIdentificationField, Set<String>>>(emptyMap()) }
-    var skippedAssistantHints by remember { mutableStateOf<Set<VehicleIdentificationField>>(emptySet()) }
+    var assistantAnswers by rememberSaveable(initialId, stateSaver = AssistantAnswersSaver) {
+        mutableStateOf<Map<VehicleIdentificationField, Set<String>>>(emptyMap())
+    }
+    var skippedAssistantHints by rememberSaveable(initialId, stateSaver = SkippedAssistantHintsSaver) {
+        mutableStateOf<Set<VehicleIdentificationField>>(emptySet())
+    }
+
+    fun resetAssistant() {
+        showVersionAssistant = false
+        assistantEnergyName = null
+        assistantAnswers = emptyMap()
+        skippedAssistantHints = emptySet()
+    }
 
     val category = VehicleCategory.entries.firstOrNull { it.name == categoryName.value } ?: VehicleCategory.COCHE
     val currentCatalog = selectionCatalog.takeIf { it.category == category }
@@ -140,16 +151,27 @@ fun VehicleForm(
     val selectedAssistantEnergy = assistantEnergyName?.let { energyName ->
         VehicleType.entries.firstOrNull { it.name == energyName }
     }
+    val validProgress = remember(assistant, selectedAssistantEnergy, assistantAnswers, skippedAssistantHints) {
+        assistant?.let { validateAssistantProgress(it, selectedAssistantEnergy, assistantAnswers, skippedAssistantHints) }
+    }
     val selectedAssistantResolution = assistant?.let { helper ->
-        selectedAssistantEnergy?.let { helper.resolve(it, assistantAnswers, skippedAssistantHints) }
+        validProgress?.energy?.let { helper.resolve(it, validProgress.answers, validProgress.skipped) }
     }
     val selectedBrandName = brands.firstOrNull { it.id == brandId }?.displayName
     val selectedModelName = models.firstOrNull { it.id == modelId }?.displayName
 
-    LaunchedEffect(assistant) {
+    LaunchedEffect(currentCatalog, assistant) {
+        // A restored category can request its catalog after another category finishes loading.
+        // Do not mistake that temporary absence for an invalid restored assistant.
+        if (currentCatalog == null) return@LaunchedEffect
         if (assistant == null) {
-            showVersionAssistant = false
-            assistantEnergyName = null
+            resetAssistant()
+        } else {
+            val restoredEnergy = VehicleType.entries.firstOrNull { it.name == assistantEnergyName }
+            val restoredProgress = validateAssistantProgress(assistant, restoredEnergy, assistantAnswers, skippedAssistantHints)
+            assistantEnergyName = restoredProgress.energy?.name
+            assistantAnswers = restoredProgress.answers
+            skippedAssistantHints = restoredProgress.skipped
         }
     }
     val selectedVehicle = selectedVariant?.vehicle ?: initialVehicle?.toVehicleInfoOrNull()
@@ -184,6 +206,7 @@ fun VehicleForm(
                     enabled = catalogEditable && !isSaving,
                     onClick = {
                         if (category != item) {
+                            resetAssistant()
                             catalogSelectionChanged = true
                             categoryName.value = item.name
                             brandId = ""
@@ -220,6 +243,7 @@ fun VehicleForm(
                 expanded = brandsExpanded,
                 onExpandedChange = { brandsExpanded = it }
             ) { value ->
+                resetAssistant()
                 catalogSelectionChanged = true
                 brandId = value
                 modelId = ""
@@ -233,6 +257,7 @@ fun VehicleForm(
                 expanded = modelsExpanded,
                 onExpandedChange = { modelsExpanded = it }
             ) { value ->
+                resetAssistant()
                 catalogSelectionChanged = true
                 modelId = value
                 year = ""
@@ -245,6 +270,7 @@ fun VehicleForm(
                 expanded = yearsExpanded,
                 onExpandedChange = { yearsExpanded = it }
             ) { value ->
+                resetAssistant()
                 catalogSelectionChanged = true
                 year = value
                 variantId = ""

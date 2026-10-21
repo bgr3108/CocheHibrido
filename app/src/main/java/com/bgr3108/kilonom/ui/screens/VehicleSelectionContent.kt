@@ -7,6 +7,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -20,8 +21,11 @@ internal fun VehicleSelectionContent(
     onRetry: () -> Unit,
     content: @Composable (VehicleSelectionCatalog) -> Unit
 ) {
+    val formState = rememberSaveableStateHolder()
     when (state) {
-        is VehicleSelectionState.Ready -> content(state.catalog)
+        is VehicleSelectionState.Ready -> formState.SaveableStateProvider("vehicle-form") {
+            content(state.catalog)
+        }
         VehicleSelectionState.Loading, VehicleSelectionState.Failed -> Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
