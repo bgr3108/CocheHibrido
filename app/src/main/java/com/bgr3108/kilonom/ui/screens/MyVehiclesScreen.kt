@@ -92,7 +92,7 @@ fun MyVehiclesScreen(
         }
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         ExtendedFloatingActionButton(
-            onClick = onAdd,
+            onClick = { if (viewModel.beginVehicleCreation()) onAdd() },
             icon = { Icon(Icons.Default.Add, contentDescription = null) },
             text = { Text("Añadir vehículo") },
             containerColor = MaterialTheme.colorScheme.primary,

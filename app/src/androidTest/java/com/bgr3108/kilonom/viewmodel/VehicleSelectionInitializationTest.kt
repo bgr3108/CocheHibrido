@@ -76,9 +76,12 @@ class VehicleSelectionInitializationTest {
                     type = info.type, fuelTankCapacity = info.fuelTankCapacity,
                     batteryCapacity = info.batteryCapacity, initialKm = 100.0
                 )
-                val created = CompletableDeferred<Unit>()
-                withContext(Dispatchers.Main.immediate) { vm.createVehicle(snapshot) { created.complete(Unit) } }
-                created.await()
+                withContext(Dispatchers.Main.immediate) {
+                    vm.beginVehicleCreation()
+                    vm.createVehicle(snapshot)
+                }
+                vm.creationState.first { it is VehicleCreationState.Saved && it.isActive }
+                vm.isWorking.first { !it }
                 val entity = f.database.vehicleDao().observeAllVehicles().first().first { it.category == category }
                 assertEquals(snapshot.copy(id = entity.id), entity.toVehicle())
                 assertNotNull(selector.initialSelectionFor(entity.toVehicle()))

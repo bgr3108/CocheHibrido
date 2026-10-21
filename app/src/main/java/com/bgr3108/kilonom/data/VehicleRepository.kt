@@ -8,6 +8,7 @@ import com.bgr3108.kilonom.domain.calculateVehicleCurrentKm
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.IOException
@@ -285,22 +287,41 @@ class VehicleRepository(
     /** Resolves a requested id through the same deterministic fallback used at bootstrap. */
     suspend fun selectActiveVehicle(requestedId: Long?) = vehicleMutex.withLock {
         val resolved = requestedId?.let { id -> vehicleDao.getVehicle(id) } ?: vehicleDao.getFirstVehicle()
-        _activeVehicleId.value = resolved?.id
-        _vehicle.value = resolved?.toVehicle() ?: Vehicle()
+        activateVehicle(resolved)
+    }
+
+    /** Activation retries must select the saved id, never silently fall back to another vehicle. */
+    suspend fun activateCreatedVehicle(vehicleId: Long): Boolean = vehicleMutex.withLock {
+        val existing = vehicleDao.getVehicle(vehicleId) ?: return@withLock false
+        activateVehicle(existing)
+        true
+    }
+
+    private suspend fun activateVehicle(resolved: VehicleEntity?) {
         if (resolved != null) {
             vehiclePreferences.saveActiveVehicleId(resolved.id)
         } else {
             vehiclePreferences.clearActiveVehicleId()
         }
+        currentCoroutineContext().ensureActive()
+        _activeVehicleId.value = resolved?.id
+        _vehicle.value = resolved?.toVehicle() ?: Vehicle()
     }
 
-    /** Creates an independent Room snapshot and makes it the active vehicle. */
-    suspend fun createVehicle(vehicle: Vehicle): VehicleEntity = vehicleMutex.withLock {
-        val id = vehicleDao.insert(vehicle.copy(id = null).toEntity(createdAt = System.currentTimeMillis()))
-        val entity = vehicleDao.getVehicle(id) ?: error("No se pudo recuperar el vehículo creado")
-        vehiclePreferences.saveActiveVehicleId(entity.id)
-        _activeVehicleId.value = entity.id
-        _vehicle.value = entity.toVehicle()
+    /** Acknowledges the Room commit separately, before attempting to persist the active selection. */
+    suspend fun createVehicle(
+        vehicle: Vehicle,
+        onStored: (VehicleEntity) -> Unit = {}
+    ): VehicleEntity = vehicleMutex.withLock {
+        currentCoroutineContext().ensureActive()
+        val candidate = vehicle.copy(id = null).toEntity(createdAt = System.currentTimeMillis())
+        val entity = withContext(NonCancellable) {
+            // Only the local INSERT and its acknowledgement are non-cancellable: retain the real
+            // id before cancellation can interrupt activation. Waiting for the mutex is cancellable.
+            candidate.copy(id = vehicleDao.insert(candidate)).also(onStored)
+        }
+        currentCoroutineContext().ensureActive()
+        activateVehicle(entity)
         entity
     }
 
