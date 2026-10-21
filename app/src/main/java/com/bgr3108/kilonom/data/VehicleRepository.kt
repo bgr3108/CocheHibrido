@@ -365,18 +365,30 @@ class VehicleRepository(
     /** Deletes one snapshot; Room cascades its associated entries and maintenance history. */
     suspend fun deleteVehicle(vehicleId: Long) = vehicleMutex.withLock {
         val target = vehicleDao.getVehicle(vehicleId) ?: return@withLock
+        val replacement = vehicleDao.observeAllVehicles().first().firstOrNull { it.id != target.id }
+        if (replacement == null) {
+            // Remove the recovery anchor before Room can become empty, just as for a full reset.
+            vehiclePreferences.clearVehicle()
+            try {
+                currentCoroutineContext().ensureActive()
+                vehicleDao.delete(target)
+                _activeVehicleId.value = null
+                publishLoadedVehicles(null, emptyList())
+            } finally {
+                // Room may have committed before cancellation was delivered. Re-read storage,
+                // without resuming deletion, rather than retaining a deleted active snapshot.
+                loadRequests.update { it + 1L }
+            }
+            return@withLock
+        }
+
         val deletingActive = target.id == _activeVehicleId.value
         vehicleDao.delete(target)
 
         if (deletingActive) {
-            val replacement = vehicleDao.getFirstVehicle()
-            _activeVehicleId.value = replacement?.id
-            _vehicle.value = replacement?.toVehicle() ?: Vehicle()
-            if (replacement != null) {
-                vehiclePreferences.saveActiveVehicleId(replacement.id)
-            } else {
-                vehiclePreferences.clearVehicle()
-            }
+            _activeVehicleId.value = replacement.id
+            _vehicle.value = replacement.toVehicle()
+            vehiclePreferences.saveActiveVehicleId(replacement.id)
         }
     }
 
