@@ -84,9 +84,11 @@ fun MaintenanceFormScreen(
     itemId: Long? = null,
     recordId: Long? = null,
     viewModel: MaintenanceViewModel,
+    operationOrigin: String,
     onClose: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val operations by viewModel.operationResults.collectAsStateWithLifecycle()
     val item = state.items.firstOrNull { it.item.id == itemId }?.item
     val record = state.records.firstOrNull { it.record.id == recordId }?.record
     if ((mode == MaintenanceFormMode.REGISTER_RECORD || mode == MaintenanceFormMode.EDIT_ITEM) && item == null ||
@@ -414,7 +416,7 @@ fun MaintenanceFormScreen(
         (automaticCalculation?.exceptionOrNull()?.message ?: formError.value)?.let {
             Text(it, color = MaterialTheme.colorScheme.error)
         }
-        state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        operations[operationOrigin]?.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         Button(
             onClick = {
                 val selectedMaintenanceType = maintenanceType ?: run {
@@ -478,16 +480,16 @@ fun MaintenanceFormScreen(
                         draft,
                         recordDraft,
                         effectiveNextDueMode.toRepositoryUpdate(reminderDueValues),
-                        onClose
+                        operationOrigin
                     )
                     MaintenanceFormMode.REGISTER_RECORD -> viewModel.registerRecord(
                         item!!,
                         recordDraft!!,
                         effectiveNextDueMode.toRepositoryUpdate(reminderDueValues),
-                        onClose
+                        operationOrigin
                     )
-                    MaintenanceFormMode.EDIT_ITEM -> viewModel.updateItem(item!!, draft, onClose)
-                    MaintenanceFormMode.EDIT_RECORD -> viewModel.updateRecord(record!!, recordDraft!!, onClose)
+                    MaintenanceFormMode.EDIT_ITEM -> viewModel.updateItem(item!!, draft, operationOrigin)
+                    MaintenanceFormMode.EDIT_RECORD -> viewModel.updateRecord(record!!, recordDraft!!, operationOrigin)
                 }
             },
             enabled = !state.isWorking,

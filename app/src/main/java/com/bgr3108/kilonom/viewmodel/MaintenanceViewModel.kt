@@ -106,6 +106,9 @@ class MaintenanceViewModel(
 
     private val selectedItemId = MutableStateFlow<Long?>(null)
     private val actionMutex = Mutex()
+    private val operations = ScreenOperationResults()
+    val operationResults = operations.results
+    fun consumeOperation(origin: String, id: Long) = operations.consume(origin, id)
     private val isWorking = MutableStateFlow(false)
     private val errorMessage = MutableStateFlow<String?>(null)
     private val currentDay = MutableStateFlow(todayAtStartOfDay())
@@ -192,8 +195,8 @@ class MaintenanceViewModel(
             draft.nextDueKm,
             draft.nextDueDate
         ),
-        onComplete: () -> Unit
-    ) = runAction(onComplete) {
+        origin: String
+    ) = runAction(origin, ScreenOperationKind.SAVE) {
         val now = System.currentTimeMillis()
         maintenanceRepository.createItemForActiveVehicle(
             item = MaintenanceItemEntity(
@@ -221,8 +224,8 @@ class MaintenanceViewModel(
         item: MaintenanceItemEntity,
         record: MaintenanceRecordDraft,
         nextDueUpdate: MaintenanceNextDueUpdate,
-        onComplete: () -> Unit
-    ) = runAction(onComplete) {
+        origin: String
+    ) = runAction(origin, ScreenOperationKind.SAVE) {
         val now = System.currentTimeMillis()
         maintenanceRepository.registerRecordForActiveVehicle(
             item = item.copy(
@@ -236,8 +239,8 @@ class MaintenanceViewModel(
     fun updateItem(
         existing: MaintenanceItemEntity,
         draft: MaintenanceItemDraft,
-        onComplete: () -> Unit
-    ) = runAction(onComplete) {
+        origin: String
+    ) = runAction(origin, ScreenOperationKind.SAVE) {
         maintenanceRepository.updateItemForActiveVehicle(
             existing.copy(
                 customName = draft.customName,
@@ -253,8 +256,8 @@ class MaintenanceViewModel(
         )
     }
 
-    fun updateRecord(record: MaintenanceRecordEntity, draft: MaintenanceRecordDraft, onComplete: () -> Unit) =
-        runAction(onComplete) {
+    fun updateRecord(record: MaintenanceRecordEntity, draft: MaintenanceRecordDraft, origin: String) =
+        runAction(origin, ScreenOperationKind.SAVE) {
             maintenanceRepository.updateRecordForActiveVehicle(
                 record.copy(
                     performedDate = draft.performedDate,
@@ -266,28 +269,38 @@ class MaintenanceViewModel(
             )
         }
 
-    fun deleteItem(itemId: Long, onComplete: () -> Unit) = runAction(onComplete) {
+    fun deleteItem(itemId: Long, origin: String) = runAction(origin, ScreenOperationKind.DELETE_ITEM, itemId) {
         maintenanceRepository.deleteItemForActiveVehicle(itemId)
     }
 
-    fun deleteRecord(recordId: Long, onComplete: () -> Unit) = runAction(onComplete) {
+    fun deleteRecord(recordId: Long, origin: String) = runAction(origin, ScreenOperationKind.DELETE_RECORD, recordId) {
         maintenanceRepository.deleteRecordForActiveVehicle(recordId)
     }
 
-    private fun runAction(onComplete: () -> Unit, action: suspend () -> Unit) {
+    private fun runAction(origin: String, kind: ScreenOperationKind, targetId: Long? = null, action: suspend () -> Unit) {
         if (!actionMutex.tryLock()) return
+        val operation = operations.begin(origin, kind, targetId) ?: run {
+            actionMutex.unlock()
+            return
+        }
         isWorking.value = true
         errorMessage.value = null
         viewModelScope.launch {
             try {
                 action()
-                onComplete()
+                operations.finish(operation, ScreenOperationStatus.SUCCEEDED)
             } catch (error: Throwable) {
-                if (error is CancellationException) throw error
+                if (error is CancellationException) {
+                    operations.finish(operation, ScreenOperationStatus.CANCELLED)
+                    throw error
+                }
                 errorMessage.value = when (error) {
                     is SQLiteConstraintException -> "Ya estás siguiendo este mantenimiento para este vehículo."
-                    else -> error.message ?: "No se pudo guardar el mantenimiento. Inténtalo de nuevo."
+                    is IllegalArgumentException, is IllegalStateException -> error.message
+                        ?: "No se pudo completar la operación de mantenimiento. Inténtalo de nuevo."
+                    else -> "No se pudo completar la operación de mantenimiento. Inténtalo de nuevo."
                 }
+                operations.finish(operation, ScreenOperationStatus.FAILED, errorMessage.value)
             } finally {
                 isWorking.value = false
                 actionMutex.unlock()

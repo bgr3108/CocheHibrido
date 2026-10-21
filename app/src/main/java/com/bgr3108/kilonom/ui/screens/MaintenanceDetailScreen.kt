@@ -46,6 +46,7 @@ fun MaintenanceDetailScreen(
     innerPadding: PaddingValues,
     itemId: Long?,
     viewModel: MaintenanceViewModel,
+    operationOrigin: String,
     onBack: () -> Unit,
     onRegister: (Long) -> Unit,
     onEditItem: (Long) -> Unit,
@@ -56,6 +57,16 @@ fun MaintenanceDetailScreen(
     val item = state.items.firstOrNull { it.item.id == itemId }
     val itemToDelete = remember { mutableStateOf<MaintenanceItemEntity?>(null) }
     val recordToDelete = remember { mutableStateOf<MaintenanceRecordEntity?>(null) }
+    val operations by viewModel.operationResults.collectAsStateWithLifecycle()
+    LaunchedEffect(operations[operationOrigin]) {
+        val result = operations[operationOrigin]
+        if (result?.status == com.bgr3108.kilonom.viewmodel.ScreenOperationStatus.SUCCEEDED) {
+            if (result.kind == com.bgr3108.kilonom.viewmodel.ScreenOperationKind.DELETE_ITEM &&
+                itemToDelete.value?.id == result.targetId) itemToDelete.value = null
+            if (result.kind == com.bgr3108.kilonom.viewmodel.ScreenOperationKind.DELETE_RECORD &&
+                recordToDelete.value?.id == result.targetId) recordToDelete.value = null
+        }
+    }
     val calendarOpenError = remember(itemId, item?.item?.nextDueDate) { mutableStateOf(false) }
     val context = LocalContext.current
 
@@ -76,6 +87,7 @@ fun MaintenanceDetailScreen(
             Text(item.name, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
         }
         SectionTitle("Próximo")
+        operations[operationOrigin]?.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         MaintenanceCard {
             item.nextDueDetailLines().forEachIndexed { index, line ->
                 Text(
@@ -155,7 +167,7 @@ fun MaintenanceDetailScreen(
             },
             confirmButton = {
                 TextButton(enabled = !state.isWorking, onClick = {
-                    viewModel.deleteItem(target.id) { onBack() }
+                    viewModel.deleteItem(target.id, operationOrigin)
                 }) { Text("Eliminar", color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = { TextButton(onClick = { itemToDelete.value = null }) { Text("Cancelar") } }
@@ -168,7 +180,7 @@ fun MaintenanceDetailScreen(
             text = { Text("¿Eliminar este registro? El próximo aviso del seguimiento no cambiará.") },
             confirmButton = {
                 TextButton(enabled = !state.isWorking, onClick = {
-                    viewModel.deleteRecord(target.id) { recordToDelete.value = null }
+                    viewModel.deleteRecord(target.id, operationOrigin)
                 }) { Text("Eliminar", color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = { TextButton(onClick = { recordToDelete.value = null }) { Text("Cancelar") } }

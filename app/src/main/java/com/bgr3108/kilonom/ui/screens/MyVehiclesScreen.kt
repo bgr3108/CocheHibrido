@@ -54,9 +54,9 @@ import com.bgr3108.kilonom.viewmodel.MyVehiclesViewModel
 fun MyVehiclesScreen(
     innerPadding: PaddingValues,
     viewModel: MyVehiclesViewModel,
+    operationOrigin: String,
     onAdd: () -> Unit,
-    onEdit: (Long) -> Unit,
-    onActiveVehicleDeleted: () -> Unit
+    onEdit: (Long) -> Unit
 ) {
     val summaries by viewModel.vehicleSummaries.collectAsStateWithLifecycle()
     val activeVehicleId by viewModel.activeVehicleId.collectAsStateWithLifecycle()
@@ -64,6 +64,14 @@ fun MyVehiclesScreen(
     val switchingVehicleId by viewModel.switchingVehicleId.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val pendingDeletion = remember { mutableStateOf<VehicleSummary?>(null) }
+    val operations by viewModel.operationResults.collectAsStateWithLifecycle()
+    androidx.compose.runtime.LaunchedEffect(operations[operationOrigin]) {
+        val result = operations[operationOrigin]
+        if (result?.status == com.bgr3108.kilonom.viewmodel.ScreenOperationStatus.SUCCEEDED &&
+            pendingDeletion.value?.vehicle?.id == result.targetId) {
+            pendingDeletion.value = null
+        }
+    }
     val detailsSummary = remember { mutableStateOf<VehicleSummary?>(null) }
     Column(
         modifier = Modifier
@@ -115,10 +123,7 @@ fun MyVehiclesScreen(
                 TextButton(
                     enabled = !isWorking,
                     onClick = {
-                        viewModel.deleteVehicle(summary.vehicle.id) {
-                            pendingDeletion.value = null
-                            if (summary.vehicle.id == activeVehicleId) onActiveVehicleDeleted()
-                        }
+                        viewModel.deleteVehicle(summary.vehicle.id, operationOrigin)
                     }
                 ) { Text("Eliminar", color = MaterialTheme.colorScheme.error) }
             },

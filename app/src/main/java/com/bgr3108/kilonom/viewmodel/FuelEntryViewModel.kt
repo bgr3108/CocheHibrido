@@ -90,6 +90,9 @@ class FuelEntryViewModel(
     private val _dateFilterRefresh = MutableStateFlow(0)
 
     private val saveMutex = Mutex()
+    private val operations = ScreenOperationResults()
+    val operationResults = operations.results
+    fun consumeOperation(origin: String, id: Long) = operations.consume(origin, id)
     private val _isSaving = MutableStateFlow(false)
     val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
     private val _isDeleting = MutableStateFlow(false)
@@ -125,10 +128,13 @@ class FuelEntryViewModel(
     // 🔥 GUARDAR (CORREGIDO)
     fun saveEntry(
         draft: FuelEntryDraft,
-        onSaved: () -> Unit,
-        onError: () -> Unit
+        origin: String
     ) {
         if (!saveMutex.tryLock()) return
+        val operation = operations.begin(origin, ScreenOperationKind.SAVE) ?: run {
+            saveMutex.unlock()
+            return
+        }
 
         _isSaving.value = true
 
@@ -142,11 +148,14 @@ class FuelEntryViewModel(
                 } else {
                     repository.updateEntryForVehicle(entry, activeVehicleId)
                 }
-                onSaved()
+                operations.finish(operation, ScreenOperationStatus.SUCCEEDED)
             } catch (error: Throwable) {
-                if (error is CancellationException) throw error
-
-                onError()
+                if (error is CancellationException) {
+                    operations.finish(operation, ScreenOperationStatus.CANCELLED)
+                    throw error
+                }
+                operations.finish(operation, ScreenOperationStatus.FAILED,
+                    "No se pudo guardar el registro. Inténtalo de nuevo.")
             } finally {
                 _isSaving.value = false
                 saveMutex.unlock()
@@ -157,8 +166,12 @@ class FuelEntryViewModel(
     // 🔥 BORRAR
     fun clearDeleteError() { _deleteError.value = null }
 
-    fun deleteEntry(entry: FuelEntry, onDeleted: () -> Unit) {
+    fun deleteEntry(entry: FuelEntry, origin: String) {
         if (!saveMutex.tryLock()) return
+        val operation = operations.begin(origin, ScreenOperationKind.DELETE_ENTRY, entry.id.toLong()) ?: run {
+            saveMutex.unlock()
+            return
+        }
         _isDeleting.value = true
         _deleteError.value = null
         viewModelScope.launch {
@@ -166,14 +179,20 @@ class FuelEntryViewModel(
                 val activeVehicleId = vehicleRepository.activeVehicleId.value
                 if (activeVehicleId == null || activeVehicleId != entry.vehicleId) {
                     _deleteError.value = "El consumo ya no pertenece al vehículo seleccionado."
+                    operations.finish(operation, ScreenOperationStatus.FAILED, _deleteError.value)
                     return@launch
                 }
                 repository.deleteEntryForVehicle(entry, activeVehicleId)
-                onDeleted()
+                operations.finish(operation, ScreenOperationStatus.SUCCEEDED)
+            } catch (error: CancellationException) {
+                operations.finish(operation, ScreenOperationStatus.CANCELLED)
+                throw error
             } catch (_: IOException) {
                 showDeleteError()
+                operations.finish(operation, ScreenOperationStatus.FAILED, _deleteError.value)
             } catch (_: SQLiteException) {
                 showDeleteError()
+                operations.finish(operation, ScreenOperationStatus.FAILED, _deleteError.value)
             } finally {
                 _isDeleting.value = false
                 saveMutex.unlock()

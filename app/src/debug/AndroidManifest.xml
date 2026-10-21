@@ -4,6 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools">
     <!-- This partial debug manifest is merged into the main application manifest. -->
     <application tools:ignore="MissingApplicationIcon">
+        <activity
+            android:name="com.bgr3108.kilonom.testing.OperationTestActivity"
+            android:exported="false" />
         <!-- Debug always uses Google's official sample App ID. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"

@@ -52,6 +52,7 @@ fun ConsumptionListScreen(
     viewModel: FuelEntryViewModel,
     homeViewModel: HomeViewModel,
     navController: NavController, // 🔥 IMPORTANTE
+    operationOrigin: String,
     onAddClick: () -> Unit
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -63,6 +64,14 @@ fun ConsumptionListScreen(
     val deleteError by viewModel.deleteError.collectAsStateWithLifecycle()
     val isDark = isSystemInDarkTheme()
     val entryToDelete = remember { mutableStateOf<FuelEntry?>(null) }
+    val operations by viewModel.operationResults.collectAsStateWithLifecycle()
+    LaunchedEffect(operations[operationOrigin]) {
+        val result = operations[operationOrigin]
+        if (result?.status == com.bgr3108.kilonom.viewmodel.ScreenOperationStatus.SUCCEEDED &&
+            entryToDelete.value?.id?.toLong() == result.targetId) {
+            entryToDelete.value = null
+        }
+    }
     var isDateMenuExpanded by remember { mutableStateOf(false) }
     val isDateFilterActive = filterState.dateFilter != DateFilter.ALL
     val showFuel = vehicle.type.supportsFuelEntries
@@ -143,6 +152,9 @@ fun ConsumptionListScreen(
                 .padding(16.dp)
         ) {
 
+        if (entryToDelete.value == null) {
+            operations[operationOrigin]?.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -298,7 +310,7 @@ fun ConsumptionListScreen(
             onDismissRequest = { if (!isDeleting) entryToDelete.value = null },
             confirmButton = {
                 TextButton(enabled = !isDeleting, onClick = {
-                    viewModel.deleteEntry(entry) { entryToDelete.value = null }
+                    viewModel.deleteEntry(entry, operationOrigin)
                 }) {
                     Text(if (isDeleting) "Eliminando…" else "Eliminar")
                 }

@@ -9,7 +9,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.bgr3108.kilonom.data.*
 import com.bgr3108.kilonom.database.HybridCarDatabase
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -85,11 +84,10 @@ class VehicleSelectionInitializationTest {
                 val entity = f.database.vehicleDao().observeAllVehicles().first().first { it.category == category }
                 assertEquals(snapshot.copy(id = entity.id), entity.toVehicle())
                 assertNotNull(selector.initialSelectionFor(entity.toVehicle()))
-                val edited = CompletableDeferred<Unit>()
                 withContext(Dispatchers.Main.immediate) {
-                    vm.updateVehicle(entity.id, snapshot.copy(initialKm = 200.0)) { edited.complete(Unit) }
+                    vm.updateVehicle(entity.id, snapshot.copy(initialKm = 200.0), "edit-${entity.id}")
                 }
-                edited.await()
+                vm.operationResults.first { it["edit-${entity.id}"]?.status == ScreenOperationStatus.SUCCEEDED }
                 assertEquals(200.0, requireNotNull(f.database.vehicleDao().getVehicle(entity.id)).initialKm, 0.0)
             }
             assertEquals(2, f.database.vehicleDao().observeAllVehicles().first().size)

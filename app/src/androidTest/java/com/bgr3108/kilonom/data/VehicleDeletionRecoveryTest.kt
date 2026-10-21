@@ -23,7 +23,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -217,24 +216,25 @@ class VehicleDeletionRecoveryTest {
     fun viewModelReportsFailureWithoutSuccessThenRejectsDuplicateAndRetries() = runBlocking {
         withFixture { f ->
             val vm = f.viewModel()
-            val completions = MutableStateFlow(0)
             f.preferences.clearError = IOException("simulated failure")
-            withContext(Dispatchers.Main.immediate) { vm.deleteVehicle(1) { completions.value++ } }
+            withContext(Dispatchers.Main.immediate) { vm.deleteVehicle(1, "delete") }
             awaitDeletion { vm.error.first { it != null } }
             awaitDeletion { vm.isWorking.first { !it } }
-            assertEquals(0, completions.value)
+            assertEquals(com.bgr3108.kilonom.viewmodel.ScreenOperationStatus.FAILED, vm.operationResults.value["delete"]?.status)
             f.assertVehicleIntact(VEHICLE)
             f.preferences.clearError = null
             val entered = CompletableDeferred<Unit>()
             val finish = CompletableDeferred<Unit>()
             f.dao.deleteAction = { target -> entered.complete(Unit); finish.await(); f.database.vehicleDao().delete(target) }
-            withContext(Dispatchers.Main.immediate) { vm.deleteVehicle(1) { completions.value++ } }
+            withContext(Dispatchers.Main.immediate) { vm.deleteVehicle(1, "delete") }
             awaitDeletion { entered.await() }
-            withContext(Dispatchers.Main.immediate) { vm.deleteVehicle(1) { completions.value++ } }
+            withContext(Dispatchers.Main.immediate) { vm.deleteVehicle(1, "delete") }
             assertEquals(1, f.dao.deleteCalls)
-            assertEquals(0, completions.value)
+            assertEquals(com.bgr3108.kilonom.viewmodel.ScreenOperationStatus.RUNNING, vm.operationResults.value["delete"]?.status)
             finish.complete(Unit)
-            awaitDeletion { completions.first { it == 1 } }
+            val completed = awaitDeletion { vm.operationResults.first { it["delete"]?.status == com.bgr3108.kilonom.viewmodel.ScreenOperationStatus.SUCCEEDED } }.getValue("delete")
+            assertTrue(vm.consumeOperation("delete", completed.id))
+            assertFalse(vm.consumeOperation("delete", completed.id))
             awaitDeletion { vm.isWorking.first { !it } }
             assertNull(vm.error.value)
             f.assertDeleted(VEHICLE)
@@ -246,18 +246,17 @@ class VehicleDeletionRecoveryTest {
         withFixture { f ->
             val vm = f.viewModel()
             val cleared = CompletableDeferred<Unit>()
-            val completions = MutableStateFlow(0)
             f.preferences.afterClear = { cleared.complete(Unit); currentCoroutineContext().cancel() }
-            withContext(Dispatchers.Main.immediate) { vm.deleteVehicle(1) { completions.value++ } }
+            withContext(Dispatchers.Main.immediate) { vm.deleteVehicle(1, "delete") }
             awaitDeletion { cleared.await() }
             awaitDeletion { vm.isWorking.first { !it } }
-            assertEquals(0, completions.value)
+            assertEquals(com.bgr3108.kilonom.viewmodel.ScreenOperationStatus.CANCELLED, vm.operationResults.value["delete"]?.status)
             assertNull(vm.error.value)
             assertEquals(0, f.dao.deleteCalls)
             f.assertVehicleIntact(VEHICLE)
             f.preferences.afterClear = {}
-            withContext(Dispatchers.Main.immediate) { vm.deleteVehicle(1) { completions.value++ } }
-            awaitDeletion { completions.first { it == 1 } }
+            withContext(Dispatchers.Main.immediate) { vm.deleteVehicle(1, "delete") }
+            awaitDeletion { vm.operationResults.first { it["delete"]?.status == com.bgr3108.kilonom.viewmodel.ScreenOperationStatus.SUCCEEDED } }
             awaitDeletion { vm.isWorking.first { !it } }
             f.assertDeleted(VEHICLE)
         }

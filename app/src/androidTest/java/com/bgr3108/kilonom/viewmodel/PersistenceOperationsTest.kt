@@ -39,18 +39,17 @@ class PersistenceOperationsTest {
     fun fuelDeleteFailurePreservesEntryAndOnlySuccessfulRetryNotifiesUi() = runBlocking {
         withFuel { vm, dao, database ->
             dao.error = SQLiteException("private database error")
-            var successes = 0
-            onMain { vm.deleteEntry(ENTRY) { successes++ } }
+            onMain { vm.deleteEntry(ENTRY, "fuel") }
             await { vm.deleteError.first { it != null } }
             await { vm.isDeleting.first { !it } }
-            assertEquals(0, successes)
+            assertEquals(ScreenOperationStatus.FAILED, vm.operationResults.value["fuel"]?.status)
             assertEquals(ENTRY, database.fuelEntryDao().getEntryForVehicle(1, 1))
             assertEquals("No se pudo eliminar el consumo. Inténtalo de nuevo.", vm.deleteError.value)
             dao.error = null
-            val deleted = CompletableDeferred<Unit>()
-            onMain { vm.deleteEntry(ENTRY) { successes++; deleted.complete(Unit) } }
-            await { deleted.await() }
-            assertEquals(1, successes)
+            onMain { vm.deleteEntry(ENTRY, "fuel") }
+            val completed = await { vm.operationResults.first { it["fuel"]?.status == ScreenOperationStatus.SUCCEEDED } }.getValue("fuel")
+            assertTrue(vm.consumeOperation("fuel", completed.id))
+            assertFalse(vm.consumeOperation("fuel", completed.id))
             assertEquals(2, dao.calls)
             assertNull(database.fuelEntryDao().getEntryForVehicle(1, 1))
             assertNull(vm.deleteError.value)
@@ -63,20 +62,18 @@ class PersistenceOperationsTest {
             dao.error = CancellationException()
             dao.gate = CompletableDeferred()
             val started = dao.started
-            var successes = 0
-            onMain { vm.deleteEntry(ENTRY) { successes++ } }
+            onMain { vm.deleteEntry(ENTRY, "fuel") }
             await { started.await() }
-            onMain { vm.deleteEntry(ENTRY) { successes++ } }
+            onMain { vm.deleteEntry(ENTRY, "fuel") }
             assertEquals(1, dao.calls)
             dao.gate?.complete(Unit)
             await { vm.isDeleting.first { !it } }
             assertNull(vm.deleteError.value)
-            assertEquals(0, successes)
+            assertEquals(ScreenOperationStatus.CANCELLED, vm.operationResults.value["fuel"]?.status)
             assertEquals(ENTRY, database.fuelEntryDao().getEntryForVehicle(1, 1))
             dao.error = null
-            val deleted = CompletableDeferred<Unit>()
-            onMain { vm.deleteEntry(ENTRY) { deleted.complete(Unit) } }
-            await { deleted.await() }
+            onMain { vm.deleteEntry(ENTRY, "fuel") }
+            await { vm.operationResults.first { it["fuel"]?.status == ScreenOperationStatus.SUCCEEDED } }
             assertEquals(2, dao.calls)
         }
     }

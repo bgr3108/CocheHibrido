@@ -57,6 +57,7 @@ fun AddConsumptionScreen(
     viewModel: FuelEntryViewModel,
     homeViewModel: HomeViewModel,
     innerPadding: PaddingValues,
+    operationOrigin: String,
     entry: FuelEntry? = null,
     onClose: () -> Unit
 ){
@@ -70,6 +71,7 @@ fun AddConsumptionScreen(
 
     val entries by viewModel.entries.collectAsStateWithLifecycle()
     val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
+    val operations by viewModel.operationResults.collectAsStateWithLifecycle()
 
     val initialDateMillis = entry?.fecha ?: System.currentTimeMillis()
     val initialCalendar = Calendar.getInstance().apply {
@@ -468,7 +470,7 @@ fun AddConsumptionScreen(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        errorCapacidad?.let {
+        (errorCapacidad ?: operations[operationOrigin]?.error)?.let {
             Text(
                 text = it,
                 color = MaterialTheme.colorScheme.error
@@ -660,10 +662,7 @@ fun AddConsumptionScreen(
 
                 viewModel.saveEntry(
                     draft = draft,
-                    onSaved = onClose,
-                    onError = {
-                        errorCapacidad = "No se pudo guardar el registro. Inténtalo de nuevo."
-                    }
+                    origin = operationOrigin
                 )
             },
             modifier = Modifier.fillMaxWidth(),

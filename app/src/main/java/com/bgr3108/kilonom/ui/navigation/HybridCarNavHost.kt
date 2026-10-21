@@ -16,6 +16,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavBackStackEntry
+import com.bgr3108.kilonom.viewmodel.ScreenOperationKind
+import com.bgr3108.kilonom.viewmodel.ScreenOperationResult
+import kotlinx.coroutines.flow.StateFlow
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.bgr3108.kilonom.ui.screens.AddConsumptionScreen
@@ -87,17 +91,21 @@ internal fun HybridCarNavHost(
                 onOpenItem = { itemId -> navController.navigate("maintenance/item/$itemId") }
             )
         }
-        composable("maintenance/add") {
+        composable("maintenance/add") { entry ->
+            OperationNavigationEffect(entry, navController, maintenanceViewModel.operationResults, maintenanceViewModel::consumeOperation)
             MaintenanceFormScreen(
                 innerPadding = innerPadding,
                 mode = MaintenanceFormMode.CREATE_ITEM,
+                operationOrigin = entry.id,
                 viewModel = maintenanceViewModel,
                 onClose = { navController.popBackStack() }
             )
         }
         composable("maintenance/item/{itemId}") { entry ->
+            OperationNavigationEffect(entry, navController, maintenanceViewModel.operationResults, maintenanceViewModel::consumeOperation)
             val itemId = entry.arguments?.getString("itemId")?.toLongOrNull()
             MaintenanceDetailScreen(
+                operationOrigin = entry.id,
                 innerPadding = innerPadding,
                 itemId = itemId,
                 viewModel = maintenanceViewModel,
@@ -108,7 +116,9 @@ internal fun HybridCarNavHost(
             )
         }
         composable("maintenance/item/{itemId}/register") { entry ->
+            OperationNavigationEffect(entry, navController, maintenanceViewModel.operationResults, maintenanceViewModel::consumeOperation)
             MaintenanceFormScreen(
+                operationOrigin = entry.id,
                 innerPadding = innerPadding,
                 mode = MaintenanceFormMode.REGISTER_RECORD,
                 itemId = entry.arguments?.getString("itemId")?.toLongOrNull(),
@@ -117,7 +127,9 @@ internal fun HybridCarNavHost(
             )
         }
         composable("maintenance/item/{itemId}/edit") { entry ->
+            OperationNavigationEffect(entry, navController, maintenanceViewModel.operationResults, maintenanceViewModel::consumeOperation)
             MaintenanceFormScreen(
+                operationOrigin = entry.id,
                 innerPadding = innerPadding,
                 mode = MaintenanceFormMode.EDIT_ITEM,
                 itemId = entry.arguments?.getString("itemId")?.toLongOrNull(),
@@ -126,7 +138,9 @@ internal fun HybridCarNavHost(
             )
         }
         composable("maintenance/record/{recordId}/edit") { entry ->
+            OperationNavigationEffect(entry, navController, maintenanceViewModel.operationResults, maintenanceViewModel::consumeOperation)
             MaintenanceFormScreen(
+                operationOrigin = entry.id,
                 innerPadding = innerPadding,
                 mode = MaintenanceFormMode.EDIT_RECORD,
                 recordId = entry.arguments?.getString("recordId")?.toLongOrNull(),
@@ -135,15 +149,16 @@ internal fun HybridCarNavHost(
             )
         }
 
-        composable("my_vehicles") {
+        composable("my_vehicles") { entry ->
+            OperationNavigationEffect(entry, navController, myVehiclesViewModel.operationResults, myVehiclesViewModel::consumeOperation) {
+                onNavigateTopLevel("home")
+            }
             MyVehiclesScreen(
+                operationOrigin = entry.id,
                 innerPadding = innerPadding,
                 viewModel = myVehiclesViewModel,
                 onAdd = { navController.navigate("add_vehicle") },
-                onEdit = { id -> navController.navigate("edit_vehicle/$id") },
-                onActiveVehicleDeleted = {
-                    onNavigateTopLevel("home")
-                }
+                onEdit = { id -> navController.navigate("edit_vehicle/$id") }
             )
         }
 
@@ -178,16 +193,21 @@ internal fun HybridCarNavHost(
         }
 
         composable("edit_vehicle/{id}") { backStackEntry ->
+            OperationNavigationEffect(backStackEntry, navController, myVehiclesViewModel.operationResults, myVehiclesViewModel::consumeOperation)
             VehicleEditorScreen(
+                operationOrigin = backStackEntry.id,
                 vehicleId = backStackEntry.arguments?.getString("id")?.toLongOrNull(),
                 viewModel = myVehiclesViewModel,
-                onSaved = { navController.popBackStack() },
-                onMissing = { navController.popBackStack() }
+                onMissing = {
+                    if (navController.currentBackStackEntry?.id == backStackEntry.id) navController.popBackStack()
+                }
             )
         }
 
-        composable("consumption") {
+        composable("consumption") { entry ->
+            OperationNavigationEffect(entry, navController, fuelViewModel.operationResults, fuelViewModel::consumeOperation)
             ConsumptionListScreen(
+                operationOrigin = entry.id,
                 innerPadding = innerPadding,
                 viewModel = fuelViewModel,
                 homeViewModel = homeViewModel,
@@ -198,8 +218,10 @@ internal fun HybridCarNavHost(
             )
         }
 
-        composable("add_refuel") {
+        composable("add_refuel") { entry ->
+            OperationNavigationEffect(entry, navController, fuelViewModel.operationResults, fuelViewModel::consumeOperation)
             AddConsumptionScreen(
+                operationOrigin = entry.id,
                 viewModel = fuelViewModel,
                 homeViewModel = homeViewModel,
                 innerPadding = innerPadding,
@@ -209,6 +231,7 @@ internal fun HybridCarNavHost(
             )
         }
         composable("edit_refuel/{id}") { backStackEntry ->
+            OperationNavigationEffect(backStackEntry, navController, fuelViewModel.operationResults, fuelViewModel::consumeOperation)
 
             val id = backStackEntry.arguments?.getString("id")?.toIntOrNull()
 
@@ -219,6 +242,7 @@ internal fun HybridCarNavHost(
 
             if (entry != null) {
                 AddConsumptionScreen(
+                    operationOrigin = backStackEntry.id,
                     viewModel = fuelViewModel,
                     homeViewModel = homeViewModel,
                     innerPadding = innerPadding,
@@ -318,6 +342,25 @@ internal fun HybridCarNavHost(
             PrivacyScreen(
                 innerPadding = innerPadding
             )
+        }
+    }
+}
+
+@Composable
+private fun OperationNavigationEffect(
+    entry: NavBackStackEntry,
+    navController: NavHostController,
+    results: StateFlow<Map<String, ScreenOperationResult>>,
+    consume: (String, Long) -> Boolean,
+    onActiveVehicleDeleted: () -> Unit = {}
+) {
+    ScreenOperationEffect(entry.id, results, consume,
+        isCurrentEntry = { navController.currentBackStackEntry?.id == entry.id }
+    ) { result ->
+        when (result.kind) {
+            ScreenOperationKind.SAVE, ScreenOperationKind.DELETE_ITEM -> navController.popBackStack()
+            ScreenOperationKind.DELETE_ACTIVE_VEHICLE -> onActiveVehicleDeleted()
+            else -> Unit
         }
     }
 }

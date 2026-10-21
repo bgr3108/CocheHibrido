@@ -79,7 +79,7 @@ fun AddVehicleScreen(
 fun VehicleEditorScreen(
     vehicleId: Long?,
     viewModel: MyVehiclesViewModel,
-    onSaved: () -> Unit,
+    operationOrigin: String,
     onMissing: () -> Unit
 ) {
     val summaries by viewModel.vehicleSummaries.collectAsStateWithLifecycle()
@@ -87,6 +87,7 @@ fun VehicleEditorScreen(
     val catalog by viewModel.selectionCatalog.collectAsStateWithLifecycle()
     val isSaving by viewModel.isWorking.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
+    val operations by viewModel.operationResults.collectAsStateWithLifecycle()
     val summary = summaries.firstOrNull { it.vehicle.id == vehicleId }
     if (vehicleId == null || summary == null) {
         LaunchedEffect(vehicleId, summaries) { if (summaries.isNotEmpty()) onMissing() }
@@ -113,10 +114,10 @@ fun VehicleEditorScreen(
                 { viewModel.linkLegacyVehicleToCatalog(summary.vehicle.id, catalogId) }
             },
             isSaving = isSaving,
-            errorMessage = error,
+            errorMessage = operations[operationOrigin]?.error ?: error,
             onSubmit = { updated ->
                 if (hasRecordedActivity && updated.initialKm != summary.vehicle.initialKm) pendingInitialKmChange.value = updated
-                else viewModel.updateVehicle(summary.vehicle.id, updated, onSaved)
+                else viewModel.updateVehicle(summary.vehicle.id, updated, operationOrigin)
             }
         )
         pendingInitialKmChange.value?.let { updated ->
@@ -126,7 +127,7 @@ fun VehicleEditorScreen(
                 text = { Text("Cambiar el kilometraje inicial puede modificar los cálculos de distancia y coste por kilómetro.") },
                 confirmButton = {
                     TextButton(onClick = {
-                        viewModel.updateVehicle(summary.vehicle.id, updated, onSaved)
+                        viewModel.updateVehicle(summary.vehicle.id, updated, operationOrigin)
                         pendingInitialKmChange.value = null
                     }) { Text("Guardar") }
                 },

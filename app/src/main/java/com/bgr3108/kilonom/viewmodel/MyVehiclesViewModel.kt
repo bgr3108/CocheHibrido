@@ -33,6 +33,9 @@ class MyVehiclesViewModel(
     val activeVehicleId = vehicleRepository.activeVehicleId
 
     private val actionMutex = Mutex()
+    private val operations = ScreenOperationResults()
+    val operationResults = operations.results
+    fun consumeOperation(origin: String, id: Long) = operations.consume(origin, id)
     private val _isWorking = MutableStateFlow(false)
     private val _error = MutableStateFlow<String?>(null)
     val isWorking: StateFlow<Boolean> = _isWorking
@@ -127,17 +130,21 @@ class MyVehiclesViewModel(
         }
     }
 
-    fun updateVehicle(vehicleId: Long, vehicle: Vehicle, onUpdated: () -> Unit) = runAction(
+    fun updateVehicle(vehicleId: Long, vehicle: Vehicle, origin: String) = runAction(
+        origin = origin,
+        kind = ScreenOperationKind.SAVE,
         action = {
             vehicleRepository.updateVehicle(vehicleId, vehicle)
-            onUpdated()
         }
     )
 
-    fun deleteVehicle(vehicleId: Long, onDeleted: () -> Unit) = runAction(
+    fun deleteVehicle(vehicleId: Long, origin: String) = runAction(
+        origin = origin,
+        targetId = vehicleId,
+        kind = if (activeVehicleId.value == vehicleId) ScreenOperationKind.DELETE_ACTIVE_VEHICLE
+            else ScreenOperationKind.DELETE_VEHICLE,
         action = {
             vehicleRepository.deleteVehicle(vehicleId)
-            onDeleted()
         }
     )
 
@@ -150,19 +157,35 @@ class MyVehiclesViewModel(
 
     private fun runAction(
         action: suspend () -> Unit,
+        origin: String? = null,
+        kind: ScreenOperationKind = ScreenOperationKind.SAVE,
+        targetId: Long? = null,
         onStarted: () -> Unit = {},
         onFinished: () -> Unit = {}
     ) {
         if (!actionMutex.tryLock()) return
+        val operation = origin?.let { operations.begin(it, kind, targetId) }
+        if (origin != null && operation == null) {
+            actionMutex.unlock()
+            return
+        }
         _isWorking.value = true
         _error.value = null
         onStarted()
         viewModelScope.launch {
             try {
                 action()
+                operation?.let { operations.finish(it, ScreenOperationStatus.SUCCEEDED) }
             } catch (error: Throwable) {
-                if (error is CancellationException) throw error
-                _error.value = error.message ?: "No se pudo completar la operación. Inténtalo de nuevo."
+                if (error is CancellationException) {
+                    operation?.let { operations.finish(it, ScreenOperationStatus.CANCELLED) }
+                    throw error
+                }
+                _error.value = when (error) {
+                    is IOException, is SQLiteException -> "No se pudo completar la operación. Inténtalo de nuevo."
+                    else -> error.message ?: "No se pudo completar la operación. Inténtalo de nuevo."
+                }
+                operation?.let { operations.finish(it, ScreenOperationStatus.FAILED, _error.value) }
             } finally {
                 onFinished()
                 _isWorking.value = false
