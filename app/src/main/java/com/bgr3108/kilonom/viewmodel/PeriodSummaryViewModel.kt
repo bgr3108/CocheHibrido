@@ -1,6 +1,7 @@
 package com.bgr3108.kilonom.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.bgr3108.kilonom.data.FuelRepository
 import com.bgr3108.kilonom.data.VehicleRepository
@@ -32,7 +33,8 @@ data class PeriodSummaryUiState(
 
 class PeriodSummaryViewModel(
     fuelRepository: FuelRepository,
-    vehicleRepository: VehicleRepository
+    vehicleRepository: VehicleRepository,
+    private val savedStateHandle: SavedStateHandle? = null
 ) : ViewModel() {
 
     private val activeContext = fuelRepository
@@ -44,10 +46,11 @@ class PeriodSummaryViewModel(
         )
 
     private val _period = MutableStateFlow<StatisticsPeriod>(
-        currentPeriod(StatisticsPeriodMode.MONTH)
+        restoredStatisticsPeriod(savedStateHandle?.get("statistics.period"))
     )
     private val timeRefresh = MutableStateFlow(0)
-    private var followsCurrentPeriod = true
+    private var followsCurrentPeriod = savedStateHandle?.get<Boolean>("statistics.followsCurrent")
+        ?: (_period.value == currentPeriod(_period.value.mode))
 
     val period: StateFlow<StatisticsPeriod> = _period
 
@@ -77,11 +80,13 @@ class PeriodSummaryViewModel(
     fun selectMode(mode: StatisticsPeriodMode) {
         _period.value = currentPeriod(mode)
         followsCurrentPeriod = true
+        savePeriod()
     }
 
     fun showPreviousPeriod() {
         _period.value = previousPeriod(_period.value) ?: return
         followsCurrentPeriod = false
+        savePeriod()
     }
 
     fun showNextPeriod() {
@@ -91,6 +96,7 @@ class PeriodSummaryViewModel(
 
         _period.value = candidate
         followsCurrentPeriod = candidate == current
+        savePeriod()
     }
 
     fun refreshCurrentPeriodOnResume() {
@@ -98,6 +104,12 @@ class PeriodSummaryViewModel(
             _period.value = currentPeriod(_period.value.mode)
         }
         timeRefresh.update { it + 1 }
+        savePeriod()
+    }
+
+    private fun savePeriod() {
+        savedStateHandle?.set("statistics.period", _period.value.savedValues())
+        savedStateHandle?.set("statistics.followsCurrent", followsCurrentPeriod)
     }
 }
 

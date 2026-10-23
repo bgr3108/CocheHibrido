@@ -1,6 +1,7 @@
 package com.bgr3108.kilonom.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import android.database.sqlite.SQLiteException
 import androidx.paging.PagingData
@@ -36,6 +37,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -52,13 +54,15 @@ class StationsViewModel(
     private val repository: StationRepository,
     private val chargerRepository: ChargerRepository,
     private val stationPreferences: StationPreferencesStore = NoOpStationPreferences,
-    elapsedRealtime: () -> Long = android.os.SystemClock::elapsedRealtime
+    elapsedRealtime: () -> Long = android.os.SystemClock::elapsedRealtime,
+    private val savedStateHandle: SavedStateHandle? = null
 ) : ViewModel() {
-    private val filter = MutableStateFlow(StationFilter())
-    private val chargerFilter = MutableStateFlow(ChargerFilter())
+    // The application factory supplies the registry-backed handle; standalone callers need no owner.
+    private val filter = MutableStateFlow(restoredStationFilter(savedStateHandle?.get("stations.filter")))
+    private val chargerFilter = MutableStateFlow(restoredChargerFilter(savedStateHandle?.get("stations.chargerFilter")))
     private val currentLocation = MutableStateFlow<StationCoordinates?>(null)
-    private val viewMode = MutableStateFlow(StationsViewMode.LIST)
-    private val contentType = MutableStateFlow(StationsContentType.FUEL)
+    private val viewMode = MutableStateFlow(savedEnum(savedStateHandle?.get("stations.mode"), StationsViewMode.LIST))
+    private val contentType = MutableStateFlow(savedEnum(savedStateHandle?.get("stations.source"), StationsContentType.FUEL))
     private val refreshing = MutableStateFlow(false)
     private val refreshError = MutableStateFlow<String?>(null)
     private val chargerRefreshing = MutableStateFlow(false)
@@ -71,6 +75,8 @@ class StationsViewModel(
     private val locationPermissionRequested = MutableStateFlow(false)
     private var stationEntryHandled = false
     private var stationEntryGeneration = 0L
+    private var restoredZonesNeedValidation = savedStateHandle?.contains("stations.filter") == true ||
+        savedStateHandle?.contains("stations.chargerFilter") == true
     private val preferenceMutex = Mutex()
     private val _persistenceError = MutableStateFlow<String?>(null)
     val persistenceError: StateFlow<String?> = _persistenceError
@@ -92,10 +98,10 @@ class StationsViewModel(
 
     private val stationSearchScope = combine(filter, currentLocation) { activeFilter, location ->
         activeFilter.stationSearchScope(location)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StationSearchScope.None)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), filter.value.stationSearchScope(null))
     private val chargerSearchScope = combine(chargerFilter, currentLocation) { activeFilter, location ->
         activeFilter.chargerSearchScope(location)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StationSearchScope.None)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), chargerFilter.value.chargerSearchScope(null))
 
     val metadata: StateFlow<StationCacheMetadataEntity?> = repository.observeMetadata()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -267,23 +273,58 @@ class StationsViewModel(
             navigation.locationPermissionRequested
         )
     }.combine(refreshSucceeded) { state, succeeded -> state.copy(refreshSucceeded = succeeded) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StationsUiState())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StationsUiState(
+            filter = filter.value, viewMode = viewMode.value, contentType = contentType.value,
+            searchScope = filter.value.stationSearchScope(null)
+        ))
 
     val chargerUiState: StateFlow<ChargerUiState> = combine(
         chargerFilter, chargerMetadata, chargerRefreshing, chargerRefreshError, chargerSearchScope
     ) { activeFilter, cache, isRefreshing, error, scope ->
         ChargerUiState(activeFilter, cache, isRefreshing, error, scope)
     }.combine(chargerRefreshSucceeded) { state, succeeded -> state.copy(refreshSucceeded = succeeded) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ChargerUiState())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ChargerUiState(
+            filter = chargerFilter.value, searchScope = chargerFilter.value.chargerSearchScope(null)
+        ))
 
     val activeContentRefreshing: StateFlow<Boolean> = combine(contentType, refreshing, chargerRefreshing) {
             type, fuelRefreshing, chargersRefreshing ->
         if (type == StationsContentType.CHARGERS) chargersRefreshing else fuelRefreshing
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
+    private fun validateRestoredZones() {
+        viewModelScope.launch {
+            runPersistenceAction(::validateRestoredZones) {
+                val fuelSelection = filter.value
+                val chargerSelection = chargerFilter.value
+                // Validate against real cache emissions, not the empty initial values of UI StateFlows.
+                // If no cache exists, retain the explicit scope: it cannot become a national search.
+                if (fuelSelection.province != null && repository.getMetadata() != null) {
+                    val province = fuelSelection.province.takeIf { it in repository.observeProvinces().first() }
+                    val municipality = fuelSelection.municipality?.takeIf {
+                        province != null && it in repository.observeMunicipalities(province).first()
+                    }
+                    if (filter.value == fuelSelection) filter.value = fuelSelection.copy(province = province, municipality = municipality)
+                }
+                if (chargerSelection.province != null && chargerRepository.getMetadata() != null) {
+                    val province = chargerSelection.province.takeIf { it in chargerRepository.observeProvinces().first() }
+                    val municipality = chargerSelection.municipality?.takeIf {
+                        province != null && it in chargerRepository.observeMunicipalities(province).first()
+                    }
+                    if (chargerFilter.value == chargerSelection) chargerFilter.value = chargerSelection.copy(province = province, municipality = municipality)
+                }
+                saveSelections()
+            }
+        }
+    }
+
     fun onStationsOpened() {
         if (stationEntryHandled) return
         stationEntryHandled = true
+        if (restoredZonesNeedValidation) {
+            restoredZonesNeedValidation = false
+            validateRestoredZones()
+        }
         val entryGeneration = ++stationEntryGeneration
         viewModelScope.launch {
             var preferencesLoaded = false
@@ -296,8 +337,10 @@ class StationsViewModel(
                         locationPermissionRequested.value = requestedPermission
                     }
                 }
-                if (preferencesLoaded) runPersistenceAction(::refresh) {
-                    fuelStationsRefreshCoordinator.refreshAutomaticallyIfNeeded()
+                if (preferencesLoaded) runPersistenceAction(::refreshActiveContent) {
+                    if (contentType.value == StationsContentType.CHARGERS) {
+                        chargerRefreshCoordinator.refreshAutomaticallyIfNeeded()
+                    } else fuelStationsRefreshCoordinator.refreshAutomaticallyIfNeeded()
                 }
             } finally {
                 if (!preferencesLoaded && stationEntryGeneration == entryGeneration) stationEntryHandled = false
@@ -339,6 +382,7 @@ class StationsViewModel(
 
     fun selectContentType(type: StationsContentType) {
         contentType.value = type
+        saveSelections()
         if (type == StationsContentType.FUEL) stationMapViewport.value = null else chargerMapViewport.value = null
         if (type == StationsContentType.CHARGERS) viewModelScope.launch {
             runPersistenceAction({ refreshChargers() }) { chargerRefreshCoordinator.refreshAutomaticallyIfNeeded() }
@@ -402,22 +446,37 @@ class StationsViewModel(
     fun applyFilter(newFilter: StationFilter) {
         val wasNearby = filter.value.province == null && currentLocation.value != null
         filter.value = normalizeStationFilterForScope(newFilter, wasNearby, currentLocation.value != null)
+        saveSelections()
     }
-    fun resetFilters() { filter.value = if (currentLocation.value != null) StationFilter(sortOrder = StationSortOrder.DISTANCE) else StationFilter() }
-    fun useNearbyStations() { currentLocation.value?.let { filter.value = filter.value.copy(province = null, municipality = null, sortOrder = StationSortOrder.DISTANCE) } }
+    fun resetFilters() {
+        filter.value = if (currentLocation.value != null) StationFilter(sortOrder = StationSortOrder.DISTANCE) else StationFilter()
+        saveSelections()
+    }
+    fun useNearbyStations() {
+        currentLocation.value?.let { filter.value = filter.value.copy(province = null, municipality = null, sortOrder = StationSortOrder.DISTANCE) }
+        saveSelections()
+    }
 
     fun applyChargerFilter(newFilter: ChargerFilter) {
         val wasNearby = chargerFilter.value.province == null && currentLocation.value != null
         chargerFilter.value = normalizeChargerFilterForScope(newFilter, wasNearby, currentLocation.value != null)
+        saveSelections()
     }
-    fun resetChargerFilters() { chargerFilter.value = if (currentLocation.value != null) ChargerFilter(sortOrder = ChargerSortOrder.DISTANCE) else ChargerFilter() }
-    fun useNearbyChargers() { currentLocation.value?.let { chargerFilter.value = chargerFilter.value.copy(province = null, municipality = null, sortOrder = ChargerSortOrder.DISTANCE) } }
+    fun resetChargerFilters() {
+        chargerFilter.value = if (currentLocation.value != null) ChargerFilter(sortOrder = ChargerSortOrder.DISTANCE) else ChargerFilter()
+        saveSelections()
+    }
+    fun useNearbyChargers() {
+        currentLocation.value?.let { chargerFilter.value = chargerFilter.value.copy(province = null, municipality = null, sortOrder = ChargerSortOrder.DISTANCE) }
+        saveSelections()
+    }
     fun setViewMode(mode: StationsViewMode) {
         if (mode == StationsViewMode.MAP && viewMode.value != StationsViewMode.MAP) {
             if (contentType.value == StationsContentType.FUEL) stationMapViewport.value = null
             else chargerMapViewport.value = null
         }
         viewMode.value = mode
+        saveSelections()
     }
 
     fun updateStationMapViewport(bounds: StationMapBounds) {
@@ -435,6 +494,14 @@ class StationsViewModel(
             if (filter.value.province == null) filter.value = filter.value.copy(sortOrder = StationSortOrder.DISTANCE)
             if (chargerFilter.value.province == null) chargerFilter.value = chargerFilter.value.copy(sortOrder = ChargerSortOrder.DISTANCE)
         }
+        saveSelections()
+    }
+
+    private fun saveSelections() {
+        savedStateHandle?.set("stations.filter", filter.value.savedValues())
+        savedStateHandle?.set("stations.chargerFilter", chargerFilter.value.savedValues())
+        savedStateHandle?.set("stations.mode", viewMode.value.name)
+        savedStateHandle?.set("stations.source", contentType.value.name)
     }
 }
 

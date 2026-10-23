@@ -1,6 +1,7 @@
 package com.bgr3108.kilonom.viewmodel
 
 import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.viewModelFactory
 
 object AppViewModelProvider {
@@ -30,7 +31,8 @@ object AppViewModelProvider {
         initializer {
             PeriodSummaryViewModel(
                 hybridCarApplication().container.fuelRepository,
-                hybridCarApplication().container.vehicleRepository
+                hybridCarApplication().container.vehicleRepository,
+                createSavedStateHandle()
             )
         }
 
@@ -51,7 +53,8 @@ object AppViewModelProvider {
             StationsViewModel(
                 hybridCarApplication().container.stationRepository,
                 hybridCarApplication().container.chargerRepository,
-                hybridCarApplication().container.stationPreferences
+                hybridCarApplication().container.stationPreferences,
+                savedStateHandle = createSavedStateHandle()
             )
         }
 

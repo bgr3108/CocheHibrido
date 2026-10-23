@@ -1,6 +1,7 @@
 package com.bgr3108.kilonom.viewmodel
 
 import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -60,6 +61,25 @@ class StationsListMapConsistencyTest {
     private val wholeArea = StationMapBounds(39.99, -3.1, 40.5, -2.9)
     private val distantArea = StationMapBounds(40.17, -3.05, 40.23, -2.95)
     private val closeArea = StationMapBounds(40.0, -3.05, 40.1, -2.95)
+
+    @Test fun restoredMapUsesOneViewportSubscriptionAndNoFullProvinceQuery() = runBlocking {
+        withFixture(listOf(5.0)) { f ->
+            val vm = f.viewModel(SavedStateHandle(mapOf(
+                "stations.source" to StationsContentType.CHARGERS.name,
+                "stations.mode" to StationsViewMode.MAP.name,
+                "stations.chargerFilter" to ChargerFilter(province = "MADRID", municipality = "Madrid").savedValues()
+            )))
+            f.collectResults(this, vm)
+            onMain { vm.onStationsOpened(); vm.updateChargerMapViewport(wholeArea) }
+            await { vm.mapChargers.first { it.isNotEmpty() } }
+            assertEquals(1, f.chargerDao.viewport.starts.value)
+            assertEquals(1, f.chargerDao.viewport.active.value)
+            assertEquals(0, f.chargerDao.full.starts.value)
+            assertEquals(0, f.fuelDao.full.starts.value)
+            assertEquals(0, f.chargerDao.nearby.starts.value)
+            assertEquals(0, f.remoteCalls)
+        }
+    }
 
     @Test fun delayedStationBoundsRemainAssociatedWithTheirOriginalScope() = delayedBounds(charger = false)
     @Test fun delayedChargerBoundsRemainAssociatedWithTheirOriginalScope() = delayedBounds(charger = true)
@@ -327,7 +347,9 @@ class StationsListMapConsistencyTest {
         val store = ViewModelStore()
         val collectors = mutableListOf<Job>()
         var vm: StationsViewModel? = null
-        fun viewModel() = onMain { StationsViewModel(fuelRepository, chargerRepository).also { vm = it; store.put("stations", it) } }
+        fun viewModel(handle: SavedStateHandle = SavedStateHandle()) = onMain {
+            StationsViewModel(fuelRepository, chargerRepository, savedStateHandle = handle).also { vm = it; store.put("stations", it) }
+        }
         fun collectResults(scope: CoroutineScope, viewModel: StationsViewModel) {
             collectors += scope.launch { viewModel.stations.collect() }
             collectors += scope.launch { viewModel.mapStations.collect() }
