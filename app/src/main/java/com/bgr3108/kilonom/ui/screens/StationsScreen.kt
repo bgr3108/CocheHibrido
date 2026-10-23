@@ -44,10 +44,11 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -96,6 +97,8 @@ fun StationsScreen(innerPadding: PaddingValues, viewModel: StationsViewModel) {
 @Composable
 private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: StationsViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val mapSavedState = rememberStationMapStateHolder(state.searchScope)
+    var locationRequestId by rememberSaveable { mutableLongStateOf(0L) }
     val provinces by viewModel.provinces.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -140,6 +143,7 @@ private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: Stations
             try {
                 val location = StationLocationProvider.requestCurrentLocation(context)
                 viewModel.updateCurrentLocation(location)
+                if (location?.isValid() == true) locationRequestId++
                 if (location != null && useLocationAsSearchScope) viewModel.useNearbyStations()
                 if (location == null) snackbarHostState.showSnackbar("No se ha podido obtener tu ubicación.")
             } finally {
@@ -216,15 +220,16 @@ private fun FuelStationsContent(innerPadding: PaddingValues, viewModel: Stations
                     )
                 }
                 else -> Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                    key(state.filter, state.searchScope) {
+                    mapSavedState.SaveableStateProvider(stationMapCameraScopeKey(state.searchScope)) {
                         StationMap(
                             stations = mapStations,
                             currentLocation = state.currentLocation.takeIf { state.searchScope is StationSearchScope.Nearby },
-                            initialBounds = mapInitialBounds,
+                            initialBounds = mapInitialBounds?.forScope(state.searchScope),
                             waitForInitialCamera = state.searchScope is StationSearchScope.ManualZone,
                             onViewportChanged = viewModel::updateStationMapViewport,
                             onStationSelected = { selectedStation = it },
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize(),
+                            locationRequestId = locationRequestId
                         )
                     }
                     FloatingActionButton(

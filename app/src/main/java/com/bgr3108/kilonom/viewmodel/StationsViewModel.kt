@@ -178,14 +178,14 @@ class StationsViewModel(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     /** Manual scopes are framed from one aggregate row before MapLibre emits its first viewport. */
-    val stationMapInitialBounds: StateFlow<StationMapBounds?> = combine(
-        contentType, filter, viewMode, stationSearchScope
-    ) { type, activeFilter, mode, scope ->
-        SearchInput(type, activeFilter, null, mode, scope)
+    val stationMapInitialBounds: StateFlow<ScopedMapBounds?> = combine(
+        contentType, filter, viewMode
+    ) { type, activeFilter, mode ->
+        SearchInput(type, activeFilter, null, mode, activeFilter.stationSearchScope(null))
     }.flatMapLatest { input ->
         if (input.contentType == StationsContentType.FUEL && input.mode == StationsViewMode.MAP &&
             input.scope is StationSearchScope.ManualZone
-        ) repository.observeStationMapBounds(input.filter) else flowOf(null)
+        ) repository.observeStationMapBounds(input.filter).map { ScopedMapBounds(input.scope, it) } else flowOf(null)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val chargerMetadata: StateFlow<ChargerCacheMetadataEntity?> = chargerRepository.observeMetadata()
@@ -243,14 +243,14 @@ class StationsViewModel(
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    val chargerMapInitialBounds: StateFlow<StationMapBounds?> = combine(
-        contentType, chargerFilter, viewMode, chargerSearchScope
-    ) { type, activeFilter, mode, scope ->
-        ChargerSearchInput(type, activeFilter, null, mode, scope)
+    val chargerMapInitialBounds: StateFlow<ScopedMapBounds?> = combine(
+        contentType, chargerFilter, viewMode
+    ) { type, activeFilter, mode ->
+        ChargerSearchInput(type, activeFilter, null, mode, activeFilter.chargerSearchScope(null))
     }.flatMapLatest { input ->
         if (input.contentType == StationsContentType.CHARGERS && input.mode == StationsViewMode.MAP &&
             input.scope is StationSearchScope.ManualZone
-        ) chargerRepository.observeChargerMapBounds(input.filter) else flowOf(null)
+        ) chargerRepository.observeChargerMapBounds(input.filter).map { ScopedMapBounds(input.scope, it) } else flowOf(null)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val fuelCoreState = combine(filter, metadata, refreshing, refreshError, currentLocation) {
@@ -463,6 +463,11 @@ internal fun stationRefreshErrorMessage(error: Throwable): String = when {
         listOf("CSV", "RIPREE", "MITECO", "Descarga").any { error.message.orEmpty().contains(it) } ->
         "Los datos recibidos no son válidos. Inténtalo de nuevo más tarde."
     else -> "No se pudieron actualizar los datos. Inténtalo de nuevo."
+}
+
+/** Bounds belong to the query scope that produced them, never to the next selected province. */
+data class ScopedMapBounds(val scope: StationSearchScope, val bounds: StationMapBounds?) {
+    fun forScope(currentScope: StationSearchScope): StationMapBounds? = bounds.takeIf { scope == currentScope }
 }
 
 private data class SearchInput(val contentType: StationsContentType, val filter: StationFilter, val location: StationCoordinates?, val mode: StationsViewMode, val scope: StationSearchScope)

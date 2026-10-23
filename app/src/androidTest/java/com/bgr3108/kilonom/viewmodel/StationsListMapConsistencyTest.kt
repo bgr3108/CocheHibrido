@@ -26,6 +26,8 @@ import com.bgr3108.kilonom.stations.StationFilter
 import com.bgr3108.kilonom.stations.StationFuelType
 import com.bgr3108.kilonom.stations.StationListItem
 import com.bgr3108.kilonom.stations.StationMapBounds
+import com.bgr3108.kilonom.stations.StationMapBoundsRow
+import com.bgr3108.kilonom.stations.StationSearchScope
 import com.bgr3108.kilonom.stations.StationRepository
 import com.bgr3108.kilonom.stations.StationSortOrder
 import com.bgr3108.kilonom.stations.StationsViewMode
@@ -45,6 +47,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -57,6 +60,67 @@ class StationsListMapConsistencyTest {
     private val wholeArea = StationMapBounds(39.99, -3.1, 40.5, -2.9)
     private val distantArea = StationMapBounds(40.17, -3.05, 40.23, -2.95)
     private val closeArea = StationMapBounds(40.0, -3.05, 40.1, -2.95)
+
+    @Test fun delayedStationBoundsRemainAssociatedWithTheirOriginalScope() = delayedBounds(charger = false)
+    @Test fun delayedChargerBoundsRemainAssociatedWithTheirOriginalScope() = delayedBounds(charger = true)
+
+    private fun delayedBounds(charger: Boolean) = runBlocking {
+        withFixture(listOf(5.0)) { f ->
+            val vm = f.viewModel()
+            onMain {
+                if (charger) {
+                    vm.selectContentType(StationsContentType.CHARGERS)
+                    vm.applyChargerFilter(ChargerFilter(province = "MADRID"))
+                } else vm.applyFilter(StationFilter(province = "MADRID"))
+                vm.setViewMode(StationsViewMode.MAP)
+            }
+            val frames = if (charger) vm.chargerMapInitialBounds else vm.stationMapInitialBounds
+            val counter = if (charger) f.chargerDao.bounds else f.fuelDao.bounds
+            f.collectors += launch { frames.collect() }
+            val original = StationSearchScope.ManualZone("MADRID", null)
+            await { frames.first { it?.scope == original && it.bounds != null } }
+            assertEquals(1, counter.starts.value)
+            val changed = StationSearchScope.ManualZone("SEVILLA", null)
+            val gate = CompletableDeferred<Unit>()
+            counter.gate = gate
+            onMain {
+                if (charger) vm.applyChargerFilter(ChargerFilter(province = changed.province))
+                else vm.applyFilter(StationFilter(province = changed.province))
+            }
+            await { counter.starts.first { it == 2 } }
+            assertEquals(original, frames.value?.scope)
+            assertNull(frames.value?.forScope(changed))
+            gate.complete(Unit)
+            await { frames.first { it?.scope == changed } }
+            assertNull(frames.value?.bounds) // Actual empty aggregate, not the preceding province.
+            assertEquals(2, counter.starts.value)
+            assertEquals(0, f.remoteCalls)
+        }
+    }
+
+    @Test fun repeatedIdenticalViewportDoesNotDuplicateRoomMapQueries() = runBlocking {
+        withFixture(listOf(5.0)) { f ->
+            val vm = f.viewModel()
+            f.collectResults(this, vm)
+            onMain {
+                vm.applyFilter(StationFilter(province = "MADRID"))
+                vm.setViewMode(StationsViewMode.MAP)
+                vm.updateStationMapViewport(wholeArea)
+            }
+            await { vm.mapStations.first { it.isNotEmpty() } }
+            onMain { repeat(3) { vm.updateStationMapViewport(wholeArea) } }
+            assertEquals(1, f.fuelDao.viewport.starts.value)
+            onMain {
+                vm.applyChargerFilter(ChargerFilter(province = "MADRID"))
+                vm.selectContentType(StationsContentType.CHARGERS)
+                vm.updateChargerMapViewport(wholeArea)
+            }
+            await { vm.mapChargers.first { it.isNotEmpty() } }
+            onMain { repeat(3) { vm.updateChargerMapViewport(wholeArea) } }
+            assertEquals(1, f.chargerDao.viewport.starts.value)
+            assertEquals(0, f.remoteCalls)
+        }
+    }
 
     @Test
     fun nearbyTenKmRemainsTenKmWhenViewportContainsOnlyTwentyTwoKmPoint() = runBlocking {
@@ -304,6 +368,9 @@ class StationsListMapConsistencyTest {
     }
 
     private class TrackingStationDao(private val delegate: StationCacheDao) : StationCacheDao by delegate {
+        val bounds = QueryCounter()
+        override fun observeStationMapBounds(fuelType: String, province: String?, municipality: String?): Flow<StationMapBoundsRow> =
+            bounds.track(delegate.observeStationMapBounds(fuelType, province, municipality))
         val full = QueryCounter()
         val nearby = QueryCounter()
         val viewport = QueryCounter()
@@ -316,6 +383,9 @@ class StationsListMapConsistencyTest {
     }
 
     private class TrackingChargerDao(private val delegate: ChargerCacheDao) : ChargerCacheDao by delegate {
+        val bounds = QueryCounter()
+        override fun observeChargerMapBounds(connectorFilterEnabled: Int, connectorCodes: List<String>, minimumPowerKw: Double?, operatorName: String?, province: String?, municipality: String?): Flow<StationMapBoundsRow> =
+            bounds.track(delegate.observeChargerMapBounds(connectorFilterEnabled, connectorCodes, minimumPowerKw, operatorName, province, municipality))
         val full = QueryCounter()
         val nearby = QueryCounter()
         val viewport = QueryCounter()

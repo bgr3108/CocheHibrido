@@ -96,7 +96,8 @@ fun StationMap(
     waitForInitialCamera: Boolean,
     onViewportChanged: (StationMapBounds) -> Unit,
     onStationSelected: (StationListItem) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    locationRequestId: Long = 0
 ) {
     val preparation by produceState<StationMapPreparation>(
         initialValue = StationMapPreparation.Loading,
@@ -117,7 +118,8 @@ fun StationMap(
             waitForInitialCamera = waitForInitialCamera,
             onViewportChanged = onViewportChanged,
             onStationSelected = onStationSelected,
-            modifier = modifier
+            modifier = modifier,
+            locationRequestId = locationRequestId
         )
     }
 }
@@ -131,11 +133,11 @@ private fun StationMapContent(
     waitForInitialCamera: Boolean,
     onViewportChanged: (StationMapBounds) -> Unit,
     onStationSelected: (StationListItem) -> Unit,
-    modifier: Modifier
+    modifier: Modifier,
+    locationRequestId: Long
 ) {
     val stationsById by rememberUpdatedState(preparation.stationsById)
     val updateViewport by rememberUpdatedState(onViewportChanged)
-    var waitingForInitialCamera by remember(waitForInitialCamera) { mutableStateOf(waitForInitialCamera) }
     val selectStation by rememberUpdatedState(onStationSelected)
     val scope = rememberCoroutineScope()
     var activeMapState by remember { mutableStateOf<org.maplibre.compose.map.MapState?>(null) }
@@ -206,17 +208,9 @@ private fun StationMapContent(
     LaunchedEffect(mapState) {
         activeMapState = mapState
     }
-    LaunchedEffect(initialBounds, waitForInitialCamera) {
-        if (waitingForInitialCamera && initialBounds != null) {
-            mapState.animateCameraPosition(
-                initialBounds.toMapCameraPosition(),
-                animation = CameraAnimation.Ease(USER_LOCATION_ANIMATION_DURATION)
-            )
-            waitingForInitialCamera = false
-        } else if (!waitForInitialCamera) {
-            waitingForInitialCamera = false
-        }
-    }
+    val waitingForInitialCamera by rememberStationMapCamera(
+        mapState, initialBounds, waitForInitialCamera, currentLocation, locationRequestId
+    )
     LaunchedEffect(mapState) {
         snapshotFlow {
             if (waitingForInitialCamera || mapState.isCameraMoving) null
@@ -270,14 +264,6 @@ private fun StationMapContent(
         is StyleLoadState.Failed -> stationMapLoadStateForFailure(styleState.reason)
         StyleLoadState.Ready -> StationMapLoadState.READY
         else -> StationMapLoadState.LOADING
-    }
-    LaunchedEffect(currentLocation) {
-        currentLocation?.takeIf(StationCoordinates::isValid)?.let { location ->
-            mapState.animateCameraPosition(
-                userLocationCamera(location),
-                animation = CameraAnimation.Ease(USER_LOCATION_ANIMATION_DURATION)
-            )
-        }
     }
 
     Box(modifier = modifier) {
@@ -458,7 +444,6 @@ private const val CLUSTER_ZOOM_INCREMENT = 2.0
 private const val MAX_CLUSTER_ZOOM = 18.0
 private val CLUSTER_ZOOM_ANIMATION_DURATION = 350.milliseconds
 private const val USER_LOCATION_ZOOM = 13.0
-private val USER_LOCATION_ANIMATION_DURATION = 500.milliseconds
 
 /** Official MapLibre controls stay within the map, clear of the location action at bottom end. */
 internal val STATION_MAP_ATTRIBUTION_ALIGNMENT = Alignment.BottomStart

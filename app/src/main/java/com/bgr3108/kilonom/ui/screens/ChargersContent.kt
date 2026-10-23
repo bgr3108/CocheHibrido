@@ -41,10 +41,11 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -80,6 +81,8 @@ import kotlinx.coroutines.launch
 internal fun ChargersContent(innerPadding: PaddingValues, viewModel: StationsViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val chargerState by viewModel.chargerUiState.collectAsStateWithLifecycle()
+    val mapSavedState = rememberStationMapStateHolder(chargerState.searchScope)
+    var locationRequestId by rememberSaveable { mutableLongStateOf(0L) }
     val distanceChargers by viewModel.chargers.collectAsStateWithLifecycle()
     val mapChargers by viewModel.mapChargers.collectAsStateWithLifecycle()
     val mapInitialBounds by viewModel.chargerMapInitialBounds.collectAsStateWithLifecycle()
@@ -112,6 +115,7 @@ internal fun ChargersContent(innerPadding: PaddingValues, viewModel: StationsVie
             try {
                 val location = StationLocationProvider.requestCurrentLocation(context)
                 viewModel.updateCurrentLocation(location)
+                if (location?.isValid() == true) locationRequestId++
                 if (location != null && useLocationAsSearchScope) viewModel.useNearbyChargers()
                 if (location == null) snackbarHostState.showSnackbar("No se ha podido obtener tu ubicación.")
             } finally { isLocating = false }
@@ -175,15 +179,16 @@ internal fun ChargersContent(innerPadding: PaddingValues, viewModel: StationsVie
                     )
                 }
                 else -> Box(Modifier.weight(1f).fillMaxWidth()) {
-                    key(chargerState.filter, chargerState.searchScope) {
+                    mapSavedState.SaveableStateProvider(stationMapCameraScopeKey(chargerState.searchScope)) {
                         ChargerMap(
                             mapChargers,
                             state.currentLocation.takeIf { chargerState.searchScope is StationSearchScope.Nearby },
-                            mapInitialBounds,
+                            mapInitialBounds?.forScope(chargerState.searchScope),
                             chargerState.searchScope is StationSearchScope.ManualZone,
                             viewModel::updateChargerMapViewport,
                             { selectedCharger = it },
-                            Modifier.fillMaxSize()
+                            Modifier.fillMaxSize(),
+                            locationRequestId = locationRequestId
                         )
                     }
                     FloatingActionButton(

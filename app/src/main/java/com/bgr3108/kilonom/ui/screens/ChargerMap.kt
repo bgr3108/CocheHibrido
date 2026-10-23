@@ -69,7 +69,8 @@ fun ChargerMap(
     waitForInitialCamera: Boolean,
     onViewportChanged: (StationMapBounds) -> Unit,
     onChargerSelected: (ChargerListItem) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    locationRequestId: Long = 0
 ) {
     val mapPreparation by produceState<ChargerMapPreparation>(
         initialValue = ChargerMapPreparation.Loading,
@@ -91,7 +92,8 @@ fun ChargerMap(
                 waitForInitialCamera = waitForInitialCamera,
                 onViewportChanged = onViewportChanged,
                 onChargerSelected = onChargerSelected,
-                modifier = modifier
+                modifier = modifier,
+                locationRequestId = locationRequestId
             )
     }
 }
@@ -105,11 +107,11 @@ private fun ChargerMapContent(
     waitForInitialCamera: Boolean,
     onViewportChanged: (StationMapBounds) -> Unit,
     onChargerSelected: (ChargerListItem) -> Unit,
-    modifier: Modifier
+    modifier: Modifier,
+    locationRequestId: Long
 ) {
     val chargersById by rememberUpdatedState(preparation.chargersById)
     val updateViewport by rememberUpdatedState(onViewportChanged)
-    var waitingForInitialCamera by remember(waitForInitialCamera) { mutableStateOf(waitForInitialCamera) }
     val selectCharger by rememberUpdatedState(onChargerSelected)
     val scope = rememberCoroutineScope()
     var activeMapState by remember { mutableStateOf<org.maplibre.compose.map.MapState?>(null) }
@@ -135,17 +137,9 @@ private fun ChargerMapContent(
         CircleLayer("charger-current-location", locationSource, color = const(Color(0xFF00695C)), radius = const(8.dp), strokeColor = const(Color.White), strokeWidth = const(3.dp))
     }
     LaunchedEffect(mapState) { activeMapState = mapState }
-    LaunchedEffect(initialBounds, waitForInitialCamera) {
-        if (waitingForInitialCamera && initialBounds != null) {
-            mapState.animateCameraPosition(
-                initialBounds.toMapCameraPosition(),
-                animation = CameraAnimation.Ease(500.milliseconds)
-            )
-            waitingForInitialCamera = false
-        } else if (!waitForInitialCamera) {
-            waitingForInitialCamera = false
-        }
-    }
+    val waitingForInitialCamera by rememberStationMapCamera(
+        mapState, initialBounds, waitForInitialCamera, currentLocation, locationRequestId
+    )
     LaunchedEffect(mapState) {
         snapshotFlow {
             if (waitingForInitialCamera || mapState.isCameraMoving) null
@@ -178,14 +172,6 @@ private fun ChargerMapContent(
         is StyleLoadState.Failed -> stationMapLoadStateForFailure(style.reason)
         StyleLoadState.Ready -> StationMapLoadState.READY
         else -> StationMapLoadState.LOADING
-    }
-    LaunchedEffect(currentLocation) {
-        currentLocation?.takeIf(StationCoordinates::isValid)?.let {
-            mapState.animateCameraPosition(
-                userLocationCamera(it),
-                animation = CameraAnimation.Ease(500.milliseconds)
-            )
-        }
     }
     Box(modifier) {
         MaplibreMap(
