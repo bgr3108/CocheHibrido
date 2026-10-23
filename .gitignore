@@ -26,3 +26,5 @@ app/release/
 keystore.properties
 key.properties
 signing.properties
+# Android Studio - configuración local de App Quality Insights
+/.idea/appInsightsSettings.xml
