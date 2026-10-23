@@ -1,19 +1,7 @@
 package com.bgr3108.kilonom.ui.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavBackStackEntry
@@ -23,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.bgr3108.kilonom.ui.screens.AddConsumptionScreen
+import com.bgr3108.kilonom.ui.screens.EditConsumptionScreen
 import com.bgr3108.kilonom.ui.screens.ConsumptionDetailScreen
 import com.bgr3108.kilonom.ui.screens.ConsumptionListScreen
 import com.bgr3108.kilonom.ui.screens.CostDetailScreen
@@ -235,36 +224,22 @@ internal fun HybridCarNavHost(
 
             val id = backStackEntry.arguments?.getString("id")?.toIntOrNull()
 
-            val entry = fuelViewModel.entries
-                .collectAsStateWithLifecycle(initialValue = emptyList())
-                .value
-                .find { it.id == id }
-
-            if (entry != null) {
-                AddConsumptionScreen(
-                    operationOrigin = backStackEntry.id,
-                    viewModel = fuelViewModel,
-                    homeViewModel = homeViewModel,
-                    innerPadding = innerPadding,
-                    entry = entry,
-                    onClose = {
-                        navController.popBackStack()
-                    }
-                )
-            } else {
-                MissingEntryScreen(
-                    innerPadding = innerPadding,
-                    onBack = {
-                        if (!navController.popBackStack()) {
-                            navController.navigate(
-                                navController.graph.findStartDestination().id
-                            ) {
-                                launchSingleTop = true
-                            }
+            EditConsumptionScreen(
+                id = id,
+                operationOrigin = backStackEntry.id,
+                viewModel = fuelViewModel,
+                homeViewModel = homeViewModel,
+                innerPadding = innerPadding,
+                onClose = {
+                    if (!navController.popBackStack()) {
+                        navController.navigate(
+                            navController.graph.findStartDestination().id
+                        ) {
+                            launchSingleTop = true
                         }
                     }
-                )
-            }
+                }
+            )
         }
         composable("stats") {
             StatisticsScreen(
@@ -361,27 +336,6 @@ private fun OperationNavigationEffect(
             ScreenOperationKind.SAVE, ScreenOperationKind.DELETE_ITEM -> navController.popBackStack()
             ScreenOperationKind.DELETE_ACTIVE_VEHICLE -> onActiveVehicleDeleted()
             else -> Unit
-        }
-    }
-}
-
-@Composable
-private fun MissingEntryScreen(
-    innerPadding: PaddingValues,
-    onBack: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding)
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Registro no encontrado")
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = onBack) {
-            Text("Volver")
         }
     }
 }

@@ -12,6 +12,9 @@ import com.bgr3108.kilonom.data.MaintenanceType
 import com.bgr3108.kilonom.data.TyrePosition
 import com.bgr3108.kilonom.data.VehicleEntity
 import com.bgr3108.kilonom.data.VehicleRepository
+import com.bgr3108.kilonom.data.RecordLoadState
+import com.bgr3108.kilonom.data.MaintenanceData
+import com.bgr3108.kilonom.data.selectRecord
 import com.bgr3108.kilonom.data.DEFAULT_REMINDER_LEAD_DAYS
 import com.bgr3108.kilonom.data.DEFAULT_REMINDER_LEAD_KM
 import com.bgr3108.kilonom.domain.MaintenanceDueInfo
@@ -24,13 +27,10 @@ import com.bgr3108.kilonom.domain.displayMaintenanceName
 import com.bgr3108.kilonom.domain.maintenanceUrgencySortValue
 import com.bgr3108.kilonom.domain.selectMaintenanceHomeInsight
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -42,10 +42,8 @@ import java.util.Calendar
 import kotlin.math.roundToLong
 
 private data class MaintenanceSourceSnapshot(
-    val vehicle: VehicleEntity?,
-    val summaries: List<VehicleRepository.VehicleSummary>,
-    val items: List<MaintenanceItemEntity>,
-    val records: List<MaintenanceRecordWithItem>
+    val data: RecordLoadState<MaintenanceData>,
+    val summaries: List<VehicleRepository.VehicleSummary>
 )
 
 data class MaintenanceItemUiModel(
@@ -67,7 +65,8 @@ data class MaintenanceUiState(
     val records: List<MaintenanceRecordUiModel> = emptyList(),
     val availableTypes: Set<MaintenanceType> = emptySet(),
     val isWorking: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val readState: RecordLoadState<Unit> = RecordLoadState.Loading
 ) {
     val hasItems: Boolean get() = items.isNotEmpty()
     val upcomingItems: List<MaintenanceItemUiModel>
@@ -101,10 +100,9 @@ data class MaintenanceRecordDraft(
 /** UI boundary for the active vehicle's maintenance only. */
 class MaintenanceViewModel(
     private val maintenanceRepository: MaintenanceRepository,
-    vehicleRepository: VehicleRepository
+    private val vehicleRepository: VehicleRepository
 ) : ViewModel() {
 
-    private val selectedItemId = MutableStateFlow<Long?>(null)
     private val actionMutex = Mutex()
     private val operations = ScreenOperationResults()
     val operationResults = operations.results
@@ -113,16 +111,13 @@ class MaintenanceViewModel(
     private val errorMessage = MutableStateFlow<String?>(null)
     private val currentDay = MutableStateFlow(todayAtStartOfDay())
 
-    private val activeItems = maintenanceRepository.observeActiveItems()
-    private val activeRecords = maintenanceRepository.observeActiveRecords()
+    private val readRetries = MutableStateFlow(0)
 
     private val sourceSnapshot = combine(
-        vehicleRepository.activeVehicle,
-        vehicleRepository.vehicleSummaries,
-        activeItems,
-        activeRecords
-    ) { vehicle, summaries, items, records ->
-        MaintenanceSourceSnapshot(vehicle, summaries, items, records)
+        maintenanceRepository.observeData(readRetries),
+        vehicleRepository.vehicleSummaries
+    ) { data, summaries ->
+        MaintenanceSourceSnapshot(data, summaries)
     }
 
     val state: StateFlow<MaintenanceUiState> = combine(
@@ -131,10 +126,11 @@ class MaintenanceViewModel(
         isWorking,
         errorMessage
     ) { source, today, working, error ->
-        val vehicle = source.vehicle
+        val loaded = (source.data as? RecordLoadState.Found)?.value
+        val vehicle = loaded?.vehicle
         val summaries = source.summaries
-        val items = source.items
-        val records = source.records
+        val items = loaded?.items.orEmpty()
+        val records = loaded?.records.orEmpty()
         val summary = vehicle?.let { active -> summaries.firstOrNull { it.vehicle.id == active.id } }
         val currentKm = summary?.currentKm?.roundToLong()?.coerceAtLeast(0L) ?: 0L
         val activeVehicleId = vehicle?.id
@@ -158,9 +154,10 @@ class MaintenanceViewModel(
             records = recordModels,
             availableTypes = vehicle?.let { availableMaintenanceTypes(it.category, it.type) }.orEmpty(),
             isWorking = working,
-            errorMessage = error
+            errorMessage = error,
+            readState = source.data.selectRecord { Unit }
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MaintenanceUiState())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000, replayExpirationMillis = 0), MaintenanceUiState())
 
     val homeInsight: StateFlow<MaintenanceHomeInsight> = state
         .map { currentState ->
@@ -174,13 +171,9 @@ class MaintenanceViewModel(
             MaintenanceHomeInsight(com.bgr3108.kilonom.domain.MaintenanceHomeInsightType.NO_ITEMS)
         )
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val detailRecords: StateFlow<List<MaintenanceRecordEntity>> = selectedItemId
-        .flatMapLatest { itemId -> itemId?.let(maintenanceRepository::observeRecordsForActiveItem) ?: flowOf(emptyList()) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-
-    fun selectDetailItem(itemId: Long?) {
-        selectedItemId.value = itemId
+    fun retryRead() {
+        vehicleRepository.retryVehicleLoad()
+        readRetries.value += 1
     }
 
     /** Refreshes date-based reminders when a maintenance surface becomes visible again. */

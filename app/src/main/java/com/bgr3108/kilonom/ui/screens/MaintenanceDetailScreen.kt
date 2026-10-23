@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.data.MaintenanceItemEntity
 import com.bgr3108.kilonom.data.MaintenanceRecordEntity
+import com.bgr3108.kilonom.data.selectRecord
+import com.bgr3108.kilonom.viewmodel.MaintenanceUiState
 import com.bgr3108.kilonom.viewmodel.MaintenanceViewModel
 
 @Composable
@@ -53,7 +55,27 @@ fun MaintenanceDetailScreen(
     onEditRecord: (Long) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val records by viewModel.detailRecords.collectAsStateWithLifecycle()
+    val recordState = state.readState.selectRecord {
+        state.takeIf { data -> data.items.any { it.item.id == itemId } }
+    }
+    RecordLoadContent(recordState, "maintenance-detail:$itemId", innerPadding, viewModel::retryRead, onBack) { loaded ->
+        MaintenanceDetailContent(innerPadding, itemId, viewModel, operationOrigin, onBack, onRegister, onEditItem, onEditRecord, loaded)
+    }
+}
+
+@Composable
+private fun MaintenanceDetailContent(
+    innerPadding: PaddingValues,
+    itemId: Long?,
+    viewModel: MaintenanceViewModel,
+    operationOrigin: String,
+    onBack: () -> Unit,
+    onRegister: (Long) -> Unit,
+    onEditItem: (Long) -> Unit,
+    onEditRecord: (Long) -> Unit,
+    state: MaintenanceUiState
+) {
+    val records = state.records.filter { it.item.id == itemId }.map { it.record }
     val item = state.items.firstOrNull { it.item.id == itemId }
     val itemToDelete = remember { mutableStateOf<MaintenanceItemEntity?>(null) }
     val recordToDelete = remember { mutableStateOf<MaintenanceRecordEntity?>(null) }
@@ -70,11 +92,7 @@ fun MaintenanceDetailScreen(
     val calendarOpenError = remember(itemId, item?.item?.nextDueDate) { mutableStateOf(false) }
     val context = LocalContext.current
 
-    LaunchedEffect(itemId) { viewModel.selectDetailItem(itemId) }
-    if (item == null) {
-        MissingMaintenanceScreen(innerPadding, onBack)
-        return
-    }
+    if (item == null) return
 
     Column(
         modifier = Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState()).padding(16.dp),
@@ -242,16 +260,3 @@ internal fun com.bgr3108.kilonom.viewmodel.MaintenanceItemUiModel.nextDueDetailL
             item.nextDueKm?.let { add("${it.formatKilometers()} km") }
         }
     }
-
-@Composable
-internal fun MissingMaintenanceScreen(innerPadding: PaddingValues, onBack: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(innerPadding).padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Mantenimiento no encontrado")
-        Spacer(Modifier.height(16.dp))
-        Button(onClick = onBack) { Text("Volver") }
-    }
-}

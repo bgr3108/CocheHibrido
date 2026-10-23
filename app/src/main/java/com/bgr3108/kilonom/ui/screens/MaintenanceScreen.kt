@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.domain.MaintenanceDueStatus
+import com.bgr3108.kilonom.data.RecordLoadState
 import com.bgr3108.kilonom.domain.MaintenanceDueMeasure
 import com.bgr3108.kilonom.domain.primaryDueMeasure
 import com.bgr3108.kilonom.ui.theme.CardBlueDark
@@ -56,6 +57,13 @@ fun MaintenanceScreen(
 ) {
     RefreshMaintenanceForCurrentDayOnResume(viewModel)
     val state by viewModel.state.collectAsStateWithLifecycle()
+    when (state.readState) {
+        RecordLoadState.Loading, is RecordLoadState.Error -> {
+            RecordLoadContent(state.readState, "maintenance-list", innerPadding, viewModel::retryRead, null) { }
+            return
+        }
+        else -> Unit
+    }
     var showAllHistory by remember { mutableStateOf(false) }
     val shownRecords = if (showAllHistory) state.records else state.records.take(5)
 

@@ -8,7 +8,10 @@ import com.bgr3108.kilonom.data.FuelEntry
 import com.bgr3108.kilonom.data.FuelRepository
 import com.bgr3108.kilonom.data.FuelType
 import com.bgr3108.kilonom.data.VehicleRepository
-import com.bgr3108.kilonom.data.observeActiveVehicleEntries
+import com.bgr3108.kilonom.data.RecordLoadState
+import com.bgr3108.kilonom.data.observeVehicleData
+import com.bgr3108.kilonom.data.forCurrentVehicle
+import com.bgr3108.kilonom.data.selectRecord
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -64,20 +67,29 @@ class FuelEntryViewModel(
     private val vehicleRepository: VehicleRepository
 ) : ViewModel() {
 
-    private val activeContext = repository
-        .observeActiveVehicleEntries(vehicleRepository)
+    private val readRetries = MutableStateFlow(0)
+    val entryLoadState: StateFlow<RecordLoadState<List<FuelEntry>>> = observeVehicleData(
+        vehicleRepository.loadState, readRetries
+    ) { vehicle -> repository.observeEntries(vehicle.id) }
+        .forCurrentVehicle(vehicleRepository.loadState)
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = com.bgr3108.kilonom.data.ActiveVehicleEntries(
-                vehicle = com.bgr3108.kilonom.data.Vehicle(),
-                entries = emptyList()
-            )
+            started = SharingStarted.WhileSubscribed(5_000, replayExpirationMillis = 0),
+            initialValue = RecordLoadState.Loading
         )
 
+    fun entryState(id: Int?) = entryLoadState.map { data ->
+        data.selectRecord { rows -> rows.firstOrNull { it.id == id } }
+    }
+
+    fun retryEntryLoad() {
+        vehicleRepository.retryVehicleLoad()
+        readRetries.value += 1
+    }
+
     val entries: StateFlow<List<FuelEntry>> =
-        activeContext
-            .map { it.entries }
+        entryLoadState
+            .map { (it as? RecordLoadState.Found)?.value.orEmpty() }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),

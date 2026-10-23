@@ -30,6 +30,7 @@ import com.bgr3108.kilonom.ui.theme.CardBlueLight
 import com.bgr3108.kilonom.ui.theme.CardBlueDark
 
 import com.bgr3108.kilonom.data.FuelEntry
+import com.bgr3108.kilonom.data.RecordLoadState
 import com.bgr3108.kilonom.data.FuelType
 import com.bgr3108.kilonom.data.fuelLevelAfterPercentageText
 import com.bgr3108.kilonom.data.electricChargePercentageSummaryText
@@ -55,6 +56,14 @@ fun ConsumptionListScreen(
     operationOrigin: String,
     onAddClick: () -> Unit
 ) {
+    val readState by viewModel.entryLoadState.collectAsStateWithLifecycle()
+    when (readState) {
+        RecordLoadState.Loading, is RecordLoadState.Error -> {
+            RecordLoadContent(readState, "consumption-list", innerPadding, viewModel::retryEntryLoad, null) { }
+            return
+        }
+        else -> Unit
+    }
     val lifecycleOwner = LocalLifecycleOwner.current
     val entries by viewModel.entries.collectAsStateWithLifecycle()
     val filteredEntries by viewModel.filteredEntries.collectAsStateWithLifecycle()

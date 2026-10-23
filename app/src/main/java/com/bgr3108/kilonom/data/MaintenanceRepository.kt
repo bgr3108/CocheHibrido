@@ -9,8 +9,7 @@ import com.bgr3108.kilonom.domain.MaintenanceNextDue
 import com.bgr3108.kilonom.domain.MaintenanceNextDueUpdate
 import com.bgr3108.kilonom.domain.resolveNextMaintenanceDueUpdate
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 
 /**
  * Vehicle-scoped persistence boundary for maintenance. It owns structural validation and never
@@ -21,22 +20,13 @@ class MaintenanceRepository(
     private val maintenanceDao: MaintenanceDao,
     private val vehicleRepository: VehicleRepository
 ) {
-    fun observeActiveItems(): Flow<List<MaintenanceItemEntity>> =
-        vehicleRepository.observeLoadedVehicle { vehicle ->
-            vehicle?.let { maintenanceDao.observeItems(it.id) } ?: flowOf(emptyList())
-        }
-
-    fun observeActiveRecords(): Flow<List<MaintenanceRecordWithItem>> =
-        vehicleRepository.observeLoadedVehicle { vehicle ->
-            vehicle?.let { entity ->
-                maintenanceDao.observeRecordsForVehicle(entity.id).map { rows -> rows.map { it.toDomain() } }
-            } ?: flowOf(emptyList())
-        }
-
-    fun observeRecordsForActiveItem(itemId: Long): Flow<List<MaintenanceRecordEntity>> =
-        vehicleRepository.observeLoadedVehicle { vehicle ->
-            vehicle?.let { maintenanceDao.observeRecordsForItem(itemId, it.id) } ?: flowOf(emptyList())
-        }
+    internal fun observeData(retries: Flow<Int>): Flow<RecordLoadState<MaintenanceData>> =
+        observeVehicleData(vehicleRepository.loadState, retries) { vehicle ->
+            combine(
+                maintenanceDao.observeItems(vehicle.id),
+                maintenanceDao.observeRecordsForVehicle(vehicle.id)
+            ) { items, records -> MaintenanceData(vehicle, items, records.map { it.toDomain() }) }
+        }.forCurrentVehicle(vehicleRepository.loadState)
 
     suspend fun createItemForActiveVehicle(
         item: MaintenanceItemEntity,
@@ -245,3 +235,9 @@ class MaintenanceRepository(
         intervalTimeUnit = item.intervalTimeUnit
     )
 }
+
+internal data class MaintenanceData(
+    val vehicle: VehicleEntity,
+    val items: List<MaintenanceItemEntity>,
+    val records: List<MaintenanceRecordWithItem>
+)

@@ -49,6 +49,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgr3108.kilonom.data.MaintenanceType
+import com.bgr3108.kilonom.data.selectRecord
+import com.bgr3108.kilonom.viewmodel.MaintenanceUiState
 import com.bgr3108.kilonom.data.MaintenanceTimeUnit
 import com.bgr3108.kilonom.data.TyrePosition
 import com.bgr3108.kilonom.data.DEFAULT_REMINDER_LEAD_DAYS
@@ -88,16 +90,34 @@ fun MaintenanceFormScreen(
     onClose: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val recordState = state.readState.selectRecord {
+        when (mode) {
+            MaintenanceFormMode.CREATE_ITEM -> state
+            MaintenanceFormMode.REGISTER_RECORD, MaintenanceFormMode.EDIT_ITEM ->
+                state.takeIf { data -> data.items.any { it.item.id == itemId } }
+            MaintenanceFormMode.EDIT_RECORD ->
+                state.takeIf { data -> data.records.any { it.record.id == recordId } }
+        }
+    }
+    RecordLoadContent(recordState, "$mode:$itemId:$recordId", innerPadding, viewModel::retryRead, onClose) { loaded ->
+        MaintenanceFormContent(innerPadding, mode, itemId, recordId, viewModel, operationOrigin, onClose, loaded)
+    }
+}
+
+@Composable
+private fun MaintenanceFormContent(
+    innerPadding: PaddingValues,
+    mode: MaintenanceFormMode,
+    itemId: Long?,
+    recordId: Long?,
+    viewModel: MaintenanceViewModel,
+    operationOrigin: String,
+    onClose: () -> Unit,
+    state: MaintenanceUiState
+) {
     val operations by viewModel.operationResults.collectAsStateWithLifecycle()
     val item = state.items.firstOrNull { it.item.id == itemId }?.item
     val record = state.records.firstOrNull { it.record.id == recordId }?.record
-    if ((mode == MaintenanceFormMode.REGISTER_RECORD || mode == MaintenanceFormMode.EDIT_ITEM) && item == null ||
-        mode == MaintenanceFormMode.EDIT_RECORD && record == null
-    ) {
-        MissingMaintenanceScreen(innerPadding, onClose)
-        return
-    }
-
     val sourceItem = item ?: state.records.firstOrNull { it.record.id == recordId }?.item
     val editableType = mode == MaintenanceFormMode.CREATE_ITEM
     val editableReminder = mode != MaintenanceFormMode.EDIT_RECORD
