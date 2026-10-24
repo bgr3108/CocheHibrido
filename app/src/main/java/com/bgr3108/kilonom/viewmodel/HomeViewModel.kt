@@ -1,7 +1,9 @@
 package com.bgr3108.kilonom.viewmodel
 
+import android.database.sqlite.SQLiteException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bgr3108.kilonom.data.ActiveVehicleEntries
 import com.bgr3108.kilonom.data.FuelEntry
 import com.bgr3108.kilonom.data.FuelRepository
 import com.bgr3108.kilonom.data.FuelType
@@ -9,10 +11,50 @@ import com.bgr3108.kilonom.data.MonthlyCost
 import com.bgr3108.kilonom.data.MonthlyPrice
 import com.bgr3108.kilonom.data.Vehicle
 import com.bgr3108.kilonom.data.VehicleCategory
+import com.bgr3108.kilonom.data.VehicleLoadState
 import com.bgr3108.kilonom.data.VehicleRepository
-import com.bgr3108.kilonom.data.ActiveVehicleEntries
 import com.bgr3108.kilonom.data.observeActiveVehicleEntries
+import com.bgr3108.kilonom.domain.HomeTrendInsight
+import com.bgr3108.kilonom.domain.VehicleTrendSummary
+import com.bgr3108.kilonom.domain.calculateAverageElectricConsumptionFromSegments
+import com.bgr3108.kilonom.domain.calculateAverageElectricPrice
+import com.bgr3108.kilonom.domain.calculateAverageFuelConsumptionFromSegments
+import com.bgr3108.kilonom.domain.calculateAverageFuelPrice
+import com.bgr3108.kilonom.domain.calculateBestElectricConsumptionFromSegments
+import com.bgr3108.kilonom.domain.calculateBestFuelConsumptionFromSegments
+import com.bgr3108.kilonom.domain.calculateCheapestPaidCharge
+import com.bgr3108.kilonom.domain.calculateCheapestRefuel
+import com.bgr3108.kilonom.domain.calculateCostPerHundredKilometers
+import com.bgr3108.kilonom.domain.calculateCostPerKilometer
+import com.bgr3108.kilonom.domain.calculateCurrentEstimatedFuelConsumption
+import com.bgr3108.kilonom.domain.calculateElectricCharges
+import com.bgr3108.kilonom.domain.calculateElectricSegmentCountFromSegments
+import com.bgr3108.kilonom.domain.calculateElectricSegments
+import com.bgr3108.kilonom.domain.calculateFreeCharges
+import com.bgr3108.kilonom.domain.calculateFuelRefuels
+import com.bgr3108.kilonom.domain.calculateFuelSegmentCountFromSegments
+import com.bgr3108.kilonom.domain.calculateFuelSegments
+import com.bgr3108.kilonom.domain.calculateMaxElectricPrice
+import com.bgr3108.kilonom.domain.calculateMaxFuelPrice
+import com.bgr3108.kilonom.domain.calculateMinElectricPrice
+import com.bgr3108.kilonom.domain.calculateMinFuelPrice
+import com.bgr3108.kilonom.domain.calculateMostExpensiveCharge
+import com.bgr3108.kilonom.domain.calculateMostExpensiveRefuel
+import com.bgr3108.kilonom.domain.calculateTotalCost
+import com.bgr3108.kilonom.domain.calculateTotalElectricCost
+import com.bgr3108.kilonom.domain.calculateTotalFuelCost
+import com.bgr3108.kilonom.domain.calculateTravelledKilometers
+import com.bgr3108.kilonom.domain.calculateVehicleTrends
+import com.bgr3108.kilonom.domain.calculateWorstElectricConsumptionFromSegments
+import com.bgr3108.kilonom.domain.calculateWorstFuelConsumptionFromSegments
+import com.bgr3108.kilonom.domain.isValidEconomicEntry
+import com.bgr3108.kilonom.domain.selectHomeTrendInsight
+import com.bgr3108.kilonom.domain.sumValidEconomicValues
+import com.bgr3108.kilonom.ui.components.charts.ChartPoint
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,50 +63,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.ensureActive
-import android.database.sqlite.SQLiteException
-import java.io.IOException
 import kotlinx.coroutines.sync.Mutex
-import com.bgr3108.kilonom.domain.calculateAverageElectricConsumptionFromSegments
-import com.bgr3108.kilonom.domain.calculateBestElectricConsumptionFromSegments
-import com.bgr3108.kilonom.domain.calculateElectricSegmentCountFromSegments
-import com.bgr3108.kilonom.domain.calculateWorstElectricConsumptionFromSegments
-import com.bgr3108.kilonom.domain.calculateAverageElectricPrice
-import com.bgr3108.kilonom.domain.calculateAverageFuelPrice
-import com.bgr3108.kilonom.domain.calculateCostPerKilometer
-import com.bgr3108.kilonom.domain.calculateCostPerHundredKilometers
-import com.bgr3108.kilonom.domain.calculateTotalCost
-import com.bgr3108.kilonom.domain.calculateTravelledKilometers
-import com.bgr3108.kilonom.domain.calculateElectricCharges
-import com.bgr3108.kilonom.domain.calculateFuelRefuels
-import com.bgr3108.kilonom.domain.calculateMaxElectricPrice
-import com.bgr3108.kilonom.domain.calculateMaxFuelPrice
-import com.bgr3108.kilonom.domain.calculateMinElectricPrice
-import com.bgr3108.kilonom.domain.calculateMinFuelPrice
-import com.bgr3108.kilonom.domain.calculateCheapestPaidCharge
-import com.bgr3108.kilonom.domain.calculateCheapestRefuel
-import com.bgr3108.kilonom.domain.calculateFreeCharges
-import com.bgr3108.kilonom.domain.calculateMostExpensiveCharge
-import com.bgr3108.kilonom.domain.calculateMostExpensiveRefuel
-import com.bgr3108.kilonom.domain.calculateTotalElectricCost
-import com.bgr3108.kilonom.domain.calculateTotalFuelCost
-import com.bgr3108.kilonom.domain.calculateFuelSegments
-import com.bgr3108.kilonom.domain.calculateCurrentEstimatedFuelConsumption
-import com.bgr3108.kilonom.domain.calculateAverageFuelConsumptionFromSegments
-import com.bgr3108.kilonom.domain.calculateBestFuelConsumptionFromSegments
-import com.bgr3108.kilonom.domain.calculateWorstFuelConsumptionFromSegments
-import com.bgr3108.kilonom.domain.calculateFuelSegmentCountFromSegments
-import com.bgr3108.kilonom.domain.calculateElectricSegments
-import com.bgr3108.kilonom.domain.HomeTrendInsight
-import com.bgr3108.kilonom.domain.VehicleTrendSummary
-import com.bgr3108.kilonom.domain.calculateVehicleTrends
-import com.bgr3108.kilonom.domain.isValidEconomicEntry
-import com.bgr3108.kilonom.domain.selectHomeTrendInsight
-import com.bgr3108.kilonom.domain.sumValidEconomicValues
-import com.bgr3108.kilonom.ui.components.charts.ChartPoint
+import java.io.IOException
 
 enum class ResetState {
     IDLE,
@@ -120,10 +120,18 @@ class HomeViewModel(
 
     private val vehicleSaveMutex = Mutex()
     private val _isSavingVehicle = MutableStateFlow(false)
-    private val _vehicleSaveFailed = MutableStateFlow(false)
+    private val _vehicleSaveError = MutableStateFlow<String?>(null)
+    private val _initialVehicleCreation = MutableStateFlow<VehicleCreationState>(VehicleCreationState.Editing)
 
     val isSavingVehicle: StateFlow<Boolean> = _isSavingVehicle
-    val vehicleSaveFailed: StateFlow<Boolean> = _vehicleSaveFailed
+    val vehicleSaveError: StateFlow<String?> = _vehicleSaveError
+    val initialVehicleCreation: StateFlow<VehicleCreationState> = _initialVehicleCreation
+
+    private val releaseNotesDismissMutex = Mutex()
+    private val _isDismissingReleaseNotes = MutableStateFlow(false)
+    private val _releaseNotesDismissError = MutableStateFlow<String?>(null)
+    val isDismissingReleaseNotes: StateFlow<Boolean> = _isDismissingReleaseNotes
+    val releaseNotesDismissError: StateFlow<String?> = _releaseNotesDismissError
 
     private val resetMutex = Mutex()
     private val _resetState = MutableStateFlow(ResetState.IDLE)
@@ -146,23 +154,55 @@ class HomeViewModel(
         _setupVehicleCategory.value = category
     }
 
-    fun saveInitialVehicle(
-        vehicle: Vehicle,
-        onSaved: () -> Unit
-    ) {
+    fun saveInitialVehicle(vehicle: Vehicle) {
+        val loaded = (vehicleRepository.loadState.value as? VehicleLoadState.Ready)?.vehicle
+        if (_initialVehicleCreation.value == VehicleCreationState.Editing && loaded?.type != null) {
+            _initialVehicleCreation.value = VehicleCreationState.Saved(loaded.id,
+                isActive = vehicleRepository.activeVehicleId.value == loaded.id)
+        }
+        runInitialVehicleAction {
+            val saved = _initialVehicleCreation.value as? VehicleCreationState.Saved
+            if (saved != null) {
+                activateInitialVehicle(saved)
+            } else {
+                val stored = vehicleRepository.saveVehicle(vehicle) {
+                    _initialVehicleCreation.value = VehicleCreationState.Saved(it.id)
+                }
+                _initialVehicleCreation.value = VehicleCreationState.Saved(stored.id, isActive = true)
+                vehicleRepository.retryVehicleLoad()
+            }
+        }
+    }
+
+    fun retryInitialVehicleActivation() {
+        val saved = _initialVehicleCreation.value as? VehicleCreationState.Saved ?: return
+        runInitialVehicleAction { activateInitialVehicle(saved) }
+    }
+
+    private suspend fun activateInitialVehicle(saved: VehicleCreationState.Saved) {
+        if (vehicleRepository.activateCreatedVehicle(saved.vehicleId)) {
+            _initialVehicleCreation.value = saved.copy(isActive = true)
+            vehicleRepository.retryVehicleLoad()
+        } else {
+            _vehicleSaveError.value = "El vehículo guardado ya no está disponible. Vuelve a abrir Kilonom para cargar los datos."
+        }
+    }
+
+    private fun runInitialVehicleAction(action: suspend () -> Unit) {
+        if ((_initialVehicleCreation.value as? VehicleCreationState.Saved)?.isActive == true) return
         if (!vehicleSaveMutex.tryLock()) return
 
         _isSavingVehicle.value = true
-        _vehicleSaveFailed.value = false
+        _vehicleSaveError.value = null
 
-        viewModelScope.launch {
+        viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
             try {
-                vehicleRepository.saveVehicle(vehicle)
-                onSaved()
-            } catch (error: Throwable) {
-                if (error is CancellationException) throw error
-
-                _vehicleSaveFailed.value = true
+                currentCoroutineContext().ensureActive()
+                action()
+            } catch (_: IOException) {
+                showInitialVehicleSaveError()
+            } catch (_: SQLiteException) {
+                showInitialVehicleSaveError()
             } finally {
                 _isSavingVehicle.value = false
                 vehicleSaveMutex.unlock()
@@ -170,9 +210,26 @@ class HomeViewModel(
         }
     }
 
+    private fun showInitialVehicleSaveError() {
+        _vehicleSaveError.value = if (_initialVehicleCreation.value is VehicleCreationState.Saved) {
+            "El vehículo está guardado, pero no pudo activarse. Puedes reintentar la activación."
+        } else "No se pudo guardar la configuración. Inténtalo de nuevo."
+    }
+
     fun dismissReleaseNotes() {
-        viewModelScope.launch {
-            vehicleRepository.dismissReleaseNotes()
+        if (!releaseNotesDismissMutex.tryLock()) return
+        _isDismissingReleaseNotes.value = true
+        _releaseNotesDismissError.value = null
+        viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            try {
+                currentCoroutineContext().ensureActive()
+                vehicleRepository.dismissReleaseNotes()
+            } catch (_: IOException) {
+                _releaseNotesDismissError.value = "No se pudo guardar la confirmación. Pulsa Entendido para reintentar."
+            } finally {
+                _isDismissingReleaseNotes.value = false
+                releaseNotesDismissMutex.unlock()
+            }
         }
     }
 
@@ -478,19 +535,19 @@ class HomeViewModel(
             0
         )
     val monthlyGasolinePrices = entries.subscribedEntryStatistic(
-        viewModelScope, emptyList<MonthlyPrice>()
+        viewModelScope, emptyList()
     ) { list -> calculateMonthlyPrices(list.filter { it.tipo == FuelType.GASOLINA }) }
 
     val monthlyElectricPrices = entries.subscribedEntryStatistic(
-        viewModelScope, emptyList<MonthlyPrice>()
+        viewModelScope, emptyList()
     ) { list -> calculateMonthlyPrices(list.filter { it.tipo == FuelType.ELECTRICO }) }
 
     val monthlyGasolineCosts = entries.subscribedEntryStatistic(
-        viewModelScope, emptyList<MonthlyCost>()
+        viewModelScope, emptyList()
     ) { list -> calculateMonthlyCosts(list.filter { it.tipo == FuelType.GASOLINA }) }
 
     val monthlyElectricCosts = entries.subscribedEntryStatistic(
-        viewModelScope, emptyList<MonthlyCost>()
+        viewModelScope, emptyList()
     ) { list -> calculateMonthlyCosts(list.filter { it.tipo == FuelType.ELECTRICO }) }
 
     // Monthly sources already own the grace period; chart projections must not add another.

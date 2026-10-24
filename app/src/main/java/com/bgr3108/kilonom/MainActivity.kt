@@ -165,6 +165,8 @@ internal fun AppContent(
     val vehicleLoadState by homeViewModel.vehicleLoadState.collectAsStateWithLifecycle()
     val resetState by homeViewModel.resetState.collectAsStateWithLifecycle()
     val showReleaseNotes by homeViewModel.showReleaseNotes.collectAsStateWithLifecycle()
+    val isDismissingReleaseNotes by homeViewModel.isDismissingReleaseNotes.collectAsStateWithLifecycle()
+    val releaseNotesDismissError by homeViewModel.releaseNotesDismissError.collectAsStateWithLifecycle()
     val adsUiState by adsManager.uiState.collectAsStateWithLifecycle()
     val activity = LocalActivity.current
 
@@ -184,12 +186,7 @@ internal fun AppContent(
 
     } else if (shouldShowSetup(vehicleLoadState, resetState)) {
 
-        SetupScreen(
-            homeViewModel = homeViewModel,
-
-            onDone = {
-            }
-        )
+        SetupScreen(homeViewModel = homeViewModel)
 
     } else {
 
@@ -336,7 +333,11 @@ internal fun AppContent(
         }
 
         if (showReleaseNotes) {
-            ReleaseNotesDialog(onDismiss = homeViewModel::dismissReleaseNotes)
+            ReleaseNotesDialog(
+                onDismiss = homeViewModel::dismissReleaseNotes,
+                isDismissing = isDismissingReleaseNotes,
+                errorMessage = releaseNotesDismissError
+            )
         }
     }
 }
@@ -399,7 +400,7 @@ private fun ResetAllDataDialog(
 }
 
 @Composable
-private fun ReleaseNotesDialog(onDismiss: () -> Unit) {
+internal fun ReleaseNotesDialog(onDismiss: () -> Unit, isDismissing: Boolean, errorMessage: String?) {
     val context = LocalContext.current
     val instagramOpenError = remember { mutableStateOf(false) }
     val contentScrollState = rememberScrollState()
@@ -449,10 +450,13 @@ private fun ReleaseNotesDialog(onDismiss: () -> Unit) {
                     modifier = Modifier.fillMaxWidth(),
                     color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)
                 )
+                errorMessage?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                }
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, enabled = !isDismissing) {
                 Text(stringResource(R.string.whats_new_confirm))
             }
         },

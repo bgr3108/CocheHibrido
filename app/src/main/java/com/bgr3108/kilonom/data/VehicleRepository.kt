@@ -262,26 +262,39 @@ class VehicleRepository(
         } else loadedSummaries)
     }
 
-    /** Saves the legacy snapshot as a safety net and then commits the Room vehicle as the active one. */
-    suspend fun saveVehicle(vehicle: Vehicle) = vehicleMutex.withLock {
-        vehiclePreferences.saveVehicle(vehicle)
-
+    /** Confirms Room storage before activation; an interrupted first setup reuses its existing row. */
+    suspend fun saveVehicle(
+        vehicle: Vehicle,
+        onStored: (VehicleEntity) -> Unit = {}
+    ): VehicleEntity = vehicleMutex.withLock {
         val activeVehicle = _activeVehicleId.value?.let { vehicleDao.getVehicle(it) }
-        val entity = if (activeVehicle != null) {
-            val updated = vehicle.toEntity(
-                id = activeVehicle.id,
-                createdAt = activeVehicle.createdAt
-            )
-            vehicleDao.update(updated)
-            updated
-        } else {
-            val id = vehicleDao.insert(vehicle.toEntity(createdAt = System.currentTimeMillis()))
-            vehicleDao.getVehicle(id) ?: error("No se pudo recuperar el vehículo creado")
+        val existing = activeVehicle ?: vehicleDao.getFirstVehicle()
+        if (activeVehicle == null && existing?.type != null) {
+            // Room, not a lost ViewModel or a field comparison, proves that setup already stored a vehicle.
+            onStored(existing)
+            currentCoroutineContext().ensureActive()
+            activateVehicle(existing)
+            return@withLock existing
         }
 
-        vehiclePreferences.saveActiveVehicleId(entity.id)
-        _activeVehicleId.value = entity.id
-        _vehicle.value = entity.toVehicle()
+        // Preserve the legacy recovery snapshot, but never write it before the authoritative Room read.
+        vehiclePreferences.saveVehicle(vehicle)
+        currentCoroutineContext().ensureActive()
+        val entity = withContext(NonCancellable) {
+            val candidate = vehicle.toEntity(
+                id = existing?.id ?: 0L,
+                createdAt = existing?.createdAt ?: System.currentTimeMillis()
+            )
+            val stored = if (existing != null) {
+                vehicleDao.update(candidate)
+                candidate
+            } else candidate.copy(id = vehicleDao.insert(candidate))
+            // Same commit/acknowledgement boundary as createVehicle(), without retaining UI callbacks.
+            stored.also(onStored)
+        }
+        currentCoroutineContext().ensureActive()
+        activateVehicle(entity)
+        entity
     }
 
     /** Resolves a requested id through the same deterministic fallback used at bootstrap. */
