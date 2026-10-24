@@ -43,7 +43,7 @@ sealed interface VehicleLoadState {
     data class Error(val cause: Exception) : VehicleLoadState
 }
 
-internal const val RELEASE_NOTES_VERSION = "1.5.0"
+internal const val RELEASE_NOTES_VERSION = "1.6.0"
 
 internal fun shouldShowReleaseNotes(
     hasExistingInstallation: Boolean,

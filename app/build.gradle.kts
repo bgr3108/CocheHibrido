@@ -25,8 +25,8 @@ android {
         applicationId = "com.bgr3108.kilonom"
         minSdk = 26
         targetSdk = 37
-        versionCode = 11
-        versionName = "1.5.0"
+        versionCode = 12
+        versionName = "1.6.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk {
             abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")

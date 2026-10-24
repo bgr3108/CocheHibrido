@@ -410,10 +410,10 @@ class VehicleRepositoryTest {
     }
 
     @Test
-    fun existingOnePointFourUser_showsOnePointFiveReleaseNotesOnce() = runBlocking {
+    fun existingOnePointFiveUser_showsOnePointSixReleaseNotesOnce() = runBlocking {
         val preferences = FakeVehiclePreferences(
             hasStoredAppState = true,
-            releaseNotesVersion = "1.4.0"
+            releaseNotesVersion = "1.5.0"
         )
         val repository = repository(preferences)
 
@@ -425,6 +425,11 @@ class VehicleRepositoryTest {
 
         assertFalse(repository.showReleaseNotes.value)
         assertEquals(RELEASE_NOTES_VERSION, preferences.releaseNotesVersion)
+        assertEquals("1.6.0", preferences.releaseNotesVersion)
+
+        val recreatedRepository = repository(preferences)
+        recreatedRepository.isLoading.first { !it }
+        assertFalse(recreatedRepository.showReleaseNotes.value)
     }
 
     @Test
