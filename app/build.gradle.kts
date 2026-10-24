@@ -25,7 +25,7 @@ android {
         applicationId = "com.bgr3108.kilonom"
         minSdk = 26
         targetSdk = 37
-        versionCode = 12
+        versionCode = 13
         versionName = "1.6.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk {
