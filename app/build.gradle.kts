@@ -28,6 +28,9 @@ android {
         versionCode = 11
         versionName = "1.5.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
+        }
         buildConfigField("boolean", "ADS_ENABLED", "false")
         buildConfigField("String", "ADMOB_BANNER_AD_UNIT_ID", "\"\"")
     }
